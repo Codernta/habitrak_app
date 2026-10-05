@@ -36,11 +36,7 @@ class IntentionalGoalsRepository {
 
   Future<Map<String, dynamic>> addGoal(String title) async {
     final id = 'goal_${DateTime.now().millisecondsSinceEpoch}';
-    final newGoal = {
-      'id': id,
-      'title': title,
-      'completed': false,
-    };
+    final newGoal = {'id': id, 'title': title, 'completed': false};
     await _box.put(id, newGoal);
     return newGoal;
   }

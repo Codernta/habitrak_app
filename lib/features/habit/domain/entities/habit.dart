@@ -10,7 +10,7 @@ enum HabitCategory {
   @HiveField(1)
   health,
   @HiveField(2)
-  growth
+  growth,
 }
 
 extension HabitCategoryExtension on HabitCategory {
@@ -90,15 +90,15 @@ class Habit extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        title,
-        category,
-        targetProgress,
-        currentProgress,
-        unit,
-        isCompleted,
-        streak,
-        completedAt,
-        scheduledTime,
-      ];
+    id,
+    title,
+    category,
+    targetProgress,
+    currentProgress,
+    unit,
+    isCompleted,
+    streak,
+    completedAt,
+    scheduledTime,
+  ];
 }

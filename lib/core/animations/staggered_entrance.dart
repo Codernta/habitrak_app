@@ -40,26 +40,32 @@ class _StaggeredEntranceState extends State<StaggeredEntrance>
       parent: _controller,
       curve: const Interval(0, 0.7, curve: AppAnimations.spring),
     );
-    _offset = Tween<Offset>(
-      begin: widget.slideAxis == Axis.vertical
-          ? const Offset(0, 0.12)
-          : const Offset(0.08, 0),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: const Interval(0, 0.85, curve: AppAnimations.bounce),
-    ));
-    _scale = Tween<double>(begin: 0.94, end: 1).animate(CurvedAnimation(
-      parent: _controller,
-      curve: const Interval(0, 0.8, curve: AppAnimations.spring),
-    ));
+    _offset =
+        Tween<Offset>(
+          begin: widget.slideAxis == Axis.vertical
+              ? const Offset(0, 0.12)
+              : const Offset(0.08, 0),
+          end: Offset.zero,
+        ).animate(
+          CurvedAnimation(
+            parent: _controller,
+            curve: const Interval(0, 0.85, curve: AppAnimations.bounce),
+          ),
+        );
+    _scale = Tween<double>(begin: 0.94, end: 1).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0, 0.8, curve: AppAnimations.spring),
+      ),
+    );
     if (widget.play) {
       _schedulePlay();
     }
   }
 
   void _schedulePlay() {
-    final delay = widget.delay ??
+    final delay =
+        widget.delay ??
         Duration(
           milliseconds: (widget.index * AppAnimations.staggerStepMs).round(),
         );
@@ -94,10 +100,7 @@ class _StaggeredEntranceState extends State<StaggeredEntrance>
               _offset.value.dx * AppAnimations.slideDistance,
               _offset.value.dy * AppAnimations.slideDistance,
             ),
-            child: Transform.scale(
-              scale: _scale.value,
-              child: child,
-            ),
+            child: Transform.scale(scale: _scale.value, child: child),
           ),
         );
       },

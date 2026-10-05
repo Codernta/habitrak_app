@@ -57,7 +57,9 @@ class _ProfilePageState extends State<ProfilePage> {
         final isDark = Theme.of(context).brightness == Brightness.dark;
         return AlertDialog(
           backgroundColor: isDark ? const Color(0xff1e201e) : Colors.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
           title: Text(
             'Edit Profile Name',
             style: TextStyle(
@@ -72,7 +74,9 @@ class _ProfilePageState extends State<ProfilePage> {
             style: TextStyle(color: isDark ? Colors.white : Colors.black),
             decoration: InputDecoration(
               labelText: 'Display Name',
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
             ),
           ),
           actions: [
@@ -95,7 +99,9 @@ class _ProfilePageState extends State<ProfilePage> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xff8ba88e),
                 foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
               ),
               child: const Text('Save'),
             ),
@@ -109,7 +115,9 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget build(BuildContext context) {
     final themeCubit = context.watch<ThemeCubit>();
     final isDark = themeCubit.state == ThemeMode.dark;
-    final primaryColor = isDark ? const Color(0xffb0ceb2) : const Color(0xff8ba88e);
+    final primaryColor = isDark
+        ? const Color(0xffb0ceb2)
+        : const Color(0xff8ba88e);
     final cardBg = isDark ? const Color(0xff1e201e) : const Color(0xffffffff);
 
     return Scaffold(
@@ -134,11 +142,20 @@ class _ProfilePageState extends State<ProfilePage> {
             const SizedBox(height: 10),
             _buildProfileCard(isDark, primaryColor, cardBg),
             const SizedBox(height: 24),
-            StaggeredEntrance(index: 1, child: _buildHeatmapCard(isDark, primaryColor, cardBg)),
+            StaggeredEntrance(
+              index: 1,
+              child: _buildHeatmapCard(isDark, primaryColor, cardBg),
+            ),
             const SizedBox(height: 24),
-            StaggeredEntrance(index: 2, child: _buildBadgesCard(isDark, primaryColor, cardBg)),
+            StaggeredEntrance(
+              index: 2,
+              child: _buildBadgesCard(isDark, primaryColor, cardBg),
+            ),
             const SizedBox(height: 24),
-            StaggeredEntrance(index: 3, child: _buildSettingsCard(isDark, primaryColor, cardBg)),
+            StaggeredEntrance(
+              index: 3,
+              child: _buildSettingsCard(isDark, primaryColor, cardBg),
+            ),
             const SizedBox(height: 40),
           ],
         ),
@@ -168,7 +185,9 @@ class _ProfilePageState extends State<ProfilePage> {
           color: cardBg,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isDark ? const Color(0xff424842).withValues(alpha: 0.1) : const Color(0xffdbdad7).withValues(alpha: 0.4),
+            color: isDark
+                ? const Color(0xff424842).withValues(alpha: 0.1)
+                : const Color(0xffdbdad7).withValues(alpha: 0.4),
             width: 1,
           ),
         ),
@@ -219,21 +238,36 @@ class _ProfilePageState extends State<ProfilePage> {
                   const SizedBox(height: 6),
                   Row(
                     children: [
-                      _buildProfileBadge(Icons.bolt, '$_streakDays Day Streak', primaryColor, isDark),
+                      _buildProfileBadge(
+                        Icons.bolt,
+                        '$_streakDays Day Streak',
+                        primaryColor,
+                        isDark,
+                      ),
                       const SizedBox(width: 8),
-                      _buildProfileBadge(Icons.timer_outlined, '${_totalMindfulMinutes}m total', primaryColor, isDark),
+                      _buildProfileBadge(
+                        Icons.timer_outlined,
+                        '${_totalMindfulMinutes}m total',
+                        primaryColor,
+                        isDark,
+                      ),
                     ],
                   ),
                 ],
               ),
-            )
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildProfileBadge(IconData icon, String text, Color primary, bool isDark) {
+  Widget _buildProfileBadge(
+    IconData icon,
+    String text,
+    Color primary,
+    bool isDark,
+  ) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
@@ -268,7 +302,9 @@ class _ProfilePageState extends State<ProfilePage> {
         color: cardBg,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: isDark ? const Color(0xff424842).withValues(alpha: 0.1) : const Color(0xffdbdad7).withValues(alpha: 0.4),
+          color: isDark
+              ? const Color(0xff424842).withValues(alpha: 0.1)
+              : const Color(0xffdbdad7).withValues(alpha: 0.4),
           width: 1,
         ),
       ),
@@ -289,7 +325,9 @@ class _ProfilePageState extends State<ProfilePage> {
             'Keep your active habits streak burning!',
             style: TextStyle(
               fontSize: 12,
-              color: isDark ? const Color(0xffc2c8c0).withValues(alpha: 0.5) : const Color(0xff615e56).withValues(alpha: 0.5),
+              color: isDark
+                  ? const Color(0xffc2c8c0).withValues(alpha: 0.5)
+                  : const Color(0xff615e56).withValues(alpha: 0.5),
             ),
           ),
           const SizedBox(height: 24),
@@ -309,7 +347,9 @@ class _ProfilePageState extends State<ProfilePage> {
                         style: TextStyle(
                           fontSize: 10,
                           fontWeight: FontWeight.bold,
-                          color: isDark ? const Color(0xffc2c8c0).withValues(alpha: 0.5) : const Color(0xff615e56).withValues(alpha: 0.5),
+                          color: isDark
+                              ? const Color(0xffc2c8c0).withValues(alpha: 0.5)
+                              : const Color(0xff615e56).withValues(alpha: 0.5),
                         ),
                       ),
                     ),
@@ -350,8 +390,12 @@ class _ProfilePageState extends State<ProfilePage> {
                       child: Container(
                         decoration: BoxDecoration(
                           color: intensity <= 0.05
-                              ? (isDark ? const Color(0xff1a1c1a) : const Color(0xfff2f1ee))
-                              : primaryColor.withValues(alpha: intensity.clamp(0.2, 1.0)),
+                              ? (isDark
+                                    ? const Color(0xff1a1c1a)
+                                    : const Color(0xfff2f1ee))
+                              : primaryColor.withValues(
+                                  alpha: intensity.clamp(0.2, 1.0),
+                                ),
                           borderRadius: BorderRadius.circular(6),
                         ),
                       ),
@@ -370,7 +414,9 @@ class _ProfilePageState extends State<ProfilePage> {
                 'Less',
                 style: TextStyle(
                   fontSize: 10,
-                  color: isDark ? const Color(0xffc2c8c0).withValues(alpha: 0.5) : const Color(0xff615e56).withValues(alpha: 0.5),
+                  color: isDark
+                      ? const Color(0xffc2c8c0).withValues(alpha: 0.5)
+                      : const Color(0xff615e56).withValues(alpha: 0.5),
                 ),
               ),
               const SizedBox(width: 6),
@@ -384,11 +430,13 @@ class _ProfilePageState extends State<ProfilePage> {
                 'More',
                 style: TextStyle(
                   fontSize: 10,
-                  color: isDark ? const Color(0xffc2c8c0).withValues(alpha: 0.5) : const Color(0xff615e56).withValues(alpha: 0.5),
+                  color: isDark
+                      ? const Color(0xffc2c8c0).withValues(alpha: 0.5)
+                      : const Color(0xff615e56).withValues(alpha: 0.5),
                 ),
               ),
             ],
-          )
+          ),
         ],
       ),
     );
@@ -412,7 +460,9 @@ class _ProfilePageState extends State<ProfilePage> {
         color: cardBg,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: isDark ? const Color(0xff424842).withValues(alpha: 0.1) : const Color(0xffdbdad7).withValues(alpha: 0.4),
+          color: isDark
+              ? const Color(0xff424842).withValues(alpha: 0.1)
+              : const Color(0xffdbdad7).withValues(alpha: 0.4),
           width: 1,
         ),
       ),
@@ -442,12 +492,16 @@ class _ProfilePageState extends State<ProfilePage> {
                     Container(
                       padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
-                        color: (b['color'] as Color).withValues(alpha: isUnlocked ? 0.2 : 0.08),
+                        color: (b['color'] as Color).withValues(
+                          alpha: isUnlocked ? 0.2 : 0.08,
+                        ),
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
                         b['icon'] as IconData,
-                        color: isUnlocked ? (b['color'] as Color) : (isDark ? Colors.white30 : Colors.black26),
+                        color: isUnlocked
+                            ? (b['color'] as Color)
+                            : (isDark ? Colors.white30 : Colors.black26),
                         size: 24,
                       ),
                     ),
@@ -469,7 +523,11 @@ class _ProfilePageState extends State<ProfilePage> {
                               ),
                               if (isUnlocked) ...[
                                 const SizedBox(width: 6),
-                                Icon(Icons.check_circle, size: 14, color: primaryColor),
+                                Icon(
+                                  Icons.check_circle,
+                                  size: 14,
+                                  color: primaryColor,
+                                ),
                               ],
                             ],
                           ),
@@ -478,7 +536,13 @@ class _ProfilePageState extends State<ProfilePage> {
                             b['desc'] as String,
                             style: TextStyle(
                               fontSize: 12,
-                              color: isDark ? const Color(0xffc2c8c0).withValues(alpha: 0.5) : const Color(0xff615e56).withValues(alpha: 0.5),
+                              color: isDark
+                                  ? const Color(
+                                      0xffc2c8c0,
+                                    ).withValues(alpha: 0.5)
+                                  : const Color(
+                                      0xff615e56,
+                                    ).withValues(alpha: 0.5),
                             ),
                           ),
                         ],
@@ -488,7 +552,9 @@ class _ProfilePageState extends State<ProfilePage> {
                       icon: Icon(
                         Icons.share_outlined,
                         size: 20,
-                        color: isDark ? const Color(0xffc2c8c0) : const Color(0xff615e56),
+                        color: isDark
+                            ? const Color(0xffc2c8c0)
+                            : const Color(0xff615e56),
                       ),
                       tooltip: 'Share Achievement',
                       onPressed: () {
@@ -562,11 +628,7 @@ class _ProfilePageState extends State<ProfilePage> {
             children: [
               Row(
                 children: [
-                  Icon(
-                    Icons.spa,
-                    size: 22,
-                    color: primaryColor,
-                  ),
+                  Icon(Icons.spa, size: 22, color: primaryColor),
                   const SizedBox(width: 6),
                   Text(
                     'HabiTrak',
@@ -581,18 +643,17 @@ class _ProfilePageState extends State<ProfilePage> {
                 ],
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
                   color: primaryColor.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(100),
                 ),
                 child: Row(
                   children: [
-                    Icon(
-                      Icons.verified_rounded,
-                      size: 12,
-                      color: primaryColor,
-                    ),
+                    Icon(Icons.verified_rounded, size: 12, color: primaryColor),
                     const SizedBox(width: 4),
                     Text(
                       'VERIFIED',
@@ -679,14 +740,10 @@ class _ProfilePageState extends State<ProfilePage> {
                         color: badgeColor.withValues(alpha: 0.2),
                         blurRadius: 8,
                         spreadRadius: 1,
-                      )
+                      ),
                     ],
                   ),
-                  child: Icon(
-                    badgeIcon,
-                    color: badgeColor,
-                    size: 32,
-                  ),
+                  child: Icon(badgeIcon, color: badgeColor, size: 32),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
@@ -730,7 +787,10 @@ class _ProfilePageState extends State<ProfilePage> {
             children: [
               Expanded(
                 child: Container(
-                  padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 8,
+                    horizontal: 12,
+                  ),
                   decoration: BoxDecoration(
                     color: isDark
                         ? const Color(0xff1e201e)
@@ -740,17 +800,16 @@ class _ProfilePageState extends State<ProfilePage> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Text(
-                        '🔥',
-                        style: TextStyle(fontSize: 14),
-                      ),
+                      const Text('🔥', style: TextStyle(fontSize: 14)),
                       const SizedBox(width: 6),
                       Text(
                         '$_streakDays-Day Streak',
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.bold,
-                          color: isDark ? const Color(0xffc2c8c0) : const Color(0xff615e56),
+                          color: isDark
+                              ? const Color(0xffc2c8c0)
+                              : const Color(0xff615e56),
                         ),
                       ),
                     ],
@@ -760,7 +819,10 @@ class _ProfilePageState extends State<ProfilePage> {
               const SizedBox(width: 12),
               Expanded(
                 child: Container(
-                  padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 8,
+                    horizontal: 12,
+                  ),
                   decoration: BoxDecoration(
                     color: isDark
                         ? const Color(0xff1e201e)
@@ -770,17 +832,16 @@ class _ProfilePageState extends State<ProfilePage> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Text(
-                        '⏱️',
-                        style: TextStyle(fontSize: 14),
-                      ),
+                      const Text('⏱️', style: TextStyle(fontSize: 14)),
                       const SizedBox(width: 6),
                       Text(
                         '${_totalMindfulMinutes}m Total',
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.bold,
-                          color: isDark ? const Color(0xffc2c8c0) : const Color(0xff615e56),
+                          color: isDark
+                              ? const Color(0xffc2c8c0)
+                              : const Color(0xff615e56),
                         ),
                       ),
                     ],
@@ -820,21 +881,27 @@ class _ProfilePageState extends State<ProfilePage> {
 
   void _showShareDialog(BuildContext context, Map<String, dynamic> badge) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryColor = isDark ? const Color(0xffb0ceb2) : const Color(0xff8ba88e);
+    final primaryColor = isDark
+        ? const Color(0xffb0ceb2)
+        : const Color(0xff8ba88e);
     final cardBg = isDark ? const Color(0xff1e201e) : const Color(0xffffffff);
 
     showDialog(
       context: context,
       barrierDismissible: true,
       builder: (BuildContext context) {
-        int shareState = 0; // 0 = Idle, 1 = Generating/Loading, 2 = Shared/Success
+        int shareState =
+            0; // 0 = Idle, 1 = Generating/Loading, 2 = Shared/Success
 
         return Dialog(
           backgroundColor: cardBg,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(24),
           ),
-          insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+          insetPadding: const EdgeInsets.symmetric(
+            horizontal: 20,
+            vertical: 24,
+          ),
           child: StatefulBuilder(
             builder: (context, setStateDialog) {
               return Stack(
@@ -878,8 +945,12 @@ class _ProfilePageState extends State<ProfilePage> {
                             ElevatedButton.icon(
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: primaryColor,
-                                foregroundColor: isDark ? Colors.black : Colors.white,
-                                padding: const EdgeInsets.symmetric(vertical: 14),
+                                foregroundColor: isDark
+                                    ? Colors.black
+                                    : Colors.white,
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 14,
+                                ),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(14),
                                 ),
@@ -889,37 +960,54 @@ class _ProfilePageState extends State<ProfilePage> {
                                 setStateDialog(() {
                                   shareState = 1;
                                 });
-                                Future.delayed(const Duration(milliseconds: 1400), () {
-                                  if (context.mounted) {
-                                    setStateDialog(() {
-                                      shareState = 2;
-                                    });
-                                  }
-                                  Future.delayed(const Duration(milliseconds: 1200), () {
+                                Future.delayed(
+                                  const Duration(milliseconds: 1400),
+                                  () {
                                     if (context.mounted) {
-                                      Navigator.pop(context);
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        SnackBar(
-                                          content: Row(
-                                            children: [
-                                              const Icon(Icons.check_circle, color: Colors.white, size: 20),
-                                              const SizedBox(width: 8),
-                                              Text(
-                                                'Successfully shared ${badge['title']}!',
-                                                style: const TextStyle(fontWeight: FontWeight.w600),
-                                              ),
-                                            ],
-                                          ),
-                                          backgroundColor: primaryColor,
-                                          behavior: SnackBarBehavior.floating,
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(10),
-                                          ),
-                                        ),
-                                      );
+                                      setStateDialog(() {
+                                        shareState = 2;
+                                      });
                                     }
-                                  });
-                                });
+                                    Future.delayed(
+                                      const Duration(milliseconds: 1200),
+                                      () {
+                                        if (context.mounted) {
+                                          Navigator.pop(context);
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(
+                                            SnackBar(
+                                              content: Row(
+                                                children: [
+                                                  const Icon(
+                                                    Icons.check_circle,
+                                                    color: Colors.white,
+                                                    size: 20,
+                                                  ),
+                                                  const SizedBox(width: 8),
+                                                  Text(
+                                                    'Successfully shared ${badge['title']}!',
+                                                    style: const TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.w600,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                              backgroundColor: primaryColor,
+                                              behavior:
+                                                  SnackBarBehavior.floating,
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(10),
+                                              ),
+                                            ),
+                                          );
+                                        }
+                                      },
+                                    );
+                                  },
+                                );
                               },
                               icon: const Icon(Icons.share, size: 18),
                               label: const Text(
@@ -934,9 +1022,13 @@ class _ProfilePageState extends State<ProfilePage> {
                             const SizedBox(height: 10),
                             OutlinedButton.icon(
                               style: OutlinedButton.styleFrom(
-                                side: BorderSide(color: primaryColor.withValues(alpha: 0.5)),
+                                side: BorderSide(
+                                  color: primaryColor.withValues(alpha: 0.5),
+                                ),
                                 foregroundColor: primaryColor,
-                                padding: const EdgeInsets.symmetric(vertical: 14),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 14,
+                                ),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(14),
                                 ),
@@ -944,19 +1036,29 @@ class _ProfilePageState extends State<ProfilePage> {
                               onPressed: () {
                                 final textToCopy =
                                     '🏆 I completed the "${badge['title']}" milestone on HabiTrak! 🧘\nDescription: ${badge['desc']}\nStats: $_streakDays-Day Streak 🔥 & ${_totalMindfulMinutes}m total mindful activity ⏱️\nJoin me in building consistency with HabiTrak!';
-                                Clipboard.setData(ClipboardData(text: textToCopy));
-                                
+                                Clipboard.setData(
+                                  ClipboardData(text: textToCopy),
+                                );
+
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
                                     content: const Row(
                                       children: [
-                                        Icon(Icons.copy, color: Colors.white, size: 20),
+                                        Icon(
+                                          Icons.copy,
+                                          color: Colors.white,
+                                          size: 20,
+                                        ),
                                         SizedBox(width: 8),
-                                        Text('Copied achievement details to clipboard!'),
+                                        Text(
+                                          'Copied achievement details to clipboard!',
+                                        ),
                                       ],
                                     ),
                                     behavior: SnackBarBehavior.floating,
-                                    backgroundColor: isDark ? const Color(0xff2d312d) : const Color(0xff434943),
+                                    backgroundColor: isDark
+                                        ? const Color(0xff2d312d)
+                                        : const Color(0xff434943),
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(10),
                                     ),
@@ -984,7 +1086,9 @@ class _ProfilePageState extends State<ProfilePage> {
                                     height: 24,
                                     child: CircularProgressIndicator(
                                       strokeWidth: 2.5,
-                                      valueColor: AlwaysStoppedAnimation<Color>(primaryColor),
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                        primaryColor,
+                                      ),
                                     ),
                                   ),
                                   const SizedBox(height: 12),
@@ -1011,7 +1115,9 @@ class _ProfilePageState extends State<ProfilePage> {
                                       return Transform.scale(
                                         scale: val,
                                         child: Opacity(
-                                          opacity: AppAnimations.clampOpacity(val),
+                                          opacity: AppAnimations.clampOpacity(
+                                            val,
+                                          ),
                                           child: Icon(
                                             Icons.check_circle,
                                             color: primaryColor,
@@ -1054,7 +1160,9 @@ class _ProfilePageState extends State<ProfilePage> {
         color: cardBg,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: isDark ? const Color(0xff424842).withValues(alpha: 0.1) : const Color(0xffdbdad7).withValues(alpha: 0.4),
+          color: isDark
+              ? const Color(0xff424842).withValues(alpha: 0.1)
+              : const Color(0xffdbdad7).withValues(alpha: 0.4),
           width: 1,
         ),
       ),
@@ -1076,7 +1184,12 @@ class _ProfilePageState extends State<ProfilePage> {
             children: [
               Row(
                 children: [
-                  Icon(Icons.notifications_outlined, color: isDark ? const Color(0xffc2c8c0) : const Color(0xff615e56)),
+                  Icon(
+                    Icons.notifications_outlined,
+                    color: isDark
+                        ? const Color(0xffc2c8c0)
+                        : const Color(0xff615e56),
+                  ),
                   const SizedBox(width: 12),
                   Text(
                     'Daily Reminders',
@@ -1108,7 +1221,12 @@ class _ProfilePageState extends State<ProfilePage> {
             children: [
               Row(
                 children: [
-                  Icon(Icons.dark_mode_outlined, color: isDark ? const Color(0xffc2c8c0) : const Color(0xff615e56)),
+                  Icon(
+                    Icons.dark_mode_outlined,
+                    color: isDark
+                        ? const Color(0xffc2c8c0)
+                        : const Color(0xff615e56),
+                  ),
                   const SizedBox(width: 12),
                   Text(
                     'Dark Mode Theme',
@@ -1129,7 +1247,9 @@ class _ProfilePageState extends State<ProfilePage> {
                   context.read<ThemeCubit>().toggleTheme(val);
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('Theme set to ${val ? "Dark" : "Light"} Mode!'),
+                      content: Text(
+                        'Theme set to ${val ? "Dark" : "Light"} Mode!',
+                      ),
                       duration: const Duration(milliseconds: 800),
                     ),
                   );

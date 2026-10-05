@@ -60,7 +60,7 @@ class HiveHabitRepository implements HabitRepository {
     final habit = _getHabitById(habitId);
     if (habit != null) {
       final newCompleted = !habit.isCompleted;
-      
+
       double newProgress = newCompleted ? habit.targetProgress : 0.0;
       if (habit.unit == 'L') {
         newProgress = newCompleted ? habit.targetProgress : 1.2;
@@ -77,7 +77,7 @@ class HiveHabitRepository implements HabitRepository {
         newStreak = habit.streak - 1;
       }
 
-      String? completedTime = newCompleted 
+      String? completedTime = newCompleted
           ? '${DateTime.now().hour}:${DateTime.now().minute.toString().padLeft(2, '0')} ${DateTime.now().hour >= 12 ? 'PM' : 'AM'}'
           : null;
 
@@ -169,7 +169,10 @@ class HiveHabitRepository implements HabitRepository {
         'date': todayKey,
         'completedCount': completed,
         'totalHabits': allHabits.length,
-        'completedHabitIds': allHabits.where((h) => h.isCompleted).map((h) => h.id).toList(),
+        'completedHabitIds': allHabits
+            .where((h) => h.isCompleted)
+            .map((h) => h.id)
+            .toList(),
       });
     }
   }

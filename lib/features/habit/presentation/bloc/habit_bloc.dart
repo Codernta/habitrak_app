@@ -46,7 +46,13 @@ class AddCustomHabitEvent extends HabitEvent {
   });
 
   @override
-  List<Object?> get props => [title, category, targetProgress, unit, scheduledTime];
+  List<Object?> get props => [
+    title,
+    category,
+    targetProgress,
+    unit,
+    scheduledTime,
+  ];
 }
 
 class ResetHabitsEvent extends HabitEvent {}
@@ -135,42 +141,60 @@ class HabitBloc extends Bloc<HabitEvent, HabitState> {
     on<CompleteActivityHabitEvent>(_onCompleteActivityHabit);
   }
 
-  Future<void> _onLoadHabits(LoadHabitsEvent event, Emitter<HabitState> emit) async {
+  Future<void> _onLoadHabits(
+    LoadHabitsEvent event,
+    Emitter<HabitState> emit,
+  ) async {
     emit(HabitLoading());
     try {
       final habits = await repository.getHabits();
       final percentage = _calculatePercentage(habits);
-      emit(HabitLoaded(
-        habits: habits,
-        completionPercentage: percentage,
-        activeDate: DateTime.now(),
-      ));
+      emit(
+        HabitLoaded(
+          habits: habits,
+          completionPercentage: percentage,
+          activeDate: DateTime.now(),
+        ),
+      );
     } catch (e) {
       emit(HabitError('Failed to load habits: $e'));
     }
   }
 
-  void _onChangeActiveDate(ChangeActiveDateEvent event, Emitter<HabitState> emit) {
+  void _onChangeActiveDate(
+    ChangeActiveDateEvent event,
+    Emitter<HabitState> emit,
+  ) {
     if (state is HabitLoaded) {
       final current = state as HabitLoaded;
       emit(current.copyWith(activeDate: event.date));
     }
   }
 
-  Future<void> _onCompleteActivityHabit(CompleteActivityHabitEvent event, Emitter<HabitState> emit) async {
+  Future<void> _onCompleteActivityHabit(
+    CompleteActivityHabitEvent event,
+    Emitter<HabitState> emit,
+  ) async {
     if (state is HabitLoaded) {
       final current = state as HabitLoaded;
       try {
         final habits = await repository.getHabits();
         Habit? match;
         if (event.titleKeyword != null) {
-          match = habits.where((h) => h.title.toLowerCase().contains(event.titleKeyword!.toLowerCase())).firstOrNull;
+          match = habits
+              .where(
+                (h) => h.title.toLowerCase().contains(
+                  event.titleKeyword!.toLowerCase(),
+                ),
+              )
+              .firstOrNull;
         }
         match ??= habits.where((h) => h.category == event.category).firstOrNull;
 
         if (match != null) {
           if (event.progressAmount != null && match.targetProgress > 1.0) {
-            final newProg = (match.currentProgress + event.progressAmount!).clamp(0.0, match.targetProgress);
+            final newProg = (match.currentProgress + event.progressAmount!)
+                .clamp(0.0, match.targetProgress);
             await repository.updateHabitProgress(match.id, newProg);
           } else {
             if (!match.isCompleted) {
@@ -178,10 +202,12 @@ class HabitBloc extends Bloc<HabitEvent, HabitState> {
             }
           }
           final updatedHabits = await repository.getHabits();
-          emit(current.copyWith(
-            habits: updatedHabits,
-            completionPercentage: _calculatePercentage(updatedHabits),
-          ));
+          emit(
+            current.copyWith(
+              habits: updatedHabits,
+              completionPercentage: _calculatePercentage(updatedHabits),
+            ),
+          );
         }
       } catch (e) {
         emit(HabitError('Failed to complete activity habit: $e'));
@@ -189,41 +215,54 @@ class HabitBloc extends Bloc<HabitEvent, HabitState> {
     }
   }
 
-  Future<void> _onToggleHabit(ToggleHabitEvent event, Emitter<HabitState> emit) async {
+  Future<void> _onToggleHabit(
+    ToggleHabitEvent event,
+    Emitter<HabitState> emit,
+  ) async {
     if (state is HabitLoaded) {
       final currentState = state as HabitLoaded;
       try {
         await repository.toggleHabitCompletion(event.habitId);
         final habits = await repository.getHabits();
         final percentage = _calculatePercentage(habits);
-        emit(currentState.copyWith(
-          habits: habits,
-          completionPercentage: percentage,
-        ));
+        emit(
+          currentState.copyWith(
+            habits: habits,
+            completionPercentage: percentage,
+          ),
+        );
       } catch (e) {
         emit(HabitError('Failed to update habit: $e'));
       }
     }
   }
 
-  Future<void> _onUpdateProgress(UpdateHabitProgressEvent event, Emitter<HabitState> emit) async {
+  Future<void> _onUpdateProgress(
+    UpdateHabitProgressEvent event,
+    Emitter<HabitState> emit,
+  ) async {
     if (state is HabitLoaded) {
       final currentState = state as HabitLoaded;
       try {
         await repository.updateHabitProgress(event.habitId, event.progress);
         final habits = await repository.getHabits();
         final percentage = _calculatePercentage(habits);
-        emit(currentState.copyWith(
-          habits: habits,
-          completionPercentage: percentage,
-        ));
+        emit(
+          currentState.copyWith(
+            habits: habits,
+            completionPercentage: percentage,
+          ),
+        );
       } catch (e) {
         emit(HabitError('Failed to update habit progress: $e'));
       }
     }
   }
 
-  Future<void> _onAddCustomHabit(AddCustomHabitEvent event, Emitter<HabitState> emit) async {
+  Future<void> _onAddCustomHabit(
+    AddCustomHabitEvent event,
+    Emitter<HabitState> emit,
+  ) async {
     if (state is HabitLoaded) {
       final currentState = state as HabitLoaded;
       try {
@@ -240,27 +279,34 @@ class HabitBloc extends Bloc<HabitEvent, HabitState> {
         await repository.addHabit(newHabit);
         final habits = await repository.getHabits();
         final percentage = _calculatePercentage(habits);
-        emit(currentState.copyWith(
-          habits: habits,
-          completionPercentage: percentage,
-        ));
+        emit(
+          currentState.copyWith(
+            habits: habits,
+            completionPercentage: percentage,
+          ),
+        );
       } catch (e) {
         emit(HabitError('Failed to add habit: $e'));
       }
     }
   }
 
-  Future<void> _onResetHabits(ResetHabitsEvent event, Emitter<HabitState> emit) async {
+  Future<void> _onResetHabits(
+    ResetHabitsEvent event,
+    Emitter<HabitState> emit,
+  ) async {
     if (state is HabitLoaded) {
       final currentState = state as HabitLoaded;
       try {
         await repository.resetHabits();
         final habits = await repository.getHabits();
         final percentage = _calculatePercentage(habits);
-        emit(currentState.copyWith(
-          habits: habits,
-          completionPercentage: percentage,
-        ));
+        emit(
+          currentState.copyWith(
+            habits: habits,
+            completionPercentage: percentage,
+          ),
+        );
       } catch (e) {
         emit(HabitError('Failed to reset: $e'));
       }
@@ -269,7 +315,7 @@ class HabitBloc extends Bloc<HabitEvent, HabitState> {
 
   double _calculatePercentage(List<Habit> habits) {
     if (habits.isEmpty) return 0.0;
-    
+
     // Average progress vs target progress for all habits
     double totalWeight = 0.0;
     double completedWeight = 0.0;
@@ -279,7 +325,10 @@ class HabitBloc extends Bloc<HabitEvent, HabitState> {
       if (h.isCompleted) {
         completedWeight += 1.0;
       } else {
-        completedWeight += (h.currentProgress / h.targetProgress).clamp(0.0, 1.0);
+        completedWeight += (h.currentProgress / h.targetProgress).clamp(
+          0.0,
+          1.0,
+        );
       }
     }
 

@@ -19,7 +19,8 @@ class DashboardPage extends StatefulWidget {
   State<DashboardPage> createState() => _DashboardPageState();
 }
 
-class _DashboardPageState extends State<DashboardPage> with TickerProviderStateMixin {
+class _DashboardPageState extends State<DashboardPage>
+    with TickerProviderStateMixin {
   late AnimationController _progressController;
   late AnimationController _ambientController;
   late Animation<double> _progressAnimation;
@@ -40,16 +41,20 @@ class _DashboardPageState extends State<DashboardPage> with TickerProviderStateM
     final habitState = context.read<HabitBloc>().state;
     if (habitState is HabitLoaded) {
       _lastPercentage = habitState.completionPercentage;
-      _progressAnimation = Tween<double>(
-        begin: 0.0,
-        end: _lastPercentage / 100.0,
-      ).animate(
-        CurvedAnimation(parent: _progressController, curve: Curves.easeOutCubic),
-      );
+      _progressAnimation =
+          Tween<double>(begin: 0.0, end: _lastPercentage / 100.0).animate(
+            CurvedAnimation(
+              parent: _progressController,
+              curve: Curves.easeOutCubic,
+            ),
+          );
       _progressController.forward();
     } else {
       _progressAnimation = Tween<double>(begin: 0.0, end: 0.0).animate(
-        CurvedAnimation(parent: _progressController, curve: Curves.easeOutCubic),
+        CurvedAnimation(
+          parent: _progressController,
+          curve: Curves.easeOutCubic,
+        ),
       );
     }
   }
@@ -62,12 +67,16 @@ class _DashboardPageState extends State<DashboardPage> with TickerProviderStateM
   }
 
   void _animateProgress(double targetPercentage) {
-    _progressAnimation = Tween<double>(
-      begin: _lastPercentage / 100.0,
-      end: targetPercentage / 100.0,
-    ).animate(
-      CurvedAnimation(parent: _progressController, curve: Curves.easeOutCubic),
-    );
+    _progressAnimation =
+        Tween<double>(
+          begin: _lastPercentage / 100.0,
+          end: targetPercentage / 100.0,
+        ).animate(
+          CurvedAnimation(
+            parent: _progressController,
+            curve: Curves.easeOutCubic,
+          ),
+        );
     _lastPercentage = targetPercentage;
     _progressController.forward(from: 0.0);
   }
@@ -75,8 +84,10 @@ class _DashboardPageState extends State<DashboardPage> with TickerProviderStateM
   void _showCelebrationOverlay() {
     HapticFeedback.vibrate();
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryColor = isDark ? const Color(0xffb0ceb2) : const Color(0xff8ba88e);
-    
+    final primaryColor = isDark
+        ? const Color(0xffb0ceb2)
+        : const Color(0xff8ba88e);
+
     showDialog(
       context: context,
       barrierColor: Colors.black.withValues(alpha: 0.4),
@@ -93,57 +104,71 @@ class _DashboardPageState extends State<DashboardPage> with TickerProviderStateM
                 child: Transform.translate(
                   offset: Offset(0, (1 - val) * 30),
                   child: AlertDialog(
-                  backgroundColor: isDark ? const Color(0xff1e201e) : const Color(0xffffffff),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-                  title: Column(
-                    children: [
-                      Icon(Icons.stars_rounded, color: primaryColor, size: 54),
-                      const SizedBox(height: 12),
-                      const Text(
-                        '100% Completed!',
-                        style: TextStyle(
-                          fontFamily: 'Hanken Grotesk',
-                          fontWeight: FontWeight.bold,
-                          fontSize: 22,
+                    backgroundColor: isDark
+                        ? const Color(0xff1e201e)
+                        : const Color(0xffffffff),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(24),
+                    ),
+                    title: Column(
+                      children: [
+                        Icon(
+                          Icons.stars_rounded,
+                          color: primaryColor,
+                          size: 54,
                         ),
-                      ),
-                    ],
-                  ),
-                  content: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        'Brilliant focus! You\'ve completed all of your daily intentions for today.',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontFamily: 'Hanken Grotesk',
-                          fontSize: 14,
-                          color: isDark ? const Color(0xffc2c8c0) : const Color(0xff615e56),
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: () => Navigator.pop(context),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: primaryColor,
-                            foregroundColor: isDark ? const Color(0xff1c3622) : Colors.white,
-                            padding: const EdgeInsets.symmetric(vertical: 14),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                          ),
-                          child: const Text(
-                            'Keep it up!',
-                            style: TextStyle(fontWeight: FontWeight.bold),
+                        const SizedBox(height: 12),
+                        const Text(
+                          '100% Completed!',
+                          style: TextStyle(
+                            fontFamily: 'Hanken Grotesk',
+                            fontWeight: FontWeight.bold,
+                            fontSize: 22,
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
+                    content: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          'Brilliant focus! You\'ve completed all of your daily intentions for today.',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontFamily: 'Hanken Grotesk',
+                            fontSize: 14,
+                            color: isDark
+                                ? const Color(0xffc2c8c0)
+                                : const Color(0xff615e56),
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed: () => Navigator.pop(context),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: primaryColor,
+                              foregroundColor: isDark
+                                  ? const Color(0xff1c3622)
+                                  : Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            child: const Text(
+                              'Keep it up!',
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ),
-          );
+            );
           },
         );
       },
@@ -153,7 +178,7 @@ class _DashboardPageState extends State<DashboardPage> with TickerProviderStateM
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.transparent,
@@ -164,15 +189,10 @@ class _DashboardPageState extends State<DashboardPage> with TickerProviderStateM
             Container(
               width: 32,
               height: 32,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(8),
-              ),
+              decoration: BoxDecoration(borderRadius: BorderRadius.circular(8)),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(8),
-                child: Image.asset(
-                  'assets/images/logo.png',
-                  fit: BoxFit.cover,
-                ),
+                child: Image.asset('assets/images/logo.png', fit: BoxFit.cover),
               ),
             ),
             const SizedBox(width: 10),
@@ -182,7 +202,9 @@ class _DashboardPageState extends State<DashboardPage> with TickerProviderStateM
                 fontFamily: 'Hanken Grotesk',
                 fontSize: 24,
                 fontWeight: FontWeight.w700,
-                color: isDark ? const Color(0xffb0ceb2) : const Color(0xff8ba88e),
+                color: isDark
+                    ? const Color(0xffb0ceb2)
+                    : const Color(0xff8ba88e),
                 letterSpacing: -0.5,
               ),
             ),
@@ -213,7 +235,9 @@ class _DashboardPageState extends State<DashboardPage> with TickerProviderStateM
             final wasAlreadyLoaded = _lastPercentage > 0.0;
             final prevPercentage = _lastPercentage;
             _animateProgress(targetPercentage);
-            if (targetPercentage >= 100.0 && prevPercentage < 100.0 && wasAlreadyLoaded) {
+            if (targetPercentage >= 100.0 &&
+                prevPercentage < 100.0 &&
+                wasAlreadyLoaded) {
               _showCelebrationOverlay();
             }
           }
@@ -250,10 +274,7 @@ class _DashboardPageState extends State<DashboardPage> with TickerProviderStateM
                     child: _buildHabitList(state.habits),
                   ),
                   const SizedBox(height: 28),
-                  StaggeredEntrance(
-                    index: 3,
-                    child: _buildQuoteBanner(isDark),
-                  ),
+                  StaggeredEntrance(index: 3, child: _buildQuoteBanner(isDark)),
                   const SizedBox(height: 40),
                 ],
               ),
@@ -283,14 +304,20 @@ class _DashboardPageState extends State<DashboardPage> with TickerProviderStateM
           child: FloatingActionButton(
             onPressed: () {
               HapticFeedback.lightImpact();
-              Navigator.of(context).push(
-                AppPageRoute(page: const YogaExercisesPage()),
-              );
+              Navigator.of(
+                context,
+              ).push(AppPageRoute(page: const YogaExercisesPage()));
             },
-            backgroundColor: isDark ? const Color(0xff334d38) : const Color(0xffcceace),
-            foregroundColor: isDark ? const Color(0xffe2e3df) : const Color(0xff1c3622),
+            backgroundColor: isDark
+                ? const Color(0xff334d38)
+                : const Color(0xffcceace),
+            foregroundColor: isDark
+                ? const Color(0xffe2e3df)
+                : const Color(0xff1c3622),
             elevation: 6,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
             child: const Icon(Icons.self_improvement, size: 28),
           ),
         ),
@@ -300,7 +327,9 @@ class _DashboardPageState extends State<DashboardPage> with TickerProviderStateM
 
   Widget _buildProgressRing(double percentage) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryColor = isDark ? const Color(0xffb0ceb2) : const Color(0xff8ba88e);
+    final primaryColor = isDark
+        ? const Color(0xffb0ceb2)
+        : const Color(0xff8ba88e);
     final trackColor = primaryColor.withValues(alpha: 0.2);
 
     return AnimatedBuilder(
@@ -320,8 +349,8 @@ class _DashboardPageState extends State<DashboardPage> with TickerProviderStateM
                   color: primaryColor.withValues(alpha: isDark ? 0.03 : 0.06),
                   blurRadius: 25 * scale,
                   spreadRadius: 2 * scale,
-                )
-              ]
+                ),
+              ],
             ),
             child: Stack(
               alignment: Alignment.center,
@@ -360,7 +389,9 @@ class _DashboardPageState extends State<DashboardPage> with TickerProviderStateM
                         fontSize: 10,
                         fontWeight: FontWeight.w600,
                         letterSpacing: 1.5,
-                        color: isDark ? const Color(0xffc2c8c0).withValues(alpha: 0.5) : const Color(0xff615e56).withValues(alpha: 0.6),
+                        color: isDark
+                            ? const Color(0xffc2c8c0).withValues(alpha: 0.5)
+                            : const Color(0xff615e56).withValues(alpha: 0.6),
                       ),
                     ),
                   ],
@@ -382,7 +413,8 @@ class _DashboardPageState extends State<DashboardPage> with TickerProviderStateM
     // Generate 5 days centered on today
     final days = List.generate(5, (index) {
       final date = today.add(Duration(days: index - 2));
-      final isActive = date.year == activeDate.year &&
+      final isActive =
+          date.year == activeDate.year &&
           date.month == activeDate.month &&
           date.day == activeDate.day;
       return {
@@ -398,7 +430,7 @@ class _DashboardPageState extends State<DashboardPage> with TickerProviderStateM
       children: days.map((d) {
         final isActive = d['isActive'] == true;
         final date = d['date'] as DateTime;
-        
+
         return Expanded(
           child: GestureDetector(
             behavior: HitTestBehavior.opaque,
@@ -411,12 +443,16 @@ class _DashboardPageState extends State<DashboardPage> with TickerProviderStateM
               padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
               decoration: BoxDecoration(
                 color: isActive
-                    ? (isDark ? const Color(0xff3f4941).withValues(alpha: 0.3) : const Color(0xffcee7f0).withValues(alpha: 0.3))
+                    ? (isDark
+                          ? const Color(0xff3f4941).withValues(alpha: 0.3)
+                          : const Color(0xffcee7f0).withValues(alpha: 0.3))
                     : Colors.transparent,
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
-                  color: isActive 
-                      ? (isDark ? const Color(0xffb0ceb2).withValues(alpha: 0.2) : const Color(0xff8ba88e).withValues(alpha: 0.2))
+                  color: isActive
+                      ? (isDark
+                            ? const Color(0xffb0ceb2).withValues(alpha: 0.2)
+                            : const Color(0xff8ba88e).withValues(alpha: 0.2))
                       : Colors.transparent,
                   width: 1,
                 ),
@@ -429,9 +465,15 @@ class _DashboardPageState extends State<DashboardPage> with TickerProviderStateM
                       fontFamily: 'Hanken Grotesk',
                       fontSize: 12,
                       fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
-                      color: isActive 
-                          ? (isDark ? const Color(0xffb0ceb2) : const Color(0xff8ba88e))
-                          : (isDark ? const Color(0xffc2c8c0).withValues(alpha: 0.4) : const Color(0xff615e56).withValues(alpha: 0.4)),
+                      color: isActive
+                          ? (isDark
+                                ? const Color(0xffb0ceb2)
+                                : const Color(0xff8ba88e))
+                          : (isDark
+                                ? const Color(0xffc2c8c0).withValues(alpha: 0.4)
+                                : const Color(
+                                    0xff615e56,
+                                  ).withValues(alpha: 0.4)),
                     ),
                   ),
                   const SizedBox(height: 6),
@@ -441,9 +483,15 @@ class _DashboardPageState extends State<DashboardPage> with TickerProviderStateM
                       fontFamily: 'Hanken Grotesk',
                       fontSize: 18,
                       fontWeight: isActive ? FontWeight.bold : FontWeight.w500,
-                      color: isActive 
-                          ? (isDark ? const Color(0xffb0ceb2) : const Color(0xff8ba88e))
-                          : (isDark ? const Color(0xffc2c8c0).withValues(alpha: 0.7) : const Color(0xff615e56).withValues(alpha: 0.7)),
+                      color: isActive
+                          ? (isDark
+                                ? const Color(0xffb0ceb2)
+                                : const Color(0xff8ba88e))
+                          : (isDark
+                                ? const Color(0xffc2c8c0).withValues(alpha: 0.7)
+                                : const Color(
+                                    0xff615e56,
+                                  ).withValues(alpha: 0.7)),
                     ),
                   ),
                 ],
@@ -461,20 +509,14 @@ class _DashboardPageState extends State<DashboardPage> with TickerProviderStateM
         ...habits.asMap().entries.map((entry) {
           final idx = entry.key;
           final h = entry.value;
-          return StaggeredEntrance(
-            index: idx + 3,
-            child: _buildHabitCard(h),
-          );
+          return StaggeredEntrance(index: idx + 3, child: _buildHabitCard(h));
         }),
         const SizedBox(height: 6),
         // Add Daily Intention Dashed Button
         PressableScale(
           onTap: () {
             HapticFeedback.lightImpact();
-            Navigator.push(
-              context,
-              AppSlideRoute(page: const LibraryPage()),
-            );
+            Navigator.push(context, AppSlideRoute(page: const LibraryPage()));
           },
           borderRadius: BorderRadius.circular(16),
           child: Container(
@@ -486,7 +528,8 @@ class _DashboardPageState extends State<DashboardPage> with TickerProviderStateM
                     ? const Color(0xff424842).withValues(alpha: 0.4)
                     : const Color(0xffdbdad7).withValues(alpha: 0.6),
                 width: 1.5,
-                style: BorderStyle.solid, // dashed border simulated with styled solid border in UI
+                style: BorderStyle
+                    .solid, // dashed border simulated with styled solid border in UI
               ),
             ),
             child: Row(
@@ -494,8 +537,8 @@ class _DashboardPageState extends State<DashboardPage> with TickerProviderStateM
               children: [
                 Icon(
                   Icons.add_circle_outline,
-                  color: Theme.of(context).brightness == Brightness.dark 
-                      ? const Color(0xffc2c8c0).withValues(alpha: 0.6) 
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? const Color(0xffc2c8c0).withValues(alpha: 0.6)
                       : const Color(0xff615e56).withValues(alpha: 0.6),
                   size: 22,
                 ),
@@ -506,8 +549,8 @@ class _DashboardPageState extends State<DashboardPage> with TickerProviderStateM
                     fontFamily: 'Hanken Grotesk',
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
-                    color: Theme.of(context).brightness == Brightness.dark 
-                        ? const Color(0xffc2c8c0).withValues(alpha: 0.8) 
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? const Color(0xffc2c8c0).withValues(alpha: 0.8)
                         : const Color(0xff615e56).withValues(alpha: 0.8),
                   ),
                 ),
@@ -521,16 +564,24 @@ class _DashboardPageState extends State<DashboardPage> with TickerProviderStateM
 
   Widget _buildHabitCard(Habit habit) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     // Design matching spec
     if (habit.id == '2') {
       // Interactive slider for Water Habit
       final isWaterCompleted = habit.currentProgress >= habit.targetProgress;
-      final completedBg = isDark ? const Color(0xff1f303a) : const Color(0xffedf6fa);
-      final normalBg = isDark ? const Color(0xff1e201e) : const Color(0xffffffff);
+      final completedBg = isDark
+          ? const Color(0xff1f303a)
+          : const Color(0xffedf6fa);
+      final normalBg = isDark
+          ? const Color(0xff1e201e)
+          : const Color(0xffffffff);
       final waterBorder = isWaterCompleted
-          ? (isDark ? const Color(0xffb2cad3).withValues(alpha: 0.2) : const Color(0xff8ba88e).withValues(alpha: 0.2))
-          : (isDark ? const Color(0xff424842).withValues(alpha: 0.1) : const Color(0xffdbdad7).withValues(alpha: 0.4));
+          ? (isDark
+                ? const Color(0xffb2cad3).withValues(alpha: 0.2)
+                : const Color(0xff8ba88e).withValues(alpha: 0.2))
+          : (isDark
+                ? const Color(0xff424842).withValues(alpha: 0.1)
+                : const Color(0xffdbdad7).withValues(alpha: 0.4));
 
       return AnimatedContainer(
         duration: const Duration(milliseconds: 300),
@@ -540,10 +591,7 @@ class _DashboardPageState extends State<DashboardPage> with TickerProviderStateM
         decoration: BoxDecoration(
           color: isWaterCompleted ? completedBg : normalBg,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: waterBorder,
-            width: 1,
-          ),
+          border: Border.all(color: waterBorder, width: 1),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: isDark ? 0.1 : 0.03),
@@ -563,7 +611,9 @@ class _DashboardPageState extends State<DashboardPage> with TickerProviderStateM
                     fontFamily: 'Hanken Grotesk',
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
-                    color: isDark ? const Color(0xffe2e3df) : const Color(0xff2f312f),
+                    color: isDark
+                        ? const Color(0xffe2e3df)
+                        : const Color(0xff2f312f),
                   ),
                 ),
                 AnimatedScale(
@@ -576,9 +626,13 @@ class _DashboardPageState extends State<DashboardPage> with TickerProviderStateM
                       fontFamily: 'Hanken Grotesk',
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
-                      color: isWaterCompleted 
-                          ? (isDark ? const Color(0xffb2cad3) : const Color(0xff5a93ab))
-                          : (isDark ? const Color(0xffc2c8c0) : const Color(0xff615e56)),
+                      color: isWaterCompleted
+                          ? (isDark
+                                ? const Color(0xffb2cad3)
+                                : const Color(0xff5a93ab))
+                          : (isDark
+                                ? const Color(0xffc2c8c0)
+                                : const Color(0xff615e56)),
                     ),
                   ),
                 ),
@@ -588,12 +642,22 @@ class _DashboardPageState extends State<DashboardPage> with TickerProviderStateM
             SliderTheme(
               data: SliderTheme.of(context).copyWith(
                 activeTrackColor: isWaterCompleted
-                    ? (isDark ? const Color(0xffb2cad3) : const Color(0xff5a93ab))
-                    : (isDark ? const Color(0xffb0ceb2) : const Color(0xff8ba88e)),
-                inactiveTrackColor: isDark ? const Color(0xff1a1c1a) : const Color(0xfff2f1ee),
+                    ? (isDark
+                          ? const Color(0xffb2cad3)
+                          : const Color(0xff5a93ab))
+                    : (isDark
+                          ? const Color(0xffb0ceb2)
+                          : const Color(0xff8ba88e)),
+                inactiveTrackColor: isDark
+                    ? const Color(0xff1a1c1a)
+                    : const Color(0xfff2f1ee),
                 thumbColor: isWaterCompleted
-                    ? (isDark ? const Color(0xffb2cad3) : const Color(0xff5a93ab))
-                    : (isDark ? const Color(0xffb0ceb2) : const Color(0xff8ba88e)),
+                    ? (isDark
+                          ? const Color(0xffb2cad3)
+                          : const Color(0xff5a93ab))
+                    : (isDark
+                          ? const Color(0xffb0ceb2)
+                          : const Color(0xff8ba88e)),
                 trackHeight: 6,
                 thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8),
               ),
@@ -602,12 +666,15 @@ class _DashboardPageState extends State<DashboardPage> with TickerProviderStateM
                 min: 0.0,
                 max: habit.targetProgress,
                 onChanged: (val) {
-                  if (val == habit.targetProgress && habit.currentProgress < habit.targetProgress) {
+                  if (val == habit.targetProgress &&
+                      habit.currentProgress < habit.targetProgress) {
                     HapticFeedback.mediumImpact();
                   } else if ((val * 10).round() % 2 == 0) {
                     HapticFeedback.selectionClick();
                   }
-                  context.read<HabitBloc>().add(UpdateHabitProgressEvent(habit.id, val));
+                  context.read<HabitBloc>().add(
+                    UpdateHabitProgressEvent(habit.id, val),
+                  );
                 },
               ),
             ),
@@ -622,10 +689,14 @@ class _DashboardPageState extends State<DashboardPage> with TickerProviderStateM
         margin: const EdgeInsets.only(bottom: 14),
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: isDark ? const Color(0xff1e201e).withValues(alpha: 0.8) : const Color(0xffffffff).withValues(alpha: 0.8),
+          color: isDark
+              ? const Color(0xff1e201e).withValues(alpha: 0.8)
+              : const Color(0xffffffff).withValues(alpha: 0.8),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isDark ? const Color(0xff424842).withValues(alpha: 0.1) : const Color(0xffdbdad7).withValues(alpha: 0.4),
+            color: isDark
+                ? const Color(0xff424842).withValues(alpha: 0.1)
+                : const Color(0xffdbdad7).withValues(alpha: 0.4),
             width: 1,
           ),
         ),
@@ -641,7 +712,9 @@ class _DashboardPageState extends State<DashboardPage> with TickerProviderStateM
                     fontFamily: 'Hanken Grotesk',
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
-                    color: isDark ? const Color(0xffe2e3df) : const Color(0xff2f312f),
+                    color: isDark
+                        ? const Color(0xffe2e3df)
+                        : const Color(0xff2f312f),
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -651,7 +724,9 @@ class _DashboardPageState extends State<DashboardPage> with TickerProviderStateM
                     fontFamily: 'Hanken Grotesk',
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
-                    color: isDark ? const Color(0xffc2c8c0).withValues(alpha: 0.6) : const Color(0xff615e56).withValues(alpha: 0.6),
+                    color: isDark
+                        ? const Color(0xffc2c8c0).withValues(alpha: 0.6)
+                        : const Color(0xff615e56).withValues(alpha: 0.6),
                   ),
                 ),
               ],
@@ -659,7 +734,9 @@ class _DashboardPageState extends State<DashboardPage> with TickerProviderStateM
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(
-                color: isDark ? const Color(0xff333533) : const Color(0xffefeeeb),
+                color: isDark
+                    ? const Color(0xff333533)
+                    : const Color(0xffefeeeb),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Text(
@@ -669,7 +746,9 @@ class _DashboardPageState extends State<DashboardPage> with TickerProviderStateM
                   fontSize: 11,
                   fontWeight: FontWeight.bold,
                   letterSpacing: 0.5,
-                  color: isDark ? const Color(0xffc2c8c0) : const Color(0xff615e56),
+                  color: isDark
+                      ? const Color(0xffc2c8c0)
+                      : const Color(0xff615e56),
                 ),
               ),
             ),
@@ -679,25 +758,36 @@ class _DashboardPageState extends State<DashboardPage> with TickerProviderStateM
     }
 
     // Standard items with active checking/toggling
-    final completedColor = isDark ? const Color(0xff223a26) : const Color(0xffedf7ee);
-    final normalColor = isDark ? const Color(0xff1e201e) : const Color(0xffffffff);
+    final completedColor = isDark
+        ? const Color(0xff223a26)
+        : const Color(0xffedf7ee);
+    final normalColor = isDark
+        ? const Color(0xff1e201e)
+        : const Color(0xffffffff);
     final borderColor = habit.isCompleted
-        ? (isDark ? const Color(0xffb0ceb2).withValues(alpha: 0.2) : const Color(0xff8ba88e).withValues(alpha: 0.2))
-        : (isDark ? const Color(0xff424842).withValues(alpha: 0.1) : const Color(0xffdbdad7).withValues(alpha: 0.4));
+        ? (isDark
+              ? const Color(0xffb0ceb2).withValues(alpha: 0.2)
+              : const Color(0xff8ba88e).withValues(alpha: 0.2))
+        : (isDark
+              ? const Color(0xff424842).withValues(alpha: 0.1)
+              : const Color(0xffdbdad7).withValues(alpha: 0.4));
 
     return PressableScale(
       onTap: () {
         final title = habit.title.toLowerCase();
         if (habit.id == '3' || title.contains('walk')) {
           HapticFeedback.lightImpact();
-          Navigator.of(context).push(
-            AppPageRoute(page: const WalkTrackerPage()),
-          );
-        } else if (title.contains('yoga') || title.contains('stretch') || title.contains('meditat') || title.contains('breath')) {
+          Navigator.of(
+            context,
+          ).push(AppPageRoute(page: const WalkTrackerPage()));
+        } else if (title.contains('yoga') ||
+            title.contains('stretch') ||
+            title.contains('meditat') ||
+            title.contains('breath')) {
           HapticFeedback.lightImpact();
-          Navigator.of(context).push(
-            AppPageRoute(page: const YogaExercisesPage()),
-          );
+          Navigator.of(
+            context,
+          ).push(AppPageRoute(page: const YogaExercisesPage()));
         } else {
           if (habit.isCompleted) {
             HapticFeedback.lightImpact();
@@ -708,179 +798,192 @@ class _DashboardPageState extends State<DashboardPage> with TickerProviderStateM
         }
       },
       child: AnimatedContainer(
-      duration: AppAnimations.fast,
-      curve: AppAnimations.smooth,
-      margin: const EdgeInsets.only(bottom: 14),
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: habit.isCompleted ? completedColor : normalColor,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: borderColor,
-          width: 1,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: habit.isCompleted ? 0.0 : (isDark ? 0.1 : 0.03)),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                AnimatedDefaultTextStyle(
-                  duration: const Duration(milliseconds: 300),
-                  curve: Curves.easeInOut,
-                  style: TextStyle(
-                    fontFamily: 'Hanken Grotesk',
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                    decoration: habit.isCompleted ? TextDecoration.lineThrough : TextDecoration.none,
-                    color: habit.isCompleted
-                        ? (isDark ? const Color(0xffc2c8c0).withValues(alpha: 0.5) : const Color(0xff615e56).withValues(alpha: 0.5))
-                        : (isDark ? const Color(0xffe2e3df) : const Color(0xff2f312f)),
-                  ),
-                  child: Text(habit.title),
-                ),
-                const SizedBox(height: 4),
-                AnimatedDefaultTextStyle(
-                  duration: const Duration(milliseconds: 300),
-                  curve: Curves.easeInOut,
-                  style: TextStyle(
-                    fontFamily: 'Hanken Grotesk',
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                    color: habit.isCompleted
-                        ? (isDark ? const Color(0xffb0ceb2) : const Color(0xff8ba88e))
-                        : (isDark ? const Color(0xffc2c8c0).withValues(alpha: 0.6) : const Color(0xff615e56).withValues(alpha: 0.6)),
-                  ),
-                  child: Text(
-                    habit.isCompleted
-                        ? 'Completed at ${habit.completedAt ?? "7:15 AM"}'
-                        : 'Current streak: ${habit.streak} days',
-                  ),
-                ),
-              ],
+        duration: AppAnimations.fast,
+        curve: AppAnimations.smooth,
+        margin: const EdgeInsets.only(bottom: 14),
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: habit.isCompleted ? completedColor : normalColor,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: borderColor, width: 1),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(
+                alpha: habit.isCompleted ? 0.0 : (isDark ? 0.1 : 0.03),
+              ),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
             ),
-          ),
-          GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onTap: () {
-              if (habit.isCompleted) {
-                HapticFeedback.lightImpact();
-              } else {
-                HapticFeedback.mediumImpact();
-              }
-              context.read<HabitBloc>().add(ToggleHabitEvent(habit.id));
-            },
-            child: AnimatedScale(
-              scale: habit.isCompleted ? 1.05 : 1.0,
-              duration: const Duration(milliseconds: 150),
-              child: AnimatedSwitcher(
-                duration: const Duration(milliseconds: 250),
-                transitionBuilder: (child, animation) {
-                  return ScaleTransition(scale: animation, child: child);
-                },
-                child: habit.isCompleted
-                    ? Icon(
-                        Icons.check_circle_rounded,
-                        key: ValueKey('completed_${habit.id}'),
-                        color: isDark ? const Color(0xffb0ceb2) : const Color(0xff8ba88e),
-                        size: 32,
-                      )
-                    : Icon(
-                        Icons.radio_button_unchecked,
-                        key: ValueKey('uncompleted_${habit.id}'),
-                        color: isDark ? const Color(0xff424842) : const Color(0xffa4a097),
-                        size: 32,
-                      ),
+          ],
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  AnimatedDefaultTextStyle(
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeInOut,
+                    style: TextStyle(
+                      fontFamily: 'Hanken Grotesk',
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      decoration: habit.isCompleted
+                          ? TextDecoration.lineThrough
+                          : TextDecoration.none,
+                      color: habit.isCompleted
+                          ? (isDark
+                                ? const Color(0xffc2c8c0).withValues(alpha: 0.5)
+                                : const Color(
+                                    0xff615e56,
+                                  ).withValues(alpha: 0.5))
+                          : (isDark
+                                ? const Color(0xffe2e3df)
+                                : const Color(0xff2f312f)),
+                    ),
+                    child: Text(habit.title),
+                  ),
+                  const SizedBox(height: 4),
+                  AnimatedDefaultTextStyle(
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeInOut,
+                    style: TextStyle(
+                      fontFamily: 'Hanken Grotesk',
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: habit.isCompleted
+                          ? (isDark
+                                ? const Color(0xffb0ceb2)
+                                : const Color(0xff8ba88e))
+                          : (isDark
+                                ? const Color(0xffc2c8c0).withValues(alpha: 0.6)
+                                : const Color(
+                                    0xff615e56,
+                                  ).withValues(alpha: 0.6)),
+                    ),
+                    child: Text(
+                      habit.isCompleted
+                          ? 'Completed at ${habit.completedAt ?? "7:15 AM"}'
+                          : 'Current streak: ${habit.streak} days',
+                    ),
+                  ),
+                ],
               ),
             ),
-          ),
-        ],
-      ),
+            GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: () {
+                if (habit.isCompleted) {
+                  HapticFeedback.lightImpact();
+                } else {
+                  HapticFeedback.mediumImpact();
+                }
+                context.read<HabitBloc>().add(ToggleHabitEvent(habit.id));
+              },
+              child: AnimatedScale(
+                scale: habit.isCompleted ? 1.05 : 1.0,
+                duration: const Duration(milliseconds: 150),
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 250),
+                  transitionBuilder: (child, animation) {
+                    return ScaleTransition(scale: animation, child: child);
+                  },
+                  child: habit.isCompleted
+                      ? Icon(
+                          Icons.check_circle_rounded,
+                          key: ValueKey('completed_${habit.id}'),
+                          color: isDark
+                              ? const Color(0xffb0ceb2)
+                              : const Color(0xff8ba88e),
+                          size: 32,
+                        )
+                      : Icon(
+                          Icons.radio_button_unchecked,
+                          key: ValueKey('uncompleted_${habit.id}'),
+                          color: isDark
+                              ? const Color(0xff424842)
+                              : const Color(0xffa4a097),
+                          size: 32,
+                        ),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildQuoteBanner(bool isDark) {
-    final primaryColor = isDark ? const Color(0xffb0ceb2) : const Color(0xff8ba88e);
-    
+    final primaryColor = isDark
+        ? const Color(0xffb0ceb2)
+        : const Color(0xff8ba88e);
+
     return TweenAnimationBuilder<double>(
       tween: Tween(begin: 0, end: 1),
       duration: const Duration(milliseconds: 1200),
       curve: Curves.easeInOut,
       builder: (context, breathe, child) {
-        return Transform.scale(
-          scale: 1 + (breathe * 0.01),
-          child: child,
-        );
+        return Transform.scale(scale: 1 + (breathe * 0.01), child: child);
       },
       child: Container(
-      height: 220,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        color: isDark ? const Color(0xff1a1c1a) : const Color(0xffefeeeb),
-        image: const DecorationImage(
-          image: NetworkImage(
-            'https://images.unsplash.com/photo-1511497584788-876760111969?q=80&w=1000&auto=format&fit=crop',
-          ),
-          fit: BoxFit.cover,
-          colorFilter: ColorFilter.mode(
-            Colors.black45,
-            BlendMode.darken,
+        height: 220,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          color: isDark ? const Color(0xff1a1c1a) : const Color(0xffefeeeb),
+          image: const DecorationImage(
+            image: NetworkImage(
+              'https://images.unsplash.com/photo-1511497584788-876760111969?q=80&w=1000&auto=format&fit=crop',
+            ),
+            fit: BoxFit.cover,
+            colorFilter: ColorFilter.mode(Colors.black45, BlendMode.darken),
           ),
         ),
-      ),
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.end,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            '"Nature does not hurry, yet everything is accomplished."',
-            style: TextStyle(
-              fontFamily: 'Hanken Grotesk',
-              fontSize: 20,
-              fontWeight: FontWeight.w400,
-              fontStyle: FontStyle.italic,
-              color: const Color(0xfffaf9f6),
-              height: 1.4,
-              shadows: [
-                Shadow(
-                  color: Colors.black.withValues(alpha: 0.6),
-                  offset: const Offset(1, 1),
-                  blurRadius: 4,
-                ),
-              ],
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.end,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '"Nature does not hurry, yet everything is accomplished."',
+              style: TextStyle(
+                fontFamily: 'Hanken Grotesk',
+                fontSize: 20,
+                fontWeight: FontWeight.w400,
+                fontStyle: FontStyle.italic,
+                color: const Color(0xfffaf9f6),
+                height: 1.4,
+                shadows: [
+                  Shadow(
+                    color: Colors.black.withValues(alpha: 0.6),
+                    offset: const Offset(1, 1),
+                    blurRadius: 4,
+                  ),
+                ],
+              ),
             ),
-          ),
-          const SizedBox(height: 10),
-          Text(
-            '— LAO TZU',
-            style: TextStyle(
-              fontFamily: 'Hanken Grotesk',
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
-              letterSpacing: 2,
-              color: primaryColor,
-              shadows: [
-                Shadow(
-                  color: Colors.black.withValues(alpha: 0.6),
-                  offset: const Offset(1, 1),
-                  blurRadius: 4,
-                ),
-              ],
+            const SizedBox(height: 10),
+            Text(
+              '— LAO TZU',
+              style: TextStyle(
+                fontFamily: 'Hanken Grotesk',
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+                letterSpacing: 2,
+                color: primaryColor,
+                shadows: [
+                  Shadow(
+                    color: Colors.black.withValues(alpha: 0.6),
+                    offset: const Offset(1, 1),
+                    blurRadius: 4,
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
-      ),
+          ],
+        ),
       ),
     );
   }
@@ -915,16 +1018,15 @@ class CircularProgressPainter extends CustomPainter {
 
     // Gradient to give a slightly 3D/Apple Health feel
     final gradient = SweepGradient(
-      colors: [
-        primaryColor.withValues(alpha: 0.5),
-        primaryColor,
-      ],
+      colors: [primaryColor.withValues(alpha: 0.5), primaryColor],
       transform: const GradientRotation(-pi / 2),
     );
 
     // Progress Arc
     final progressPaint = Paint()
-      ..shader = gradient.createShader(Rect.fromCircle(center: center, radius: radius))
+      ..shader = gradient.createShader(
+        Rect.fromCircle(center: center, radius: radius),
+      )
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round
       ..strokeWidth = strokeWidth;
@@ -948,7 +1050,7 @@ class CircularProgressPainter extends CustomPainter {
     final shadowPaint = Paint()
       ..color = Colors.black.withValues(alpha: 0.35)
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 5.0);
-    
+
     // Offset shadow slightly to indicate direction/overlap
     canvas.drawCircle(
       headPoint + Offset(cos(headAngle) * 3, sin(headAngle) * 3),
@@ -967,14 +1069,14 @@ class CircularProgressPainter extends CustomPainter {
     final arrowPaint = Paint()
       ..color = trackColor.withValues(alpha: 0.8)
       ..style = PaintingStyle.fill;
-    
+
     final path = Path();
     final arrowSize = strokeWidth * 0.35;
     path.moveTo(startPoint.dx - arrowSize / 2, startPoint.dy - arrowSize / 2);
     path.lineTo(startPoint.dx + arrowSize / 2, startPoint.dy);
     path.lineTo(startPoint.dx - arrowSize / 2, startPoint.dy + arrowSize / 2);
     path.close();
-    
+
     canvas.drawPath(path, arrowPaint);
   }
 

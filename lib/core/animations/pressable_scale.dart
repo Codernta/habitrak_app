@@ -60,10 +60,7 @@ class _PressableScaleState extends State<PressableScale>
 
   @override
   Widget build(BuildContext context) {
-    final child = ScaleTransition(
-      scale: _scaleAnim,
-      child: widget.child,
-    );
+    final child = ScaleTransition(scale: _scaleAnim, child: widget.child);
 
     if (widget.onTap == null || !widget.enabled) {
       return child;

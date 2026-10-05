@@ -16,7 +16,8 @@ class WalkTrackerPage extends StatefulWidget {
   State<WalkTrackerPage> createState() => _WalkTrackerPageState();
 }
 
-class _WalkTrackerPageState extends State<WalkTrackerPage> with TickerProviderStateMixin {
+class _WalkTrackerPageState extends State<WalkTrackerPage>
+    with TickerProviderStateMixin {
   bool _isMusicMode = true;
   bool _isPlaying = true;
   int _currentPromptIndex = 0;
@@ -91,14 +92,16 @@ class _WalkTrackerPageState extends State<WalkTrackerPage> with TickerProviderSt
 
   void _nextPrompt() {
     setState(() {
-      _currentPromptIndex = (_currentPromptIndex + 1) % _conversationPrompts.length;
+      _currentPromptIndex =
+          (_currentPromptIndex + 1) % _conversationPrompts.length;
     });
   }
 
   void _previousTrack() {
     HapticFeedback.lightImpact();
     setState(() {
-      _currentTrackIndex = (_currentTrackIndex - 1 + _tracks.length) % _tracks.length;
+      _currentTrackIndex =
+          (_currentTrackIndex - 1 + _tracks.length) % _tracks.length;
     });
   }
 
@@ -142,7 +145,12 @@ class _WalkTrackerPageState extends State<WalkTrackerPage> with TickerProviderSt
     );
   }
 
-  Widget _buildBar(double animationValue, double offset, double multiplier, Color color) {
+  Widget _buildBar(
+    double animationValue,
+    double offset,
+    double multiplier,
+    Color color,
+  ) {
     final scale = ((animationValue + offset) % 1.0 - 0.5).abs() * 2.0;
     final height = 4.0 + (scale * 12.0 * multiplier);
     return Container(
@@ -158,11 +166,14 @@ class _WalkTrackerPageState extends State<WalkTrackerPage> with TickerProviderSt
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryColor = isDark ? const Color(0xffb0ceb2) : const Color(0xff8ba88e);
+    final primaryColor = isDark
+        ? const Color(0xffb0ceb2)
+        : const Color(0xff8ba88e);
 
     final minutes = _elapsedSeconds ~/ 60;
     final seconds = _elapsedSeconds % 60;
-    final timeStr = '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
+    final timeStr =
+        '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
     final distanceKm = _elapsedSeconds * 0.075 / 60.0;
     final distanceStr = '${distanceKm.toStringAsFixed(1)}km';
     final paceStr = '12\'45"';
@@ -187,7 +198,10 @@ class _WalkTrackerPageState extends State<WalkTrackerPage> with TickerProviderSt
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             const SizedBox(height: 10),
-            StaggeredEntrance(index: 0, child: _buildReadouts(isDark, timeStr, paceStr, distanceStr)),
+            StaggeredEntrance(
+              index: 0,
+              child: _buildReadouts(isDark, timeStr, paceStr, distanceStr),
+            ),
             const SizedBox(height: 28),
             StaggeredEntrance(index: 1, child: _buildModeSelector(isDark)),
             const SizedBox(height: 28),
@@ -209,7 +223,9 @@ class _WalkTrackerPageState extends State<WalkTrackerPage> with TickerProviderSt
                     ),
                   );
                 },
-                child: _isMusicMode ? _buildMusicModeCard(isDark) : _buildSocialModeCard(isDark),
+                child: _isMusicMode
+                    ? _buildMusicModeCard(isDark)
+                    : _buildSocialModeCard(isDark),
               ),
             ),
             const SizedBox(height: 32),
@@ -231,16 +247,24 @@ class _WalkTrackerPageState extends State<WalkTrackerPage> with TickerProviderSt
 
                   // Update health habit in HabitBloc
                   context.read<HabitBloc>().add(
-                    const CompleteActivityHabitEvent(category: HabitCategory.health),
+                    const CompleteActivityHabitEvent(
+                      category: HabitCategory.health,
+                    ),
                   );
 
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Row(
                         children: [
-                          const Icon(Icons.check_circle, color: Colors.white, size: 20),
+                          const Icon(
+                            Icons.check_circle,
+                            color: Colors.white,
+                            size: 20,
+                          ),
                           const SizedBox(width: 8),
-                          Text('Walk logged: $durationMinutes mins, ${distance.toStringAsFixed(1)}km, $calories kcal!'),
+                          Text(
+                            'Walk logged: $durationMinutes mins, ${distance.toStringAsFixed(1)}km, $calories kcal!',
+                          ),
                         ],
                       ),
                       backgroundColor: primaryColor,
@@ -252,7 +276,9 @@ class _WalkTrackerPageState extends State<WalkTrackerPage> with TickerProviderSt
                   backgroundColor: const Color(0xffba1a1a),
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 18),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
                 ),
                 child: const Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -261,7 +287,11 @@ class _WalkTrackerPageState extends State<WalkTrackerPage> with TickerProviderSt
                     SizedBox(width: 8),
                     Text(
                       'End Session',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, letterSpacing: 0.5),
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 0.5,
+                      ),
                     ),
                   ],
                 ),
@@ -274,9 +304,18 @@ class _WalkTrackerPageState extends State<WalkTrackerPage> with TickerProviderSt
     );
   }
 
-  Widget _buildReadouts(bool isDark, String timeStr, String paceStr, String distanceStr) {
-    final textColor = isDark ? const Color(0xffe2e3df) : const Color(0xff2f312f);
-    final labelColor = isDark ? const Color(0xffc2c8c0).withValues(alpha: 0.5) : const Color(0xff615e56).withValues(alpha: 0.6);
+  Widget _buildReadouts(
+    bool isDark,
+    String timeStr,
+    String paceStr,
+    String distanceStr,
+  ) {
+    final textColor = isDark
+        ? const Color(0xffe2e3df)
+        : const Color(0xff2f312f);
+    final labelColor = isDark
+        ? const Color(0xffc2c8c0).withValues(alpha: 0.5)
+        : const Color(0xff615e56).withValues(alpha: 0.6);
 
     return TweenAnimationBuilder<double>(
       duration: const Duration(milliseconds: 600),
@@ -301,9 +340,17 @@ class _WalkTrackerPageState extends State<WalkTrackerPage> with TickerProviderSt
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
             _buildStatColumn('Time', timeStr, textColor, labelColor),
-            Container(width: 1, height: 40, color: labelColor.withValues(alpha: 0.2)),
+            Container(
+              width: 1,
+              height: 40,
+              color: labelColor.withValues(alpha: 0.2),
+            ),
             _buildStatColumn('Pace', paceStr, textColor, labelColor),
-            Container(width: 1, height: 40, color: labelColor.withValues(alpha: 0.2)),
+            Container(
+              width: 1,
+              height: 40,
+              color: labelColor.withValues(alpha: 0.2),
+            ),
             _buildStatColumn('Distance', distanceStr, textColor, labelColor),
           ],
         ),
@@ -311,7 +358,12 @@ class _WalkTrackerPageState extends State<WalkTrackerPage> with TickerProviderSt
     );
   }
 
-  Widget _buildStatColumn(String label, String value, Color textColor, Color labelColor) {
+  Widget _buildStatColumn(
+    String label,
+    String value,
+    Color textColor,
+    Color labelColor,
+  ) {
     return Column(
       children: [
         Text(
@@ -339,8 +391,12 @@ class _WalkTrackerPageState extends State<WalkTrackerPage> with TickerProviderSt
   }
 
   Widget _buildModeSelector(bool isDark) {
-    final activeColor = isDark ? const Color(0xffb0ceb2) : const Color(0xff8ba88e);
-    final inactiveTextColor = isDark ? const Color(0xffc2c8c0).withValues(alpha: 0.6) : const Color(0xff615e56).withValues(alpha: 0.6);
+    final activeColor = isDark
+        ? const Color(0xffb0ceb2)
+        : const Color(0xff8ba88e);
+    final inactiveTextColor = isDark
+        ? const Color(0xffc2c8c0).withValues(alpha: 0.6)
+        : const Color(0xff615e56).withValues(alpha: 0.6);
 
     return Container(
       height: 50,
@@ -355,7 +411,9 @@ class _WalkTrackerPageState extends State<WalkTrackerPage> with TickerProviderSt
           AnimatedAlign(
             duration: const Duration(milliseconds: 300),
             curve: Curves.easeOutBack,
-            alignment: _isMusicMode ? Alignment.centerLeft : Alignment.centerRight,
+            alignment: _isMusicMode
+                ? Alignment.centerLeft
+                : Alignment.centerRight,
             child: FractionallySizedBox(
               widthFactor: 0.5,
               child: Container(
@@ -364,10 +422,12 @@ class _WalkTrackerPageState extends State<WalkTrackerPage> with TickerProviderSt
                   borderRadius: BorderRadius.circular(12),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.05),
+                      color: Colors.black.withValues(
+                        alpha: isDark ? 0.2 : 0.05,
+                      ),
                       blurRadius: 4,
                       offset: const Offset(0, 2),
-                    )
+                    ),
                   ],
                 ),
               ),
@@ -398,7 +458,9 @@ class _WalkTrackerPageState extends State<WalkTrackerPage> with TickerProviderSt
                           style: TextStyle(
                             fontFamily: 'Hanken Grotesk',
                             fontWeight: FontWeight.bold,
-                            color: _isMusicMode ? activeColor : inactiveTextColor,
+                            color: _isMusicMode
+                                ? activeColor
+                                : inactiveTextColor,
                           ),
                         ),
                       ],
@@ -419,7 +481,9 @@ class _WalkTrackerPageState extends State<WalkTrackerPage> with TickerProviderSt
                       children: [
                         Icon(
                           Icons.group,
-                          color: !_isMusicMode ? activeColor : inactiveTextColor,
+                          color: !_isMusicMode
+                              ? activeColor
+                              : inactiveTextColor,
                           size: 20,
                         ),
                         const SizedBox(width: 8),
@@ -428,7 +492,9 @@ class _WalkTrackerPageState extends State<WalkTrackerPage> with TickerProviderSt
                           style: TextStyle(
                             fontFamily: 'Hanken Grotesk',
                             fontWeight: FontWeight.bold,
-                            color: !_isMusicMode ? activeColor : inactiveTextColor,
+                            color: !_isMusicMode
+                                ? activeColor
+                                : inactiveTextColor,
                           ),
                         ),
                       ],
@@ -444,8 +510,12 @@ class _WalkTrackerPageState extends State<WalkTrackerPage> with TickerProviderSt
   }
 
   Widget _buildMusicModeCard(bool isDark) {
-    final primaryColor = isDark ? const Color(0xffb0ceb2) : const Color(0xff8ba88e);
-    final cardColor = isDark ? const Color(0xff1e201e) : const Color(0xffffffff);
+    final primaryColor = isDark
+        ? const Color(0xffb0ceb2)
+        : const Color(0xff8ba88e);
+    final cardColor = isDark
+        ? const Color(0xff1e201e)
+        : const Color(0xffffffff);
     final track = _tracks[_currentTrackIndex];
 
     return Container(
@@ -455,7 +525,9 @@ class _WalkTrackerPageState extends State<WalkTrackerPage> with TickerProviderSt
         color: cardColor,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: isDark ? const Color(0xff424842).withValues(alpha: 0.1) : const Color(0xffdbdad7).withValues(alpha: 0.4),
+          color: isDark
+              ? const Color(0xff424842).withValues(alpha: 0.1)
+              : const Color(0xffdbdad7).withValues(alpha: 0.4),
           width: 1,
         ),
       ),
@@ -467,7 +539,9 @@ class _WalkTrackerPageState extends State<WalkTrackerPage> with TickerProviderSt
                 width: 60,
                 height: 60,
                 decoration: BoxDecoration(
-                  color: isDark ? const Color(0xff292a28) : const Color(0xffefeeeb),
+                  color: isDark
+                      ? const Color(0xff292a28)
+                      : const Color(0xffefeeeb),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(Icons.music_note, color: primaryColor, size: 30),
@@ -483,7 +557,9 @@ class _WalkTrackerPageState extends State<WalkTrackerPage> with TickerProviderSt
                         fontFamily: 'Hanken Grotesk',
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: isDark ? const Color(0xffe2e3df) : const Color(0xff2f312f),
+                        color: isDark
+                            ? const Color(0xffe2e3df)
+                            : const Color(0xff2f312f),
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -492,7 +568,9 @@ class _WalkTrackerPageState extends State<WalkTrackerPage> with TickerProviderSt
                       style: TextStyle(
                         fontFamily: 'Hanken Grotesk',
                         fontSize: 13,
-                        color: isDark ? const Color(0xffc2c8c0).withValues(alpha: 0.6) : const Color(0xff615e56).withValues(alpha: 0.6),
+                        color: isDark
+                            ? const Color(0xffc2c8c0).withValues(alpha: 0.6)
+                            : const Color(0xff615e56).withValues(alpha: 0.6),
                       ),
                     ),
                   ],
@@ -523,7 +601,9 @@ class _WalkTrackerPageState extends State<WalkTrackerPage> with TickerProviderSt
                           height: 40 + (_pulseController.value * 24),
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: primaryColor.withValues(alpha: 0.3 * (1.0 - _pulseController.value)),
+                            color: primaryColor.withValues(
+                              alpha: 0.3 * (1.0 - _pulseController.value),
+                            ),
                           ),
                         );
                       },
@@ -531,12 +611,15 @@ class _WalkTrackerPageState extends State<WalkTrackerPage> with TickerProviderSt
                   FloatingActionButton(
                     onPressed: _togglePlayPause,
                     backgroundColor: primaryColor,
-                    foregroundColor: isDark ? const Color(0xff1c3622) : Colors.white,
+                    foregroundColor: isDark
+                        ? const Color(0xff1c3622)
+                        : Colors.white,
                     mini: true,
                     elevation: 2,
                     child: AnimatedSwitcher(
                       duration: const Duration(milliseconds: 200),
-                      transitionBuilder: (child, anim) => ScaleTransition(scale: anim, child: child),
+                      transitionBuilder: (child, anim) =>
+                          ScaleTransition(scale: anim, child: child),
                       child: Icon(
                         _isPlaying ? Icons.pause : Icons.play_arrow,
                         key: ValueKey(_isPlaying),
@@ -562,7 +645,9 @@ class _WalkTrackerPageState extends State<WalkTrackerPage> with TickerProviderSt
                 '${(_elapsedSeconds % 180) ~/ 60}:${((_elapsedSeconds % 180) % 60).toString().padLeft(2, '0')}',
                 style: TextStyle(
                   fontSize: 11,
-                  color: isDark ? const Color(0xffc2c8c0).withValues(alpha: 0.5) : const Color(0xff615e56).withValues(alpha: 0.5),
+                  color: isDark
+                      ? const Color(0xffc2c8c0).withValues(alpha: 0.5)
+                      : const Color(0xff615e56).withValues(alpha: 0.5),
                 ),
               ),
               Expanded(
@@ -572,7 +657,9 @@ class _WalkTrackerPageState extends State<WalkTrackerPage> with TickerProviderSt
                     borderRadius: BorderRadius.circular(2),
                     child: LinearProgressIndicator(
                       value: ((_elapsedSeconds % 180) / 180.0).clamp(0.0, 1.0),
-                      backgroundColor: isDark ? const Color(0xff1a1c1a) : const Color(0xffefeeeb),
+                      backgroundColor: isDark
+                          ? const Color(0xff1a1c1a)
+                          : const Color(0xffefeeeb),
                       valueColor: AlwaysStoppedAnimation<Color>(primaryColor),
                     ),
                   ),
@@ -582,7 +669,9 @@ class _WalkTrackerPageState extends State<WalkTrackerPage> with TickerProviderSt
                 track['duration'] ?? '4:55',
                 style: TextStyle(
                   fontSize: 11,
-                  color: isDark ? const Color(0xffc2c8c0).withValues(alpha: 0.5) : const Color(0xff615e56).withValues(alpha: 0.5),
+                  color: isDark
+                      ? const Color(0xffc2c8c0).withValues(alpha: 0.5)
+                      : const Color(0xff615e56).withValues(alpha: 0.5),
                 ),
               ),
             ],
@@ -592,11 +681,23 @@ class _WalkTrackerPageState extends State<WalkTrackerPage> with TickerProviderSt
           Row(
             children: [
               Expanded(
-                child: _buildAudioStat(Icons.speed, 'BPM MATCH', track['bpm'] ?? '112', primaryColor, isDark),
+                child: _buildAudioStat(
+                  Icons.speed,
+                  'BPM MATCH',
+                  track['bpm'] ?? '112',
+                  primaryColor,
+                  isDark,
+                ),
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: _buildAudioStat(Icons.equalizer, 'SYNC STATUS', _isPlaying ? 'Active' : 'Paused', primaryColor, isDark),
+                child: _buildAudioStat(
+                  Icons.equalizer,
+                  'SYNC STATUS',
+                  _isPlaying ? 'Active' : 'Paused',
+                  primaryColor,
+                  isDark,
+                ),
               ),
             ],
           ),
@@ -605,7 +706,13 @@ class _WalkTrackerPageState extends State<WalkTrackerPage> with TickerProviderSt
     );
   }
 
-  Widget _buildAudioStat(IconData icon, String title, String val, Color primary, bool isDark) {
+  Widget _buildAudioStat(
+    IconData icon,
+    String title,
+    String val,
+    Color primary,
+    bool isDark,
+  ) {
     Widget leadWidget;
     if (icon == Icons.equalizer) {
       leadWidget = _isPlaying
@@ -634,7 +741,9 @@ class _WalkTrackerPageState extends State<WalkTrackerPage> with TickerProviderSt
                   fontSize: 9,
                   fontWeight: FontWeight.bold,
                   letterSpacing: 0.5,
-                  color: isDark ? const Color(0xffc2c8c0).withValues(alpha: 0.5) : const Color(0xff615e56).withValues(alpha: 0.5),
+                  color: isDark
+                      ? const Color(0xffc2c8c0).withValues(alpha: 0.5)
+                      : const Color(0xff615e56).withValues(alpha: 0.5),
                 ),
               ),
               Text(
@@ -646,15 +755,19 @@ class _WalkTrackerPageState extends State<WalkTrackerPage> with TickerProviderSt
                 ),
               ),
             ],
-          )
+          ),
         ],
       ),
     );
   }
 
   Widget _buildSocialModeCard(bool isDark) {
-    final primaryColor = isDark ? const Color(0xffb0ceb2) : const Color(0xff8ba88e);
-    final cardColor = isDark ? const Color(0xff1e201e) : const Color(0xffffffff);
+    final primaryColor = isDark
+        ? const Color(0xffb0ceb2)
+        : const Color(0xff8ba88e);
+    final cardColor = isDark
+        ? const Color(0xff1e201e)
+        : const Color(0xffffffff);
 
     return Container(
       key: const ValueKey('social'),
@@ -663,7 +776,9 @@ class _WalkTrackerPageState extends State<WalkTrackerPage> with TickerProviderSt
         color: cardColor,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: isDark ? const Color(0xff424842).withValues(alpha: 0.1) : const Color(0xffdbdad7).withValues(alpha: 0.4),
+          color: isDark
+              ? const Color(0xff424842).withValues(alpha: 0.1)
+              : const Color(0xffdbdad7).withValues(alpha: 0.4),
           width: 1,
         ),
       ),
@@ -679,7 +794,9 @@ class _WalkTrackerPageState extends State<WalkTrackerPage> with TickerProviderSt
                   fontFamily: 'Hanken Grotesk',
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: isDark ? const Color(0xffe2e3df) : const Color(0xff2f312f),
+                  color: isDark
+                      ? const Color(0xffe2e3df)
+                      : const Color(0xff2f312f),
                 ),
               ),
               Container(
@@ -719,7 +836,11 @@ class _WalkTrackerPageState extends State<WalkTrackerPage> with TickerProviderSt
               children: [
                 Row(
                   children: [
-                    const Icon(Icons.chat_bubble_outline, color: Color(0xff8ba88e), size: 20),
+                    const Icon(
+                      Icons.chat_bubble_outline,
+                      color: Color(0xff8ba88e),
+                      size: 20,
+                    ),
                     const SizedBox(width: 8),
                     Text(
                       'Conversation Starter',
@@ -728,7 +849,9 @@ class _WalkTrackerPageState extends State<WalkTrackerPage> with TickerProviderSt
                         fontSize: 11,
                         fontWeight: FontWeight.bold,
                         letterSpacing: 0.5,
-                        color: isDark ? const Color(0xffc2c8c0).withValues(alpha: 0.5) : const Color(0xff615e56).withValues(alpha: 0.5),
+                        color: isDark
+                            ? const Color(0xffc2c8c0).withValues(alpha: 0.5)
+                            : const Color(0xff615e56).withValues(alpha: 0.5),
                       ),
                     ),
                   ],
@@ -739,20 +862,28 @@ class _WalkTrackerPageState extends State<WalkTrackerPage> with TickerProviderSt
                   duration: const Duration(milliseconds: 450),
                   switchInCurve: Curves.easeOutBack,
                   switchOutCurve: Curves.easeIn,
-                  transitionBuilder: (Widget child, Animation<double> animation) {
-                    final isIncoming = child.key == ValueKey(_currentPromptIndex);
-                    final slideOffset = isIncoming
-                        ? Tween<Offset>(begin: const Offset(0.3, 0.0), end: Offset.zero)
-                        : Tween<Offset>(begin: const Offset(-0.3, 0.0), end: Offset.zero);
+                  transitionBuilder:
+                      (Widget child, Animation<double> animation) {
+                        final isIncoming =
+                            child.key == ValueKey(_currentPromptIndex);
+                        final slideOffset = isIncoming
+                            ? Tween<Offset>(
+                                begin: const Offset(0.3, 0.0),
+                                end: Offset.zero,
+                              )
+                            : Tween<Offset>(
+                                begin: const Offset(-0.3, 0.0),
+                                end: Offset.zero,
+                              );
 
-                    return SlideTransition(
-                      position: slideOffset.animate(animation),
-                      child: FadeTransition(
-                        opacity: animation,
-                        child: child,
-                      ),
-                    );
-                  },
+                        return SlideTransition(
+                          position: slideOffset.animate(animation),
+                          child: FadeTransition(
+                            opacity: animation,
+                            child: child,
+                          ),
+                        );
+                      },
                   child: Text(
                     _conversationPrompts[_currentPromptIndex],
                     key: ValueKey(_currentPromptIndex),
@@ -773,10 +904,18 @@ class _WalkTrackerPageState extends State<WalkTrackerPage> with TickerProviderSt
                       HapticFeedback.lightImpact();
                       _nextPrompt();
                     },
-                    icon: const Icon(Icons.refresh, size: 16, color: Color(0xff8ba88e)),
+                    icon: const Icon(
+                      Icons.refresh,
+                      size: 16,
+                      color: Color(0xff8ba88e),
+                    ),
                     label: const Text(
                       'Next Prompt',
-                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xff8ba88e)),
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xff8ba88e),
+                      ),
                     ),
                   ),
                 ),
@@ -788,7 +927,9 @@ class _WalkTrackerPageState extends State<WalkTrackerPage> with TickerProviderSt
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: isDark ? const Color(0xff1a1c1a).withValues(alpha: 0.5) : const Color(0xfff2f1ee).withValues(alpha: 0.5),
+              color: isDark
+                  ? const Color(0xff1a1c1a).withValues(alpha: 0.5)
+                  : const Color(0xfff2f1ee).withValues(alpha: 0.5),
               borderRadius: BorderRadius.circular(16),
             ),
             child: Column(
@@ -811,7 +952,9 @@ class _WalkTrackerPageState extends State<WalkTrackerPage> with TickerProviderSt
                       style: TextStyle(
                         fontFamily: 'Hanken Grotesk',
                         fontSize: 11,
-                        color: isDark ? const Color(0xffc2c8c0) : const Color(0xff615e56),
+                        color: isDark
+                            ? const Color(0xffc2c8c0)
+                            : const Color(0xff615e56),
                       ),
                     ),
                   ],
@@ -821,7 +964,9 @@ class _WalkTrackerPageState extends State<WalkTrackerPage> with TickerProviderSt
                   borderRadius: BorderRadius.circular(4),
                   child: LinearProgressIndicator(
                     value: 0.75,
-                    backgroundColor: isDark ? const Color(0xff1a1c1a) : const Color(0xfff2f1ee),
+                    backgroundColor: isDark
+                        ? const Color(0xff1a1c1a)
+                        : const Color(0xfff2f1ee),
                     valueColor: AlwaysStoppedAnimation<Color>(primaryColor),
                     minHeight: 6,
                   ),

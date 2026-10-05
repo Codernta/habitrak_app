@@ -3,14 +3,19 @@ import 'package:hive/hive.dart';
 import '../../../../core/storage/hive_registrar.dart';
 
 class ProfileRepository {
-  final Box<dynamic> _profileBox = Hive.box<dynamic>(HiveRegistrar.profileBoxName);
+  final Box<dynamic> _profileBox = Hive.box<dynamic>(
+    HiveRegistrar.profileBoxName,
+  );
   final Box<Map> _historyBox = Hive.box<Map>(HiveRegistrar.habitHistoryBoxName);
-  final Box<Map> _activityBox = Hive.box<Map>(HiveRegistrar.activityLogsBoxName);
+  final Box<Map> _activityBox = Hive.box<Map>(
+    HiveRegistrar.activityLogsBoxName,
+  );
 
   static const String _keyUserName = 'user_name';
 
   String getUserName() {
-    return _profileBox.get(_keyUserName, defaultValue: 'Jordan Smith') as String;
+    return _profileBox.get(_keyUserName, defaultValue: 'Jordan Smith')
+        as String;
   }
 
   Future<void> setUserName(String name) async {
@@ -28,11 +33,12 @@ class ProfileRepository {
   int getStreakDays() {
     final now = DateTime.now();
     int streak = 0;
-    
+
     // Check backwards from today or yesterday
     for (int i = 0; i < 60; i++) {
       final dt = now.subtract(Duration(days: i));
-      final key = '${dt.year}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')}';
+      final key =
+          '${dt.year}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')}';
       final record = _historyBox.get(key);
       if (record != null && (record['completedCount'] as int? ?? 0) > 0) {
         streak++;
@@ -66,7 +72,8 @@ class ProfileRepository {
     // Past 35 days (5 weeks × 7 days)
     for (int i = 34; i >= 0; i--) {
       final dt = now.subtract(Duration(days: i));
-      final key = '${dt.year}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')}';
+      final key =
+          '${dt.year}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')}';
       final record = _historyBox.get(key);
       if (record != null) {
         final completed = (record['completedCount'] as int? ?? 0).toDouble();
@@ -81,7 +88,7 @@ class ProfileRepository {
 
   List<Map<String, dynamic>> getBadges() {
     final streak = getStreakDays();
-    
+
     // Check meditation count from history
     int meditationCount = 0;
     int waterCount = 0;
@@ -89,7 +96,7 @@ class ProfileRepository {
       final map = Map<String, dynamic>.from(v);
       final ids = (map['completedHabitIds'] as List?)?.cast<String>() ?? [];
       if (ids.contains('1')) meditationCount++; // Meditation habit ID
-      if (ids.contains('2')) waterCount++;      // Water habit ID
+      if (ids.contains('2')) waterCount++; // Water habit ID
     }
 
     final isZenMasterUnlocked = meditationCount >= 7;

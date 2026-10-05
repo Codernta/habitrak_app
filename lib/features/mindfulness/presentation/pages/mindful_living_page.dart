@@ -63,12 +63,15 @@ class _MindfulLivingPageState extends State<MindfulLivingPage> {
         _reflections.insert(0, newRef);
         _lastEntryTime = 'Just now';
       });
-      _listKey.currentState?.insertItem(0, duration: const Duration(milliseconds: 500));
+      _listKey.currentState?.insertItem(
+        0,
+        duration: const Duration(milliseconds: 500),
+      );
       _journalController.clear();
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Gratitude entry saved!')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Gratitude entry saved!')));
     }
   }
 
@@ -95,7 +98,9 @@ class _MindfulLivingPageState extends State<MindfulLivingPage> {
         final isDark = Theme.of(context).brightness == Brightness.dark;
         return AlertDialog(
           backgroundColor: isDark ? const Color(0xff1e201e) : Colors.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
           title: Text(
             'New Intentional Goal',
             style: TextStyle(
@@ -111,9 +116,13 @@ class _MindfulLivingPageState extends State<MindfulLivingPage> {
             decoration: InputDecoration(
               hintText: 'e.g., Afternoon 10m walk',
               hintStyle: TextStyle(
-                color: isDark ? const Color(0xffc2c8c0).withValues(alpha: 0.4) : const Color(0xff615e56).withValues(alpha: 0.4),
+                color: isDark
+                    ? const Color(0xffc2c8c0).withValues(alpha: 0.4)
+                    : const Color(0xff615e56).withValues(alpha: 0.4),
               ),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
             ),
           ),
           actions: [
@@ -140,7 +149,9 @@ class _MindfulLivingPageState extends State<MindfulLivingPage> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xff8ba88e),
                 foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
               ),
               child: const Text('Add'),
             ),
@@ -160,13 +171,16 @@ class _MindfulLivingPageState extends State<MindfulLivingPage> {
         shape: BoxShape.circle,
         color: isCompleted ? primaryColor : Colors.transparent,
         border: Border.all(
-          color: isCompleted ? primaryColor : (isDark ? const Color(0xff424842) : const Color(0xffa4a097)),
+          color: isCompleted
+              ? primaryColor
+              : (isDark ? const Color(0xff424842) : const Color(0xffa4a097)),
           width: 2,
         ),
       ),
       child: AnimatedSwitcher(
         duration: const Duration(milliseconds: 200),
-        transitionBuilder: (child, anim) => ScaleTransition(scale: anim, child: child),
+        transitionBuilder: (child, anim) =>
+            ScaleTransition(scale: anim, child: child),
         child: isCompleted
             ? const Icon(
                 Icons.check,
@@ -179,19 +193,24 @@ class _MindfulLivingPageState extends State<MindfulLivingPage> {
     );
   }
 
-  Widget _buildReflectionItem(Map<String, dynamic> ref, Animation<double> animation, Color primaryColor, bool isDark) {
+  Widget _buildReflectionItem(
+    Map<String, dynamic> ref,
+    Animation<double> animation,
+    Color primaryColor,
+    bool isDark,
+  ) {
     return SizeTransition(
       sizeFactor: animation,
       child: FadeTransition(
         opacity: animation,
         child: SlideTransition(
-          position: Tween<Offset>(
-            begin: const Offset(0.0, -0.2),
-            end: Offset.zero,
-          ).animate(CurvedAnimation(
-            parent: animation,
-            curve: Curves.easeOutBack,
-          )),
+          position:
+              Tween<Offset>(
+                begin: const Offset(0.0, -0.2),
+                end: Offset.zero,
+              ).animate(
+                CurvedAnimation(parent: animation, curve: Curves.easeOutBack),
+              ),
           child: Padding(
             padding: const EdgeInsets.only(bottom: 16.0),
             child: Column(
@@ -211,7 +230,9 @@ class _MindfulLivingPageState extends State<MindfulLivingPage> {
                   style: TextStyle(
                     fontFamily: 'Hanken Grotesk',
                     fontSize: 14,
-                    color: isDark ? const Color(0xffc2c8c0) : const Color(0xff615e56),
+                    color: isDark
+                        ? const Color(0xffc2c8c0)
+                        : const Color(0xff615e56),
                     height: 1.4,
                   ),
                 ),
@@ -228,7 +249,9 @@ class _MindfulLivingPageState extends State<MindfulLivingPage> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryColor = isDark ? const Color(0xffb0ceb2) : const Color(0xff8ba88e);
+    final primaryColor = isDark
+        ? const Color(0xffb0ceb2)
+        : const Color(0xff8ba88e);
     final cardBg = isDark ? const Color(0xff1e201e) : const Color(0xffffffff);
 
     return Scaffold(
@@ -251,13 +274,25 @@ class _MindfulLivingPageState extends State<MindfulLivingPage> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             const SizedBox(height: 10),
-            StaggeredEntrance(index: 0, child: _buildGratitudeCard(isDark, primaryColor, cardBg)),
+            StaggeredEntrance(
+              index: 0,
+              child: _buildGratitudeCard(isDark, primaryColor, cardBg),
+            ),
             const SizedBox(height: 24),
-            StaggeredEntrance(index: 1, child: _buildGoalsCard(isDark, primaryColor, cardBg)),
+            StaggeredEntrance(
+              index: 1,
+              child: _buildGoalsCard(isDark, primaryColor, cardBg),
+            ),
             const SizedBox(height: 24),
-            StaggeredEntrance(index: 2, child: _buildWellBeingCard(isDark, primaryColor, cardBg)),
+            StaggeredEntrance(
+              index: 2,
+              child: _buildWellBeingCard(isDark, primaryColor, cardBg),
+            ),
             const SizedBox(height: 24),
-            StaggeredEntrance(index: 3, child: _buildRecentReflections(isDark, primaryColor, cardBg)),
+            StaggeredEntrance(
+              index: 3,
+              child: _buildRecentReflections(isDark, primaryColor, cardBg),
+            ),
             const SizedBox(height: 30),
           ],
         ),
@@ -272,7 +307,9 @@ class _MindfulLivingPageState extends State<MindfulLivingPage> {
         color: cardBg,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: isDark ? const Color(0xff424842).withValues(alpha: 0.1) : const Color(0xffdbdad7).withValues(alpha: 0.4),
+          color: isDark
+              ? const Color(0xff424842).withValues(alpha: 0.1)
+              : const Color(0xffdbdad7).withValues(alpha: 0.4),
           width: 1,
         ),
       ),
@@ -299,21 +336,30 @@ class _MindfulLivingPageState extends State<MindfulLivingPage> {
             'Last entry: $_lastEntryTime',
             style: TextStyle(
               fontSize: 12,
-              color: isDark ? const Color(0xffc2c8c0).withValues(alpha: 0.5) : const Color(0xff615e56).withValues(alpha: 0.5),
+              color: isDark
+                  ? const Color(0xffc2c8c0).withValues(alpha: 0.5)
+                  : const Color(0xff615e56).withValues(alpha: 0.5),
             ),
           ),
           const SizedBox(height: 18),
           TextField(
             controller: _journalController,
             maxLines: 3,
-            style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 14),
+            style: TextStyle(
+              color: isDark ? Colors.white : Colors.black,
+              fontSize: 14,
+            ),
             decoration: InputDecoration(
               hintText: 'What is one thing you are grateful for today?',
               hintStyle: TextStyle(
-                color: isDark ? const Color(0xffc2c8c0).withValues(alpha: 0.4) : const Color(0xff615e56).withValues(alpha: 0.4),
+                color: isDark
+                    ? const Color(0xffc2c8c0).withValues(alpha: 0.4)
+                    : const Color(0xff615e56).withValues(alpha: 0.4),
               ),
               filled: true,
-              fillColor: isDark ? const Color(0xff1a1c1a) : const Color(0xfff2f1ee),
+              fillColor: isDark
+                  ? const Color(0xff1a1c1a)
+                  : const Color(0xfff2f1ee),
               border: OutlineInputBorder(
                 borderSide: BorderSide.none,
                 borderRadius: BorderRadius.circular(12),
@@ -331,12 +377,18 @@ class _MindfulLivingPageState extends State<MindfulLivingPage> {
               backgroundColor: primaryColor,
               foregroundColor: isDark ? const Color(0xff1c3622) : Colors.white,
               padding: const EdgeInsets.symmetric(vertical: 14),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
               elevation: 0,
             ),
             child: const Text(
               'SAVE ENTRY',
-              style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 0.5),
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 0.5,
+              ),
             ),
           ),
         ],
@@ -351,7 +403,9 @@ class _MindfulLivingPageState extends State<MindfulLivingPage> {
         color: cardBg,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: isDark ? const Color(0xff424842).withValues(alpha: 0.1) : const Color(0xffdbdad7).withValues(alpha: 0.4),
+          color: isDark
+              ? const Color(0xff424842).withValues(alpha: 0.1)
+              : const Color(0xffdbdad7).withValues(alpha: 0.4),
           width: 1,
         ),
       ),
@@ -389,7 +443,9 @@ class _MindfulLivingPageState extends State<MindfulLivingPage> {
                 style: TextStyle(
                   fontFamily: 'Hanken Grotesk',
                   fontSize: 13,
-                  color: isDark ? const Color(0xffc2c8c0).withValues(alpha: 0.5) : const Color(0xff615e56).withValues(alpha: 0.5),
+                  color: isDark
+                      ? const Color(0xffc2c8c0).withValues(alpha: 0.5)
+                      : const Color(0xff615e56).withValues(alpha: 0.5),
                 ),
               ),
             )
@@ -427,9 +483,17 @@ class _MindfulLivingPageState extends State<MindfulLivingPage> {
                             style: TextStyle(
                               fontFamily: 'Hanken Grotesk',
                               fontSize: 14,
-                              decoration: isCompleted ? TextDecoration.lineThrough : null,
+                              decoration: isCompleted
+                                  ? TextDecoration.lineThrough
+                                  : null,
                               color: isCompleted
-                                  ? (isDark ? const Color(0xffc2c8c0).withValues(alpha: 0.5) : const Color(0xff615e56).withValues(alpha: 0.5))
+                                  ? (isDark
+                                        ? const Color(
+                                            0xffc2c8c0,
+                                          ).withValues(alpha: 0.5)
+                                        : const Color(
+                                            0xff615e56,
+                                          ).withValues(alpha: 0.5))
                                   : (isDark ? Colors.white : Colors.black),
                             ),
                           ),
@@ -449,7 +513,9 @@ class _MindfulLivingPageState extends State<MindfulLivingPage> {
     final dailyHours = _dailyScreenTime ~/ 60;
     final dailyMins = _dailyScreenTime % 60;
     final limitHours = _screenTimeLimit ~/ 60;
-    final screenRatio = (_dailyScreenTime / (_screenTimeLimit > 0 ? _screenTimeLimit : 1)).clamp(0.0, 1.0);
+    final screenRatio =
+        (_dailyScreenTime / (_screenTimeLimit > 0 ? _screenTimeLimit : 1))
+            .clamp(0.0, 1.0);
 
     return Container(
       padding: const EdgeInsets.all(22),
@@ -457,7 +523,9 @@ class _MindfulLivingPageState extends State<MindfulLivingPage> {
         color: cardBg,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: isDark ? const Color(0xff424842).withValues(alpha: 0.1) : const Color(0xffdbdad7).withValues(alpha: 0.4),
+          color: isDark
+              ? const Color(0xff424842).withValues(alpha: 0.1)
+              : const Color(0xffdbdad7).withValues(alpha: 0.4),
           width: 1,
         ),
       ),
@@ -490,7 +558,9 @@ class _MindfulLivingPageState extends State<MindfulLivingPage> {
                   fontSize: 10,
                   fontWeight: FontWeight.bold,
                   letterSpacing: 1.0,
-                  color: isDark ? const Color(0xffc2c8c0).withValues(alpha: 0.5) : const Color(0xff615e56).withValues(alpha: 0.5),
+                  color: isDark
+                      ? const Color(0xffc2c8c0).withValues(alpha: 0.5)
+                      : const Color(0xff615e56).withValues(alpha: 0.5),
                 ),
               ),
               Text(
@@ -509,21 +579,37 @@ class _MindfulLivingPageState extends State<MindfulLivingPage> {
             child: LinearProgressIndicator(
               value: screenRatio,
               minHeight: 6,
-              backgroundColor: isDark ? const Color(0xff1a1c1a) : const Color(0xfff2f1ee),
+              backgroundColor: isDark
+                  ? const Color(0xff1a1c1a)
+                  : const Color(0xfff2f1ee),
               valueColor: AlwaysStoppedAnimation<Color>(primaryColor),
             ),
           ),
           const SizedBox(height: 20),
           // Focus mode scheduler row
-          _buildWellBeingToggle('Focus Mode', Icons.bedtime_outlined, _isFocusMode, primaryColor, isDark, (val) {
-            setState(() => _isFocusMode = val);
-            _settingsRepo.setFocusModeEnabled(val);
-          }),
+          _buildWellBeingToggle(
+            'Focus Mode',
+            Icons.bedtime_outlined,
+            _isFocusMode,
+            primaryColor,
+            isDark,
+            (val) {
+              setState(() => _isFocusMode = val);
+              _settingsRepo.setFocusModeEnabled(val);
+            },
+          ),
           const SizedBox(height: 12),
-          _buildWellBeingToggle('DND Schedule', Icons.notifications_paused_outlined, _isDndSchedule, primaryColor, isDark, (val) {
-            setState(() => _isDndSchedule = val);
-            _settingsRepo.setDndScheduleEnabled(val);
-          }),
+          _buildWellBeingToggle(
+            'DND Schedule',
+            Icons.notifications_paused_outlined,
+            _isDndSchedule,
+            primaryColor,
+            isDark,
+            (val) {
+              setState(() => _isDndSchedule = val);
+              _settingsRepo.setDndScheduleEnabled(val);
+            },
+          ),
         ],
       ),
     );
@@ -542,7 +628,11 @@ class _MindfulLivingPageState extends State<MindfulLivingPage> {
       children: [
         Row(
           children: [
-            Icon(icon, size: 20, color: isDark ? const Color(0xffc2c8c0) : const Color(0xff615e56)),
+            Icon(
+              icon,
+              size: 20,
+              color: isDark ? const Color(0xffc2c8c0) : const Color(0xff615e56),
+            ),
             const SizedBox(width: 12),
             Text(
               label,
@@ -567,14 +657,20 @@ class _MindfulLivingPageState extends State<MindfulLivingPage> {
     );
   }
 
-  Widget _buildRecentReflections(bool isDark, Color primaryColor, Color cardBg) {
+  Widget _buildRecentReflections(
+    bool isDark,
+    Color primaryColor,
+    Color cardBg,
+  ) {
     return Container(
       padding: const EdgeInsets.all(22),
       decoration: BoxDecoration(
         color: cardBg,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: isDark ? const Color(0xff424842).withValues(alpha: 0.1) : const Color(0xffdbdad7).withValues(alpha: 0.4),
+          color: isDark
+              ? const Color(0xff424842).withValues(alpha: 0.1)
+              : const Color(0xffdbdad7).withValues(alpha: 0.4),
           width: 1,
         ),
       ),
@@ -599,7 +695,9 @@ class _MindfulLivingPageState extends State<MindfulLivingPage> {
                 style: TextStyle(
                   fontFamily: 'Hanken Grotesk',
                   fontSize: 13,
-                  color: isDark ? const Color(0xffc2c8c0).withValues(alpha: 0.5) : const Color(0xff615e56).withValues(alpha: 0.5),
+                  color: isDark
+                      ? const Color(0xffc2c8c0).withValues(alpha: 0.5)
+                      : const Color(0xff615e56).withValues(alpha: 0.5),
                 ),
               ),
             )
@@ -611,7 +709,12 @@ class _MindfulLivingPageState extends State<MindfulLivingPage> {
               physics: const NeverScrollableScrollPhysics(),
               itemBuilder: (context, index, animation) {
                 final ref = _reflections[index];
-                return _buildReflectionItem(ref, animation, primaryColor, isDark);
+                return _buildReflectionItem(
+                  ref,
+                  animation,
+                  primaryColor,
+                  isDark,
+                );
               },
             ),
         ],

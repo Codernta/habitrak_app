@@ -8,14 +8,20 @@ class ReflectionsRepository {
     {
       'id': 'seed_1',
       'date': 'Yesterday',
-      'text': 'A quiet cup of tea in the morning before looking at any screens. Peaceful start.',
-      'createdAt': DateTime.now().subtract(const Duration(days: 1)).toIso8601String(),
+      'text':
+          'A quiet cup of tea in the morning before looking at any screens. Peaceful start.',
+      'createdAt': DateTime.now()
+          .subtract(const Duration(days: 1))
+          .toIso8601String(),
     },
     {
       'id': 'seed_2',
       'date': 'Oct 21',
-      'text': '"A walk in the park reminded me that nature doesn\'t hurry, yet everything is accomplished."',
-      'createdAt': DateTime.now().subtract(const Duration(days: 4)).toIso8601String(),
+      'text':
+          '"A walk in the park reminded me that nature doesn\'t hurry, yet everything is accomplished."',
+      'createdAt': DateTime.now()
+          .subtract(const Duration(days: 4))
+          .toIso8601String(),
     },
   ];
 

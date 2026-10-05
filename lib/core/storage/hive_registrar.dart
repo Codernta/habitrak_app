@@ -12,7 +12,7 @@ class HiveRegistrar {
 
   static Future<void> init() async {
     await Hive.initFlutter();
-    
+
     // Register adapters
     Hive.registerAdapter(HabitAdapter());
     Hive.registerAdapter(HabitCategoryAdapter());

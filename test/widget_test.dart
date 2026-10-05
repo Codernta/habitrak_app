@@ -18,10 +18,7 @@ void main() {
       expect(habit.category.displayName, 'Mindfulness');
       expect(habit.isCompleted, false);
 
-      final updated = habit.copyWith(
-        currentProgress: 15.0,
-        isCompleted: true,
-      );
+      final updated = habit.copyWith(currentProgress: 15.0, isCompleted: true);
 
       expect(updated.currentProgress, 15.0);
       expect(updated.isCompleted, true);

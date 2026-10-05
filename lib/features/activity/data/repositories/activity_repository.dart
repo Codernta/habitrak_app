@@ -46,7 +46,9 @@ class ActivityRepository {
     for (var v in _box.values) {
       final map = Map<String, dynamic>.from(v);
       if (map['type'] == 'walk') {
-        final mins = map['durationMinutes'] as int? ?? ((map['durationSeconds'] as int? ?? 0) / 60).round();
+        final mins =
+            map['durationMinutes'] as int? ??
+            ((map['durationSeconds'] as int? ?? 0) / 60).round();
         total += mins;
       } else if (map['type'] == 'yoga') {
         total += map['durationMinutes'] as int? ?? 0;

@@ -45,20 +45,23 @@ class _AppShellState extends State<AppShell> {
         switchInCurve: AppAnimations.spring,
         switchOutCurve: Curves.easeInCubic,
         transitionBuilder: (child, animation) {
-          final slide = Tween<Offset>(
-            begin: Offset(0.04 * slideDirection, 0),
-            end: Offset.zero,
-          ).animate(CurvedAnimation(
-            parent: animation,
-            curve: AppAnimations.spring,
-          ));
+          final slide =
+              Tween<Offset>(
+                begin: Offset(0.04 * slideDirection, 0),
+                end: Offset.zero,
+              ).animate(
+                CurvedAnimation(parent: animation, curve: AppAnimations.spring),
+              );
           return FadeTransition(
             opacity: animation,
             child: SlideTransition(
               position: slide,
               child: ScaleTransition(
                 scale: Tween<double>(begin: 0.98, end: 1).animate(
-                  CurvedAnimation(parent: animation, curve: AppAnimations.spring),
+                  CurvedAnimation(
+                    parent: animation,
+                    curve: AppAnimations.spring,
+                  ),
                 ),
                 child: child,
               ),
@@ -76,10 +79,14 @@ class _AppShellState extends State<AppShell> {
           filter: ui.ImageFilter.blur(sigmaX: 30, sigmaY: 30),
           child: Container(
             decoration: BoxDecoration(
-              color: isDark ? const Color(0xff121212).withValues(alpha: 0.65) : Colors.white.withValues(alpha: 0.65),
+              color: isDark
+                  ? const Color(0xff121212).withValues(alpha: 0.65)
+                  : Colors.white.withValues(alpha: 0.65),
               border: Border(
                 top: BorderSide(
-                  color: isDark ? Colors.white.withValues(alpha: 0.15) : Colors.black.withValues(alpha: 0.1),
+                  color: isDark
+                      ? Colors.white.withValues(alpha: 0.15)
+                      : Colors.black.withValues(alpha: 0.1),
                   width: 0.5,
                 ),
               ),
@@ -87,8 +94,12 @@ class _AppShellState extends State<AppShell> {
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.05),
-                  isDark ? Colors.white.withValues(alpha: 0.0) : Colors.black.withValues(alpha: 0.0),
+                  isDark
+                      ? Colors.white.withValues(alpha: 0.1)
+                      : Colors.black.withValues(alpha: 0.05),
+                  isDark
+                      ? Colors.white.withValues(alpha: 0.0)
+                      : Colors.black.withValues(alpha: 0.0),
                 ],
                 stops: const [0.0, 0.4],
               ),
@@ -100,10 +111,30 @@ class _AppShellState extends State<AppShell> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    _buildGlassNavItem(0, Icons.home_filled, Icons.home_outlined, 'Home'),
-                    _buildGlassNavItem(1, Icons.library_books, Icons.library_books_outlined, 'Library'),
-                    _buildGlassNavItem(2, Icons.grid_view_rounded, Icons.grid_view_outlined, 'Mindful'),
-                    _buildGlassNavItem(3, Icons.person, Icons.person_outline, 'Profile'),
+                    _buildGlassNavItem(
+                      0,
+                      Icons.home_filled,
+                      Icons.home_outlined,
+                      'Home',
+                    ),
+                    _buildGlassNavItem(
+                      1,
+                      Icons.library_books,
+                      Icons.library_books_outlined,
+                      'Library',
+                    ),
+                    _buildGlassNavItem(
+                      2,
+                      Icons.grid_view_rounded,
+                      Icons.grid_view_outlined,
+                      'Mindful',
+                    ),
+                    _buildGlassNavItem(
+                      3,
+                      Icons.person,
+                      Icons.person_outline,
+                      'Profile',
+                    ),
                   ],
                 ),
               ),
@@ -114,10 +145,15 @@ class _AppShellState extends State<AppShell> {
     );
   }
 
-  Widget _buildGlassNavItem(int index, IconData filledIcon, IconData outlineIcon, String label) {
+  Widget _buildGlassNavItem(
+    int index,
+    IconData filledIcon,
+    IconData outlineIcon,
+    String label,
+  ) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isSelected = _currentIndex == index;
-    
+
     final activeColor = isDark ? Colors.white : Colors.black;
     final inactiveColor = isDark ? Colors.white54 : Colors.black54;
 
@@ -135,12 +171,12 @@ class _AppShellState extends State<AppShell> {
               transitionBuilder: (child, animation) {
                 return ScaleTransition(
                   scale: Tween<double>(begin: 0.8, end: 1.0).animate(
-                    CurvedAnimation(parent: animation, curve: Curves.easeOutBack),
+                    CurvedAnimation(
+                      parent: animation,
+                      curve: Curves.easeOutBack,
+                    ),
                   ),
-                  child: FadeTransition(
-                    opacity: animation,
-                    child: child,
-                  ),
+                  child: FadeTransition(opacity: animation, child: child),
                 );
               },
               child: Icon(
@@ -166,4 +202,3 @@ class _AppShellState extends State<AppShell> {
     );
   }
 }
-

@@ -14,7 +14,7 @@ import 'features/splash/presentation/pages/splash_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   // Initialize Hive
   await HiveRegistrar.init();
 
@@ -34,18 +34,24 @@ void main() async {
       providers: [
         RepositoryProvider<HiveHabitRepository>.value(value: habitRepository),
         RepositoryProvider<SettingsRepository>.value(value: settingsRepository),
-        RepositoryProvider<ReflectionsRepository>.value(value: reflectionsRepository),
-        RepositoryProvider<IntentionalGoalsRepository>.value(value: goalsRepository),
+        RepositoryProvider<ReflectionsRepository>.value(
+          value: reflectionsRepository,
+        ),
+        RepositoryProvider<IntentionalGoalsRepository>.value(
+          value: goalsRepository,
+        ),
         RepositoryProvider<ActivityRepository>.value(value: activityRepository),
         RepositoryProvider<ProfileRepository>.value(value: profileRepository),
       ],
       child: MultiBlocProvider(
         providers: [
           BlocProvider<ThemeCubit>(
-            create: (context) => ThemeCubit(settingsRepository: settingsRepository),
+            create: (context) =>
+                ThemeCubit(settingsRepository: settingsRepository),
           ),
           BlocProvider<HabitBloc>(
-            create: (context) => HabitBloc(repository: habitRepository)..add(LoadHabitsEvent()),
+            create: (context) =>
+                HabitBloc(repository: habitRepository)..add(LoadHabitsEvent()),
           ),
         ],
         child: const HabitrakApp(),

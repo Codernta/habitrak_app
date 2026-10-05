@@ -54,9 +54,9 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
 
     Future.delayed(const Duration(milliseconds: 2600), () {
       if (mounted) {
-        Navigator.of(context).pushReplacement(
-          AppPageRoute(page: const AppShell()),
-        );
+        Navigator.of(
+          context,
+        ).pushReplacement(AppPageRoute(page: const AppShell()));
       }
     });
   }
@@ -74,7 +74,9 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
     final primary = isDark ? const Color(0xffb0ceb2) : const Color(0xff8ba88e);
 
     return Scaffold(
-      backgroundColor: isDark ? const Color(0xff121412) : const Color(0xfffaf9f6),
+      backgroundColor: isDark
+          ? const Color(0xff121412)
+          : const Color(0xfffaf9f6),
       body: Center(
         child: AnimatedBuilder(
           animation: Listenable.merge([_entranceController, _pulseController]),
@@ -122,7 +124,9 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
                               borderRadius: BorderRadius.circular(24),
                               boxShadow: [
                                 BoxShadow(
-                                  color: primary.withValues(alpha: isDark ? 0.2 : 0.15),
+                                  color: primary.withValues(
+                                    alpha: isDark ? 0.2 : 0.15,
+                                  ),
                                   blurRadius: 24 * pulse,
                                   spreadRadius: 2,
                                 ),
@@ -145,12 +149,13 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
                       delay: const Duration(milliseconds: 400),
                       child: Text(
                         'habitrak',
-                        style: Theme.of(context).textTheme.displayLarge?.copyWith(
-                          fontSize: 36,
-                          fontWeight: FontWeight.w700,
-                          color: primary,
-                          letterSpacing: -0.5,
-                        ),
+                        style: Theme.of(context).textTheme.displayLarge
+                            ?.copyWith(
+                              fontSize: 36,
+                              fontWeight: FontWeight.w700,
+                              color: primary,
+                              letterSpacing: -0.5,
+                            ),
                       ),
                     ),
                     const SizedBox(height: 8),

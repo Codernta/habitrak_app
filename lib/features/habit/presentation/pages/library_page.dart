@@ -49,7 +49,7 @@ class _LibraryPageState extends State<LibraryPage> {
       context: context,
       builder: (context) {
         final isDark = Theme.of(context).brightness == Brightness.dark;
-        
+
         return StatefulBuilder(
           builder: (context, setModalState) {
             return Container(
@@ -60,8 +60,12 @@ class _LibraryPageState extends State<LibraryPage> {
                 bottom: MediaQuery.of(context).viewInsets.bottom + 24,
               ),
               decoration: BoxDecoration(
-                color: isDark ? const Color(0xff1e201e) : const Color(0xffffffff),
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+                color: isDark
+                    ? const Color(0xff1e201e)
+                    : const Color(0xffffffff),
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(24),
+                ),
               ),
               child: Form(
                 key: _formKey,
@@ -75,7 +79,9 @@ class _LibraryPageState extends State<LibraryPage> {
                           width: 40,
                           height: 4,
                           decoration: BoxDecoration(
-                            color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.1),
+                            color: isDark
+                                ? Colors.white.withValues(alpha: 0.1)
+                                : Colors.black.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(2),
                           ),
                         ),
@@ -87,22 +93,32 @@ class _LibraryPageState extends State<LibraryPage> {
                           fontFamily: 'Hanken Grotesk',
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
-                          color: isDark ? const Color(0xffe2e3df) : const Color(0xff2f312f),
+                          color: isDark
+                              ? const Color(0xffe2e3df)
+                              : const Color(0xff2f312f),
                         ),
                       ),
                       const SizedBox(height: 20),
                       TextFormField(
                         controller: _titleController,
-                        style: TextStyle(color: isDark ? Colors.white : Colors.black),
+                        style: TextStyle(
+                          color: isDark ? Colors.white : Colors.black,
+                        ),
                         decoration: InputDecoration(
                           labelText: 'Habit Title',
                           labelStyle: const TextStyle(color: Color(0xff8ba88e)),
                           enabledBorder: OutlineInputBorder(
-                            borderSide: BorderSide(color: isDark ? const Color(0x3dffffff) : const Color(0x3d000000)),
+                            borderSide: BorderSide(
+                              color: isDark
+                                  ? const Color(0x3dffffff)
+                                  : const Color(0x3d000000),
+                            ),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           focusedBorder: OutlineInputBorder(
-                            borderSide: const BorderSide(color: Color(0xff8ba88e)),
+                            borderSide: const BorderSide(
+                              color: Color(0xff8ba88e),
+                            ),
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
@@ -121,7 +137,9 @@ class _LibraryPageState extends State<LibraryPage> {
                           fontFamily: 'Hanken Grotesk',
                           fontSize: 14,
                           fontWeight: FontWeight.bold,
-                          color: isDark ? const Color(0xffc2c8c0) : const Color(0xff615e56),
+                          color: isDark
+                              ? const Color(0xffc2c8c0)
+                              : const Color(0xff615e56),
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -130,11 +148,15 @@ class _LibraryPageState extends State<LibraryPage> {
                           final isSelected = _selectedCategory == cat;
                           return Expanded(
                             child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 4.0,
+                              ),
                               child: ChoiceChip(
                                 label: Text(cat.displayName),
                                 selected: isSelected,
-                                selectedColor: const Color(0xff8ba88e).withValues(alpha: 0.3),
+                                selectedColor: const Color(
+                                  0xff8ba88e,
+                                ).withValues(alpha: 0.3),
                                 onSelected: (selected) {
                                   if (selected) {
                                     HapticFeedback.selectionClick();
@@ -155,16 +177,26 @@ class _LibraryPageState extends State<LibraryPage> {
                             child: TextFormField(
                               controller: _targetController,
                               keyboardType: TextInputType.number,
-                              style: TextStyle(color: isDark ? Colors.white : Colors.black),
+                              style: TextStyle(
+                                color: isDark ? Colors.white : Colors.black,
+                              ),
                               decoration: InputDecoration(
                                 labelText: 'Daily Goal Target',
-                                labelStyle: const TextStyle(color: Color(0xff8ba88e)),
+                                labelStyle: const TextStyle(
+                                  color: Color(0xff8ba88e),
+                                ),
                                 enabledBorder: OutlineInputBorder(
-                                  borderSide: BorderSide(color: isDark ? const Color(0x3dffffff) : const Color(0x3d000000)),
+                                  borderSide: BorderSide(
+                                    color: isDark
+                                        ? const Color(0x3dffffff)
+                                        : const Color(0x3d000000),
+                                  ),
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 focusedBorder: OutlineInputBorder(
-                                  borderSide: const BorderSide(color: Color(0xff8ba88e)),
+                                  borderSide: const BorderSide(
+                                    color: Color(0xff8ba88e),
+                                  ),
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                               ),
@@ -174,16 +206,26 @@ class _LibraryPageState extends State<LibraryPage> {
                           Expanded(
                             child: TextFormField(
                               controller: _unitController,
-                              style: TextStyle(color: isDark ? Colors.white : Colors.black),
+                              style: TextStyle(
+                                color: isDark ? Colors.white : Colors.black,
+                              ),
                               decoration: InputDecoration(
                                 labelText: 'Unit (e.g. L, mins)',
-                                labelStyle: const TextStyle(color: Color(0xff8ba88e)),
+                                labelStyle: const TextStyle(
+                                  color: Color(0xff8ba88e),
+                                ),
                                 enabledBorder: OutlineInputBorder(
-                                  borderSide: BorderSide(color: isDark ? const Color(0x3dffffff) : const Color(0x3d000000)),
+                                  borderSide: BorderSide(
+                                    color: isDark
+                                        ? const Color(0x3dffffff)
+                                        : const Color(0x3d000000),
+                                  ),
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 focusedBorder: OutlineInputBorder(
-                                  borderSide: const BorderSide(color: Color(0xff8ba88e)),
+                                  borderSide: const BorderSide(
+                                    color: Color(0xff8ba88e),
+                                  ),
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                               ),
@@ -196,14 +238,17 @@ class _LibraryPageState extends State<LibraryPage> {
                         onPressed: () {
                           if (_formKey.currentState!.validate()) {
                             HapticFeedback.mediumImpact();
-                            final target = double.tryParse(_targetController.text) ?? 1.0;
-                            
-                            context.read<HabitBloc>().add(AddCustomHabitEvent(
-                              title: _titleController.text.trim(),
-                              category: _selectedCategory,
-                              targetProgress: target,
-                              unit: _unitController.text.trim(),
-                            ));
+                            final target =
+                                double.tryParse(_targetController.text) ?? 1.0;
+
+                            context.read<HabitBloc>().add(
+                              AddCustomHabitEvent(
+                                title: _titleController.text.trim(),
+                                category: _selectedCategory,
+                                targetProgress: target,
+                                unit: _unitController.text.trim(),
+                              ),
+                            );
 
                             _titleController.clear();
                             _targetController.clear();
@@ -211,7 +256,9 @@ class _LibraryPageState extends State<LibraryPage> {
 
                             Navigator.pop(context);
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Custom habit created!')),
+                              const SnackBar(
+                                content: Text('Custom habit created!'),
+                              ),
                             );
                           }
                         },
@@ -219,7 +266,9 @@ class _LibraryPageState extends State<LibraryPage> {
                           backgroundColor: const Color(0xff8ba88e),
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
                         ),
                         child: const Text('Create Habit'),
                       ),
@@ -234,23 +283,31 @@ class _LibraryPageState extends State<LibraryPage> {
     );
   }
 
-  void _addPresetHabit(String title, HabitCategory cat, double target, String unit, String? scheduledTime) {
-    context.read<HabitBloc>().add(AddCustomHabitEvent(
-      title: title,
-      category: cat,
-      targetProgress: target,
-      unit: unit,
-      scheduledTime: scheduledTime,
-    ));
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('"$title" added to your routine!')),
+  void _addPresetHabit(
+    String title,
+    HabitCategory cat,
+    double target,
+    String unit,
+    String? scheduledTime,
+  ) {
+    context.read<HabitBloc>().add(
+      AddCustomHabitEvent(
+        title: title,
+        category: cat,
+        targetProgress: target,
+        unit: unit,
+        scheduledTime: scheduledTime,
+      ),
     );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text('"$title" added to your routine!')));
   }
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     final popularPresets = [
       {
         'title': 'Morning Sun',
@@ -327,10 +384,14 @@ class _LibraryPageState extends State<LibraryPage> {
     ];
 
     final filteredPresets = popularPresets.where((p) {
-      final matchesCat = _filterCategory == null || p['category'] == _filterCategory;
+      final matchesCat =
+          _filterCategory == null || p['category'] == _filterCategory;
       final title = (p['title'] as String).toLowerCase();
       final desc = (p['desc'] as String).toLowerCase();
-      final matchesQuery = _searchQuery.isEmpty || title.contains(_searchQuery) || desc.contains(_searchQuery);
+      final matchesQuery =
+          _searchQuery.isEmpty ||
+          title.contains(_searchQuery) ||
+          desc.contains(_searchQuery);
       return matchesCat && matchesQuery;
     }).toList();
 
@@ -362,9 +423,14 @@ class _LibraryPageState extends State<LibraryPage> {
                 decoration: InputDecoration(
                   hintText: 'Search habits...',
                   hintStyle: TextStyle(
-                    color: isDark ? const Color(0xffc2c8c0).withValues(alpha: 0.5) : const Color(0xff615e56).withValues(alpha: 0.5),
+                    color: isDark
+                        ? const Color(0xffc2c8c0).withValues(alpha: 0.5)
+                        : const Color(0xff615e56).withValues(alpha: 0.5),
                   ),
-                  prefixIcon: const Icon(Icons.search, color: Color(0xff8ba88e)),
+                  prefixIcon: const Icon(
+                    Icons.search,
+                    color: Color(0xff8ba88e),
+                  ),
                   suffixIcon: _searchQuery.isNotEmpty
                       ? IconButton(
                           icon: const Icon(Icons.clear, size: 18),
@@ -372,13 +438,18 @@ class _LibraryPageState extends State<LibraryPage> {
                         )
                       : null,
                   filled: true,
-                  fillColor: isDark ? const Color(0xff1a1c1a) : const Color(0xfff2f1ee),
+                  fillColor: isDark
+                      ? const Color(0xff1a1c1a)
+                      : const Color(0xfff2f1ee),
                   enabledBorder: OutlineInputBorder(
                     borderSide: BorderSide.none,
                     borderRadius: BorderRadius.circular(16),
                   ),
                   focusedBorder: OutlineInputBorder(
-                    borderSide: const BorderSide(color: Color(0xff8ba88e), width: 1.5),
+                    borderSide: const BorderSide(
+                      color: Color(0xff8ba88e),
+                      width: 1.5,
+                    ),
                     borderRadius: BorderRadius.circular(16),
                   ),
                 ),
@@ -397,7 +468,7 @@ class _LibraryPageState extends State<LibraryPage> {
                   padding: const EdgeInsets.all(22),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      colors: isDark 
+                      colors: isDark
                           ? [const Color(0xff334d38), const Color(0xff1e201e)]
                           : [const Color(0xffcceace), const Color(0xfffaf9f6)],
                       begin: Alignment.topLeft,
@@ -405,7 +476,9 @@ class _LibraryPageState extends State<LibraryPage> {
                     ),
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
-                      color: isDark ? const Color(0xffb0ceb2).withValues(alpha: 0.1) : const Color(0xff8ba88e).withValues(alpha: 0.2),
+                      color: isDark
+                          ? const Color(0xffb0ceb2).withValues(alpha: 0.1)
+                          : const Color(0xff8ba88e).withValues(alpha: 0.2),
                       width: 1,
                     ),
                   ),
@@ -418,7 +491,11 @@ class _LibraryPageState extends State<LibraryPage> {
                           color: Color(0xff8ba88e),
                           shape: BoxShape.circle,
                         ),
-                        child: const Icon(Icons.add, color: Colors.white, size: 28),
+                        child: const Icon(
+                          Icons.add,
+                          color: Colors.white,
+                          size: 28,
+                        ),
                       ),
                       const SizedBox(width: 16),
                       Expanded(
@@ -431,7 +508,9 @@ class _LibraryPageState extends State<LibraryPage> {
                                 fontFamily: 'Hanken Grotesk',
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
-                                color: isDark ? const Color(0xffe2e3df) : const Color(0xff2f312f),
+                                color: isDark
+                                    ? const Color(0xffe2e3df)
+                                    : const Color(0xff2f312f),
                               ),
                             ),
                             const SizedBox(height: 4),
@@ -440,7 +519,13 @@ class _LibraryPageState extends State<LibraryPage> {
                               style: TextStyle(
                                 fontFamily: 'Hanken Grotesk',
                                 fontSize: 13,
-                                color: isDark ? const Color(0xffc2c8c0).withValues(alpha: 0.7) : const Color(0xff615e56).withValues(alpha: 0.8),
+                                color: isDark
+                                    ? const Color(
+                                        0xffc2c8c0,
+                                      ).withValues(alpha: 0.7)
+                                    : const Color(
+                                        0xff615e56,
+                                      ).withValues(alpha: 0.8),
                               ),
                             ),
                           ],
@@ -448,7 +533,9 @@ class _LibraryPageState extends State<LibraryPage> {
                       ),
                       Icon(
                         Icons.chevron_right,
-                        color: isDark ? const Color(0xffc2c8c0) : const Color(0xff615e56),
+                        color: isDark
+                            ? const Color(0xffc2c8c0)
+                            : const Color(0xff615e56),
                       ),
                     ],
                   ),
@@ -467,7 +554,9 @@ class _LibraryPageState extends State<LibraryPage> {
                       fontFamily: 'Hanken Grotesk',
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
-                      color: isDark ? const Color(0xffe2e3df) : const Color(0xff2f312f),
+                      color: isDark
+                          ? const Color(0xffe2e3df)
+                          : const Color(0xff2f312f),
                     ),
                   ),
                   if (_filterCategory != null)
@@ -476,7 +565,10 @@ class _LibraryPageState extends State<LibraryPage> {
                         HapticFeedback.lightImpact();
                         setState(() => _filterCategory = null);
                       },
-                      child: const Text('Clear Filter', style: TextStyle(color: Color(0xff8ba88e))),
+                      child: const Text(
+                        'Clear Filter',
+                        style: TextStyle(color: Color(0xff8ba88e)),
+                      ),
                     ),
                 ],
               ),
@@ -489,54 +581,55 @@ class _LibraryPageState extends State<LibraryPage> {
                 child: ListView(
                   scrollDirection: Axis.horizontal,
                   physics: const BouncingScrollPhysics(),
-                  children: [
-                    {
-                      'title': 'Mindfulness',
-                      'category': HabitCategory.mindfulness,
-                      'subtitle': 'Curated habits for mental clarity',
-                      'icon': Icons.self_improvement,
-                      'color': const Color(0xffb2cad3),
-                    },
-                    {
-                      'title': 'Health',
-                      'category': HabitCategory.health,
-                      'subtitle': 'Habits for active physical vitality',
-                      'icon': Icons.favorite_rounded,
-                      'color': const Color(0xffb0ceb2),
-                    },
-                    {
-                      'title': 'Growth',
-                      'category': HabitCategory.growth,
-                      'subtitle': 'Habits for lifelong learning',
-                      'icon': Icons.auto_stories,
-                      'color': const Color(0xffedb9c3),
-                    },
-                  ].asMap().entries.map((entry) {
-                    final idx = entry.key;
-                    final cat = entry.value;
-                    final catType = cat['category'] as HabitCategory;
-                    final isSelected = _filterCategory == catType;
-
-                    return StaggeredEntrance(
-                      index: idx,
-                      slideAxis: Axis.horizontal,
-                      child: GestureDetector(
-                        onTap: () {
-                          HapticFeedback.selectionClick();
-                          setState(() {
-                            _filterCategory = isSelected ? null : catType;
-                          });
+                  children:
+                      [
+                        {
+                          'title': 'Mindfulness',
+                          'category': HabitCategory.mindfulness,
+                          'subtitle': 'Curated habits for mental clarity',
+                          'icon': Icons.self_improvement,
+                          'color': const Color(0xffb2cad3),
                         },
-                        child: _buildCategoryCard(
-                          cat['title'] as String,
-                          cat['subtitle'] as String,
-                          cat['icon'] as IconData,
-                          cat['color'] as Color,
-                          isSelected,
-                        ),
-                      ),
-                    );
-                  }).toList(),
+                        {
+                          'title': 'Health',
+                          'category': HabitCategory.health,
+                          'subtitle': 'Habits for active physical vitality',
+                          'icon': Icons.favorite_rounded,
+                          'color': const Color(0xffb0ceb2),
+                        },
+                        {
+                          'title': 'Growth',
+                          'category': HabitCategory.growth,
+                          'subtitle': 'Habits for lifelong learning',
+                          'icon': Icons.auto_stories,
+                          'color': const Color(0xffedb9c3),
+                        },
+                      ].asMap().entries.map((entry) {
+                        final idx = entry.key;
+                        final cat = entry.value;
+                        final catType = cat['category'] as HabitCategory;
+                        final isSelected = _filterCategory == catType;
+
+                        return StaggeredEntrance(
+                          index: idx,
+                          slideAxis: Axis.horizontal,
+                          child: GestureDetector(
+                            onTap: () {
+                              HapticFeedback.selectionClick();
+                              setState(() {
+                                _filterCategory = isSelected ? null : catType;
+                              });
+                            },
+                            child: _buildCategoryCard(
+                              cat['title'] as String,
+                              cat['subtitle'] as String,
+                              cat['icon'] as IconData,
+                              cat['color'] as Color,
+                              isSelected,
+                            ),
+                          ),
+                        );
+                      }).toList(),
                 ),
               ),
             ),
@@ -554,7 +647,9 @@ class _LibraryPageState extends State<LibraryPage> {
                       fontFamily: 'Hanken Grotesk',
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
-                      color: isDark ? const Color(0xffe2e3df) : const Color(0xff2f312f),
+                      color: isDark
+                          ? const Color(0xffe2e3df)
+                          : const Color(0xff2f312f),
                     ),
                   ),
                   TextButton(
@@ -566,7 +661,9 @@ class _LibraryPageState extends State<LibraryPage> {
                       });
                     },
                     child: Text(
-                      _filterCategory != null || _searchQuery.isNotEmpty ? 'RESET' : 'VIEW ALL',
+                      _filterCategory != null || _searchQuery.isNotEmpty
+                          ? 'RESET'
+                          : 'VIEW ALL',
                       style: const TextStyle(
                         fontFamily: 'Hanken Grotesk',
                         fontSize: 12,
@@ -588,7 +685,9 @@ class _LibraryPageState extends State<LibraryPage> {
                     'No habits found matching your filter.',
                     style: TextStyle(
                       fontFamily: 'Hanken Grotesk',
-                      color: isDark ? const Color(0xffc2c8c0) : const Color(0xff615e56),
+                      color: isDark
+                          ? const Color(0xffc2c8c0)
+                          : const Color(0xff615e56),
                     ),
                   ),
                 ),
@@ -603,10 +702,14 @@ class _LibraryPageState extends State<LibraryPage> {
                     margin: const EdgeInsets.only(bottom: 12),
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: isDark ? const Color(0xff1e201e) : const Color(0xffffffff),
+                      color: isDark
+                          ? const Color(0xff1e201e)
+                          : const Color(0xffffffff),
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(
-                        color: isDark ? const Color(0xff424842).withValues(alpha: 0.1) : const Color(0xffdbdad7).withValues(alpha: 0.4),
+                        color: isDark
+                            ? const Color(0xff424842).withValues(alpha: 0.1)
+                            : const Color(0xffdbdad7).withValues(alpha: 0.4),
                         width: 1,
                       ),
                     ),
@@ -616,7 +719,9 @@ class _LibraryPageState extends State<LibraryPage> {
                           width: 44,
                           height: 44,
                           decoration: BoxDecoration(
-                            color: isDark ? const Color(0xff292a28) : const Color(0xffefeeeb),
+                            color: isDark
+                                ? const Color(0xff292a28)
+                                : const Color(0xffefeeeb),
                             shape: BoxShape.circle,
                           ),
                           child: Icon(
@@ -636,7 +741,9 @@ class _LibraryPageState extends State<LibraryPage> {
                                   fontFamily: 'Hanken Grotesk',
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
-                                  color: isDark ? const Color(0xffe2e3df) : const Color(0xff2f312f),
+                                  color: isDark
+                                      ? const Color(0xffe2e3df)
+                                      : const Color(0xff2f312f),
                                 ),
                               ),
                               const SizedBox(height: 4),
@@ -645,7 +752,13 @@ class _LibraryPageState extends State<LibraryPage> {
                                 style: TextStyle(
                                   fontFamily: 'Hanken Grotesk',
                                   fontSize: 12,
-                                  color: isDark ? const Color(0xffc2c8c0).withValues(alpha: 0.6) : const Color(0xff615e56).withValues(alpha: 0.6),
+                                  color: isDark
+                                      ? const Color(
+                                          0xffc2c8c0,
+                                        ).withValues(alpha: 0.6)
+                                      : const Color(
+                                          0xff615e56,
+                                        ).withValues(alpha: 0.6),
                                 ),
                               ),
                             ],
@@ -659,19 +772,33 @@ class _LibraryPageState extends State<LibraryPage> {
                               preset['category'] as HabitCategory,
                               preset['target'] as double,
                               preset['unit'] as String,
-                              preset['title'] == 'Gratitude Journal' ? '8:00 AM' : null,
+                              preset['title'] == 'Gratitude Journal'
+                                  ? '8:00 AM'
+                                  : null,
                             );
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: isDark ? const Color(0xff334d38) : const Color(0xffcceace),
-                            foregroundColor: isDark ? const Color(0xffe2e3df) : const Color(0xff1c3622),
+                            backgroundColor: isDark
+                                ? const Color(0xff334d38)
+                                : const Color(0xffcceace),
+                            foregroundColor: isDark
+                                ? const Color(0xffe2e3df)
+                                : const Color(0xff1c3622),
                             elevation: 0,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 8,
+                            ),
                           ),
                           child: const Text(
                             'ADD',
-                            style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
                       ],
@@ -686,9 +813,15 @@ class _LibraryPageState extends State<LibraryPage> {
     );
   }
 
-  Widget _buildCategoryCard(String title, String subtitle, IconData icon, Color color, bool isSelected) {
+  Widget _buildCategoryCard(
+    String title,
+    String subtitle,
+    IconData icon,
+    Color color,
+    bool isSelected,
+  ) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     return AnimatedContainer(
       duration: const Duration(milliseconds: 250),
       width: 145,
@@ -700,7 +833,9 @@ class _LibraryPageState extends State<LibraryPage> {
         border: Border.all(
           color: isSelected
               ? const Color(0xff8ba88e)
-              : (isDark ? const Color(0xff424842).withValues(alpha: 0.1) : const Color(0xffdbdad7).withValues(alpha: 0.4)),
+              : (isDark
+                    ? const Color(0xff424842).withValues(alpha: 0.1)
+                    : const Color(0xffdbdad7).withValues(alpha: 0.4)),
           width: isSelected ? 2 : 1,
         ),
       ),
@@ -714,11 +849,7 @@ class _LibraryPageState extends State<LibraryPage> {
               color: color.withValues(alpha: 0.2),
               shape: BoxShape.circle,
             ),
-            child: Icon(
-              icon,
-              color: color,
-              size: 22,
-            ),
+            child: Icon(icon, color: color, size: 22),
           ),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -729,7 +860,9 @@ class _LibraryPageState extends State<LibraryPage> {
                   fontFamily: 'Hanken Grotesk',
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
-                  color: isDark ? const Color(0xffe2e3df) : const Color(0xff2f312f),
+                  color: isDark
+                      ? const Color(0xffe2e3df)
+                      : const Color(0xff2f312f),
                 ),
               ),
               const SizedBox(height: 4),
@@ -740,7 +873,9 @@ class _LibraryPageState extends State<LibraryPage> {
                 style: TextStyle(
                   fontFamily: 'Hanken Grotesk',
                   fontSize: 11,
-                  color: isDark ? const Color(0xffc2c8c0).withValues(alpha: 0.5) : const Color(0xff615e56).withValues(alpha: 0.5),
+                  color: isDark
+                      ? const Color(0xffc2c8c0).withValues(alpha: 0.5)
+                      : const Color(0xff615e56).withValues(alpha: 0.5),
                   height: 1.2,
                 ),
               ),

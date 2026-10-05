@@ -14,7 +14,8 @@ class YogaExercisesPage extends StatefulWidget {
   State<YogaExercisesPage> createState() => _YogaExercisesPageState();
 }
 
-class _YogaExercisesPageState extends State<YogaExercisesPage> with SingleTickerProviderStateMixin {
+class _YogaExercisesPageState extends State<YogaExercisesPage>
+    with SingleTickerProviderStateMixin {
   late AnimationController _breathingController;
   late Animation<double> _coreBreathingAnimation;
   late Animation<double> _midBreathingAnimation;
@@ -108,13 +109,16 @@ class _YogaExercisesPageState extends State<YogaExercisesPage> with SingleTicker
         shape: BoxShape.circle,
         color: isCompleted ? primaryColor : Colors.transparent,
         border: Border.all(
-          color: isCompleted ? primaryColor : (isDark ? const Color(0xff424842) : const Color(0xffa4a097)),
+          color: isCompleted
+              ? primaryColor
+              : (isDark ? const Color(0xff424842) : const Color(0xffa4a097)),
           width: 2,
         ),
       ),
       child: AnimatedSwitcher(
         duration: const Duration(milliseconds: 200),
-        transitionBuilder: (child, anim) => ScaleTransition(scale: anim, child: child),
+        transitionBuilder: (child, anim) =>
+            ScaleTransition(scale: anim, child: child),
         child: isCompleted
             ? const Icon(
                 Icons.check,
@@ -141,7 +145,9 @@ class _YogaExercisesPageState extends State<YogaExercisesPage> with SingleTicker
 
   void _finishRoutine() {
     HapticFeedback.heavyImpact();
-    final completedCount = _stretchPoses.where((p) => p['completed'] == true).length;
+    final completedCount = _stretchPoses
+        .where((p) => p['completed'] == true)
+        .length;
     final totalPoses = _stretchPoses.length;
     final posesCount = completedCount == 0 ? totalPoses : completedCount;
     const durationMinutes = 6; // Standard 6 min stretch routine
@@ -158,7 +164,9 @@ class _YogaExercisesPageState extends State<YogaExercisesPage> with SingleTicker
     );
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryColor = isDark ? const Color(0xffb0ceb2) : const Color(0xff8ba88e);
+    final primaryColor = isDark
+        ? const Color(0xffb0ceb2)
+        : const Color(0xff8ba88e);
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -166,7 +174,9 @@ class _YogaExercisesPageState extends State<YogaExercisesPage> with SingleTicker
           children: [
             const Icon(Icons.check_circle, color: Colors.white, size: 20),
             const SizedBox(width: 8),
-            Text('Yoga routine completed! ($durationMinutes mins, $posesCount poses)'),
+            Text(
+              'Yoga routine completed! ($durationMinutes mins, $posesCount poses)',
+            ),
           ],
         ),
         backgroundColor: primaryColor,
@@ -179,7 +189,9 @@ class _YogaExercisesPageState extends State<YogaExercisesPage> with SingleTicker
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryColor = isDark ? const Color(0xffb0ceb2) : const Color(0xff8ba88e);
+    final primaryColor = isDark
+        ? const Color(0xffb0ceb2)
+        : const Color(0xff8ba88e);
     final cardBg = isDark ? const Color(0xff1e201e) : const Color(0xffffffff);
 
     return Scaffold(
@@ -202,9 +214,15 @@ class _YogaExercisesPageState extends State<YogaExercisesPage> with SingleTicker
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             const SizedBox(height: 10),
-            StaggeredEntrance(index: 0, child: _buildBreathingSection(isDark, primaryColor, cardBg)),
+            StaggeredEntrance(
+              index: 0,
+              child: _buildBreathingSection(isDark, primaryColor, cardBg),
+            ),
             const SizedBox(height: 28),
-            StaggeredEntrance(index: 1, child: _buildPosesSection(isDark, primaryColor, cardBg)),
+            StaggeredEntrance(
+              index: 1,
+              child: _buildPosesSection(isDark, primaryColor, cardBg),
+            ),
             const SizedBox(height: 24),
             StaggeredEntrance(
               index: 2,
@@ -212,9 +230,13 @@ class _YogaExercisesPageState extends State<YogaExercisesPage> with SingleTicker
                 onPressed: _finishRoutine,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: primaryColor,
-                  foregroundColor: isDark ? const Color(0xff1c3622) : Colors.white,
+                  foregroundColor: isDark
+                      ? const Color(0xff1c3622)
+                      : Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 18),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
                   elevation: 2,
                 ),
                 icon: const Icon(Icons.check_circle_outline, size: 22),
@@ -243,7 +265,9 @@ class _YogaExercisesPageState extends State<YogaExercisesPage> with SingleTicker
         color: cardBg,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: isDark ? const Color(0xff424842).withValues(alpha: 0.1) : const Color(0xffdbdad7).withValues(alpha: 0.4),
+          color: isDark
+              ? const Color(0xff424842).withValues(alpha: 0.1)
+              : const Color(0xffdbdad7).withValues(alpha: 0.4),
           width: 1,
         ),
       ),
@@ -265,7 +289,9 @@ class _YogaExercisesPageState extends State<YogaExercisesPage> with SingleTicker
             style: TextStyle(
               fontFamily: 'Hanken Grotesk',
               fontSize: 12,
-              color: isDark ? const Color(0xffc2c8c0).withValues(alpha: 0.6) : const Color(0xff615e56).withValues(alpha: 0.6),
+              color: isDark
+                  ? const Color(0xffc2c8c0).withValues(alpha: 0.6)
+                  : const Color(0xff615e56).withValues(alpha: 0.6),
             ),
           ),
           const SizedBox(height: 40),
@@ -288,7 +314,9 @@ class _YogaExercisesPageState extends State<YogaExercisesPage> with SingleTicker
                         shape: BoxShape.circle,
                         color: primaryColor.withValues(alpha: 0.04),
                         border: Border.all(
-                          color: primaryColor.withValues(alpha: 0.1 * (2.0 - outerScale)),
+                          color: primaryColor.withValues(
+                            alpha: 0.1 * (2.0 - outerScale),
+                          ),
                           width: 1,
                         ),
                       ),
@@ -329,7 +357,9 @@ class _YogaExercisesPageState extends State<YogaExercisesPage> with SingleTicker
                             fontSize: 13 * coreScale,
                             fontWeight: FontWeight.bold,
                             letterSpacing: 1.0,
-                            color: isDark ? const Color(0xff1c3622) : Colors.white,
+                            color: isDark
+                                ? const Color(0xff1c3622)
+                                : Colors.white,
                           ),
                         ),
                       ),
@@ -353,7 +383,12 @@ class _YogaExercisesPageState extends State<YogaExercisesPage> with SingleTicker
     );
   }
 
-  Widget _buildTimeOption(String label, int seconds, bool isDark, Color primaryColor) {
+  Widget _buildTimeOption(
+    String label,
+    int seconds,
+    bool isDark,
+    Color primaryColor,
+  ) {
     final isSelected = _selectedPaceSeconds == seconds;
 
     return GestureDetector(
@@ -376,7 +411,9 @@ class _YogaExercisesPageState extends State<YogaExercisesPage> with SingleTicker
           style: TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.bold,
-            color: isSelected ? primaryColor : (isDark ? const Color(0xffc2c8c0) : const Color(0xff615e56)),
+            color: isSelected
+                ? primaryColor
+                : (isDark ? const Color(0xffc2c8c0) : const Color(0xff615e56)),
           ),
         ),
       ),
@@ -390,7 +427,9 @@ class _YogaExercisesPageState extends State<YogaExercisesPage> with SingleTicker
         color: cardBg,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: isDark ? const Color(0xff424842).withValues(alpha: 0.1) : const Color(0xffdbdad7).withValues(alpha: 0.4),
+          color: isDark
+              ? const Color(0xff424842).withValues(alpha: 0.1)
+              : const Color(0xffdbdad7).withValues(alpha: 0.4),
           width: 1,
         ),
       ),
@@ -414,7 +453,9 @@ class _YogaExercisesPageState extends State<YogaExercisesPage> with SingleTicker
                 style: TextStyle(
                   fontFamily: 'Hanken Grotesk',
                   fontSize: 12,
-                  color: isDark ? const Color(0xffc2c8c0).withValues(alpha: 0.5) : const Color(0xff615e56).withValues(alpha: 0.5),
+                  color: isDark
+                      ? const Color(0xffc2c8c0).withValues(alpha: 0.5)
+                      : const Color(0xff615e56).withValues(alpha: 0.5),
                 ),
               ),
             ],
@@ -443,11 +484,18 @@ class _YogaExercisesPageState extends State<YogaExercisesPage> with SingleTicker
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 300),
                   margin: const EdgeInsets.only(bottom: 12),
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 14,
+                  ),
                   decoration: BoxDecoration(
                     color: isCompleted
-                        ? (isDark ? const Color(0xff1a1c1a).withValues(alpha: 0.4) : const Color(0xfff2f1ee).withValues(alpha: 0.6))
-                        : (isDark ? const Color(0xff1a1c1a) : const Color(0xfff2f1ee)),
+                        ? (isDark
+                              ? const Color(0xff1a1c1a).withValues(alpha: 0.4)
+                              : const Color(0xfff2f1ee).withValues(alpha: 0.6))
+                        : (isDark
+                              ? const Color(0xff1a1c1a)
+                              : const Color(0xfff2f1ee)),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
                       color: isCompleted
@@ -470,7 +518,9 @@ class _YogaExercisesPageState extends State<YogaExercisesPage> with SingleTicker
                                 fontFamily: 'Hanken Grotesk',
                                 fontSize: 15,
                                 fontWeight: FontWeight.bold,
-                                decoration: isCompleted ? TextDecoration.lineThrough : null,
+                                decoration: isCompleted
+                                    ? TextDecoration.lineThrough
+                                    : null,
                                 color: isCompleted
                                     ? (isDark ? Colors.white30 : Colors.black38)
                                     : (isDark ? Colors.white : Colors.black),
@@ -482,14 +532,22 @@ class _YogaExercisesPageState extends State<YogaExercisesPage> with SingleTicker
                               style: TextStyle(
                                 fontFamily: 'Hanken Grotesk',
                                 fontSize: 12,
-                                color: isDark ? const Color(0xffc2c8c0).withValues(alpha: 0.5) : const Color(0xff615e56).withValues(alpha: 0.5),
+                                color: isDark
+                                    ? const Color(
+                                        0xffc2c8c0,
+                                      ).withValues(alpha: 0.5)
+                                    : const Color(
+                                        0xff615e56,
+                                      ).withValues(alpha: 0.5),
                               ),
                             ),
                           ],
                         ),
                       ),
                       Icon(
-                        isCompleted ? Icons.check_circle : Icons.play_circle_fill_rounded,
+                        isCompleted
+                            ? Icons.check_circle
+                            : Icons.play_circle_fill_rounded,
                         color: primaryColor.withValues(alpha: 0.7),
                         size: 24,
                       ),
