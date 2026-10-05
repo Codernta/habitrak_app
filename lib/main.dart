@@ -12,6 +12,8 @@ import 'features/activity/data/repositories/activity_repository.dart';
 import 'features/profile/data/repositories/profile_repository.dart';
 import 'features/splash/presentation/pages/splash_page.dart';
 
+import 'core/widgets/river_flow_background.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -75,6 +77,9 @@ class HabitrakApp extends StatelessWidget {
           themeMode: themeMode,
           themeAnimationDuration: const Duration(milliseconds: 400),
           themeAnimationCurve: Curves.easeInOutCubic,
+          builder: (context, child) {
+            return RiverFlowBackground(child: child ?? const SizedBox());
+          },
           home: const SplashPage(),
         );
       },

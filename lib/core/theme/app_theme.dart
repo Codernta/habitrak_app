@@ -48,7 +48,7 @@ class AppTheme {
           TargetPlatform.macOS: AppPageTransitionsBuilder(),
         },
       ),
-      scaffoldBackgroundColor: AppColors.darkBackground,
+      scaffoldBackgroundColor: Colors.transparent,
       colorScheme: const ColorScheme.dark(
         primary: AppColors.darkPrimary,
         primaryContainer: AppColors.darkPrimaryContainer,
@@ -119,7 +119,7 @@ class AppTheme {
           TargetPlatform.macOS: AppPageTransitionsBuilder(),
         },
       ),
-      scaffoldBackgroundColor: AppColors.lightBackground,
+      scaffoldBackgroundColor: Colors.transparent,
       colorScheme: const ColorScheme.light(
         primary: AppColors.lightPrimary,
         primaryContainer: AppColors.lightPrimaryContainer,

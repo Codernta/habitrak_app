@@ -74,9 +74,7 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
     final primary = isDark ? const Color(0xffb0ceb2) : const Color(0xff8ba88e);
 
     return Scaffold(
-      backgroundColor: isDark
-          ? const Color(0xff121412)
-          : const Color(0xfffaf9f6),
+      backgroundColor: Colors.transparent,
       body: Center(
         child: AnimatedBuilder(
           animation: Listenable.merge([_entranceController, _pulseController]),
