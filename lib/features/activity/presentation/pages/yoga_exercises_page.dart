@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:habitrak/core/animations/app_animations.dart';
 import 'package:habitrak/core/animations/staggered_entrance.dart';
+import 'package:habitrak/features/habit/domain/entities/habit.dart';
+import 'package:habitrak/features/habit/presentation/bloc/habit_bloc.dart';
+import '../../data/repositories/activity_repository.dart';
 
 class YogaExercisesPage extends StatefulWidget {
   const YogaExercisesPage({super.key});
@@ -16,6 +20,7 @@ class _YogaExercisesPageState extends State<YogaExercisesPage> with SingleTicker
   late Animation<double> _midBreathingAnimation;
   late Animation<double> _outerBreathingAnimation;
   String _breathingStatus = 'Inhale';
+  int _selectedPaceSeconds = 4;
 
   final List<Map<String, dynamic>> _stretchPoses = [
     {'title': 'Child\'s Pose', 'duration': '2 mins', 'completed': false},
@@ -27,9 +32,13 @@ class _YogaExercisesPageState extends State<YogaExercisesPage> with SingleTicker
   @override
   void initState() {
     super.initState();
+    _initBreathingController(_selectedPaceSeconds);
+  }
+
+  void _initBreathingController(int seconds) {
     _breathingController = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 4),
+      duration: Duration(seconds: seconds),
     );
 
     _coreBreathingAnimation = Tween<double>(begin: 0.7, end: 1.15).animate(
@@ -70,6 +79,17 @@ class _YogaExercisesPageState extends State<YogaExercisesPage> with SingleTicker
     });
 
     _breathingController.forward();
+  }
+
+  void _changePace(int seconds) {
+    if (_selectedPaceSeconds == seconds) return;
+    HapticFeedback.lightImpact();
+    _breathingController.dispose();
+    setState(() {
+      _selectedPaceSeconds = seconds;
+      _breathingStatus = 'Inhale';
+    });
+    _initBreathingController(seconds);
   }
 
   @override
@@ -119,6 +139,43 @@ class _YogaExercisesPageState extends State<YogaExercisesPage> with SingleTicker
     });
   }
 
+  void _finishRoutine() {
+    HapticFeedback.heavyImpact();
+    final completedCount = _stretchPoses.where((p) => p['completed'] == true).length;
+    final totalPoses = _stretchPoses.length;
+    final posesCount = completedCount == 0 ? totalPoses : completedCount;
+    const durationMinutes = 6; // Standard 6 min stretch routine
+
+    // Log to Hive activity_logs
+    context.read<ActivityRepository>().logYogaSession(
+      durationMinutes: durationMinutes,
+      posesCompleted: posesCount,
+    );
+
+    // Complete mindfulness habit in HabitBloc
+    context.read<HabitBloc>().add(
+      const CompleteActivityHabitEvent(category: HabitCategory.mindfulness),
+    );
+
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primaryColor = isDark ? const Color(0xffb0ceb2) : const Color(0xff8ba88e);
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(Icons.check_circle, color: Colors.white, size: 20),
+            const SizedBox(width: 8),
+            Text('Yoga routine completed! ($durationMinutes mins, $posesCount poses)'),
+          ],
+        ),
+        backgroundColor: primaryColor,
+      ),
+    );
+
+    Navigator.of(context).pop();
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -148,6 +205,30 @@ class _YogaExercisesPageState extends State<YogaExercisesPage> with SingleTicker
             StaggeredEntrance(index: 0, child: _buildBreathingSection(isDark, primaryColor, cardBg)),
             const SizedBox(height: 28),
             StaggeredEntrance(index: 1, child: _buildPosesSection(isDark, primaryColor, cardBg)),
+            const SizedBox(height: 24),
+            StaggeredEntrance(
+              index: 2,
+              child: ElevatedButton.icon(
+                onPressed: _finishRoutine,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: primaryColor,
+                  foregroundColor: isDark ? const Color(0xff1c3622) : Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 18),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  elevation: 2,
+                ),
+                icon: const Icon(Icons.check_circle_outline, size: 22),
+                label: const Text(
+                  'Finish Routine',
+                  style: TextStyle(
+                    fontFamily: 'Hanken Grotesk',
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ),
+            ),
             const SizedBox(height: 30),
           ],
         ),
@@ -263,8 +344,8 @@ class _YogaExercisesPageState extends State<YogaExercisesPage> with SingleTicker
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              _buildTimeOption('4s Inhale', isDark),
-              _buildTimeOption('4s Exhale', isDark),
+              _buildTimeOption('4s Pace', 4, isDark, primaryColor),
+              _buildTimeOption('6s Deep Pace', 6, isDark, primaryColor),
             ],
           ),
         ],
@@ -272,19 +353,31 @@ class _YogaExercisesPageState extends State<YogaExercisesPage> with SingleTicker
     );
   }
 
-  Widget _buildTimeOption(String label, bool isDark) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      decoration: BoxDecoration(
-        color: isDark ? const Color(0xff1a1c1a) : const Color(0xfff2f1ee),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.bold,
-          color: isDark ? const Color(0xffc2c8c0) : const Color(0xff615e56),
+  Widget _buildTimeOption(String label, int seconds, bool isDark, Color primaryColor) {
+    final isSelected = _selectedPaceSeconds == seconds;
+
+    return GestureDetector(
+      onTap: () => _changePace(seconds),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? primaryColor.withValues(alpha: 0.2)
+              : (isDark ? const Color(0xff1a1c1a) : const Color(0xfff2f1ee)),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected ? primaryColor : Colors.transparent,
+            width: 1,
+          ),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+            color: isSelected ? primaryColor : (isDark ? const Color(0xffc2c8c0) : const Color(0xff615e56)),
+          ),
         ),
       ),
     );
@@ -317,7 +410,7 @@ class _YogaExercisesPageState extends State<YogaExercisesPage> with SingleTicker
                 ),
               ),
               Text(
-                '4 Poses',
+                '${_stretchPoses.length} Poses',
                 style: TextStyle(
                   fontFamily: 'Hanken Grotesk',
                   fontSize: 12,
@@ -396,7 +489,7 @@ class _YogaExercisesPageState extends State<YogaExercisesPage> with SingleTicker
                         ),
                       ),
                       Icon(
-                        Icons.play_circle_fill_rounded,
+                        isCompleted ? Icons.check_circle : Icons.play_circle_fill_rounded,
                         color: primaryColor.withValues(alpha: 0.7),
                         size: 24,
                       ),

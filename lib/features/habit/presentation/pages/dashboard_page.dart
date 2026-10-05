@@ -375,62 +375,79 @@ class _DashboardPageState extends State<DashboardPage> with TickerProviderStateM
 
   Widget _buildDateSlider(DateTime activeDate) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    // Map Tuesday 24 active slider
-    final days = [
-      {'day': 'Sun', 'num': '22'},
-      {'day': 'Mon', 'num': '23'},
-      {'day': 'Tue', 'num': '24', 'isActive': true},
-      {'day': 'Wed', 'num': '25'},
-      {'day': 'Thu', 'num': '26'},
-    ];
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+    // Generate 5 days centered on today
+    final days = List.generate(5, (index) {
+      final date = today.add(Duration(days: index - 2));
+      final isActive = date.year == activeDate.year &&
+          date.month == activeDate.month &&
+          date.day == activeDate.day;
+      return {
+        'date': date,
+        'day': weekdays[date.weekday - 1],
+        'num': date.day.toString().padLeft(2, '0'),
+        'isActive': isActive,
+      };
+    });
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: days.map((d) {
         final isActive = d['isActive'] == true;
+        final date = d['date'] as DateTime;
         
         return Expanded(
-          child: Container(
-            margin: const EdgeInsets.symmetric(horizontal: 4),
-            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
-            decoration: BoxDecoration(
-              color: isActive
-                  ? (isDark ? const Color(0xff3f4941).withValues(alpha: 0.3) : const Color(0xffcee7f0).withValues(alpha: 0.3))
-                  : Colors.transparent,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: isActive 
-                    ? (isDark ? const Color(0xffb0ceb2).withValues(alpha: 0.2) : const Color(0xff8ba88e).withValues(alpha: 0.2))
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () {
+              HapticFeedback.selectionClick();
+              context.read<HabitBloc>().add(ChangeActiveDateEvent(date));
+            },
+            child: Container(
+              margin: const EdgeInsets.symmetric(horizontal: 4),
+              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
+              decoration: BoxDecoration(
+                color: isActive
+                    ? (isDark ? const Color(0xff3f4941).withValues(alpha: 0.3) : const Color(0xffcee7f0).withValues(alpha: 0.3))
                     : Colors.transparent,
-                width: 1,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: isActive 
+                      ? (isDark ? const Color(0xffb0ceb2).withValues(alpha: 0.2) : const Color(0xff8ba88e).withValues(alpha: 0.2))
+                      : Colors.transparent,
+                  width: 1,
+                ),
               ),
-            ),
-            child: Column(
-              children: [
-                Text(
-                  d['day'] as String,
-                  style: TextStyle(
-                    fontFamily: 'Hanken Grotesk',
-                    fontSize: 12,
-                    fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
-                    color: isActive 
-                        ? (isDark ? const Color(0xffb0ceb2) : const Color(0xff8ba88e))
-                        : (isDark ? const Color(0xffc2c8c0).withValues(alpha: 0.4) : const Color(0xff615e56).withValues(alpha: 0.4)),
+              child: Column(
+                children: [
+                  Text(
+                    d['day'] as String,
+                    style: TextStyle(
+                      fontFamily: 'Hanken Grotesk',
+                      fontSize: 12,
+                      fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
+                      color: isActive 
+                          ? (isDark ? const Color(0xffb0ceb2) : const Color(0xff8ba88e))
+                          : (isDark ? const Color(0xffc2c8c0).withValues(alpha: 0.4) : const Color(0xff615e56).withValues(alpha: 0.4)),
+                    ),
                   ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  d['num'] as String,
-                  style: TextStyle(
-                    fontFamily: 'Hanken Grotesk',
-                    fontSize: 18,
-                    fontWeight: isActive ? FontWeight.bold : FontWeight.w500,
-                    color: isActive 
-                        ? (isDark ? const Color(0xffb0ceb2) : const Color(0xff8ba88e))
-                        : (isDark ? const Color(0xffc2c8c0).withValues(alpha: 0.7) : const Color(0xff615e56).withValues(alpha: 0.7)),
+                  const SizedBox(height: 6),
+                  Text(
+                    d['num'] as String,
+                    style: TextStyle(
+                      fontFamily: 'Hanken Grotesk',
+                      fontSize: 18,
+                      fontWeight: isActive ? FontWeight.bold : FontWeight.w500,
+                      color: isActive 
+                          ? (isDark ? const Color(0xffb0ceb2) : const Color(0xff8ba88e))
+                          : (isDark ? const Color(0xffc2c8c0).withValues(alpha: 0.7) : const Color(0xff615e56).withValues(alpha: 0.7)),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         );
@@ -670,10 +687,16 @@ class _DashboardPageState extends State<DashboardPage> with TickerProviderStateM
 
     return PressableScale(
       onTap: () {
-        if (habit.id == '3') {
+        final title = habit.title.toLowerCase();
+        if (habit.id == '3' || title.contains('walk')) {
           HapticFeedback.lightImpact();
           Navigator.of(context).push(
             AppPageRoute(page: const WalkTrackerPage()),
+          );
+        } else if (title.contains('yoga') || title.contains('stretch') || title.contains('meditat') || title.contains('breath')) {
+          HapticFeedback.lightImpact();
+          Navigator.of(context).push(
+            AppPageRoute(page: const YogaExercisesPage()),
           );
         } else {
           if (habit.isCompleted) {
@@ -746,7 +769,17 @@ class _DashboardPageState extends State<DashboardPage> with TickerProviderStateM
               ],
             ),
           ),
-          AnimatedScale(
+          GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () {
+              if (habit.isCompleted) {
+                HapticFeedback.lightImpact();
+              } else {
+                HapticFeedback.mediumImpact();
+              }
+              context.read<HabitBloc>().add(ToggleHabitEvent(habit.id));
+            },
+            child: AnimatedScale(
               scale: habit.isCompleted ? 1.05 : 1.0,
               duration: const Duration(milliseconds: 150),
               child: AnimatedSwitcher(
@@ -769,6 +802,7 @@ class _DashboardPageState extends State<DashboardPage> with TickerProviderStateM
                       ),
               ),
             ),
+          ),
         ],
       ),
       ),

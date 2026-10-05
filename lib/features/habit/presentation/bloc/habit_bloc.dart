@@ -51,6 +51,29 @@ class AddCustomHabitEvent extends HabitEvent {
 
 class ResetHabitsEvent extends HabitEvent {}
 
+class ChangeActiveDateEvent extends HabitEvent {
+  final DateTime date;
+  const ChangeActiveDateEvent(this.date);
+
+  @override
+  List<Object?> get props => [date];
+}
+
+class CompleteActivityHabitEvent extends HabitEvent {
+  final HabitCategory category;
+  final String? titleKeyword;
+  final double? progressAmount;
+
+  const CompleteActivityHabitEvent({
+    required this.category,
+    this.titleKeyword,
+    this.progressAmount,
+  });
+
+  @override
+  List<Object?> get props => [category, titleKeyword, progressAmount];
+}
+
 // --- STATES ---
 abstract class HabitState extends Equatable {
   const HabitState();
@@ -108,6 +131,8 @@ class HabitBloc extends Bloc<HabitEvent, HabitState> {
     on<UpdateHabitProgressEvent>(_onUpdateProgress);
     on<AddCustomHabitEvent>(_onAddCustomHabit);
     on<ResetHabitsEvent>(_onResetHabits);
+    on<ChangeActiveDateEvent>(_onChangeActiveDate);
+    on<CompleteActivityHabitEvent>(_onCompleteActivityHabit);
   }
 
   Future<void> _onLoadHabits(LoadHabitsEvent event, Emitter<HabitState> emit) async {
@@ -118,10 +143,49 @@ class HabitBloc extends Bloc<HabitEvent, HabitState> {
       emit(HabitLoaded(
         habits: habits,
         completionPercentage: percentage,
-        activeDate: DateTime(2026, 5, 24), // Active Tue 24 matching standard design
+        activeDate: DateTime.now(),
       ));
     } catch (e) {
       emit(HabitError('Failed to load habits: $e'));
+    }
+  }
+
+  void _onChangeActiveDate(ChangeActiveDateEvent event, Emitter<HabitState> emit) {
+    if (state is HabitLoaded) {
+      final current = state as HabitLoaded;
+      emit(current.copyWith(activeDate: event.date));
+    }
+  }
+
+  Future<void> _onCompleteActivityHabit(CompleteActivityHabitEvent event, Emitter<HabitState> emit) async {
+    if (state is HabitLoaded) {
+      final current = state as HabitLoaded;
+      try {
+        final habits = await repository.getHabits();
+        Habit? match;
+        if (event.titleKeyword != null) {
+          match = habits.where((h) => h.title.toLowerCase().contains(event.titleKeyword!.toLowerCase())).firstOrNull;
+        }
+        match ??= habits.where((h) => h.category == event.category).firstOrNull;
+
+        if (match != null) {
+          if (event.progressAmount != null && match.targetProgress > 1.0) {
+            final newProg = (match.currentProgress + event.progressAmount!).clamp(0.0, match.targetProgress);
+            await repository.updateHabitProgress(match.id, newProg);
+          } else {
+            if (!match.isCompleted) {
+              await repository.toggleHabitCompletion(match.id);
+            }
+          }
+          final updatedHabits = await repository.getHabits();
+          emit(current.copyWith(
+            habits: updatedHabits,
+            completionPercentage: _calculatePercentage(updatedHabits),
+          ));
+        }
+      } catch (e) {
+        emit(HabitError('Failed to complete activity habit: $e'));
+      }
     }
   }
 

@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:habitrak/core/animations/app_animations.dart';
 import 'package:habitrak/core/animations/staggered_entrance.dart';
+import 'package:habitrak/core/storage/settings_repository.dart';
+import '../../data/repositories/reflections_repository.dart';
+import '../../data/repositories/intentional_goals_repository.dart';
 
 class MindfulLivingPage extends StatefulWidget {
   const MindfulLivingPage({super.key});
@@ -14,22 +18,33 @@ class _MindfulLivingPageState extends State<MindfulLivingPage> {
   final TextEditingController _journalController = TextEditingController();
   final GlobalKey<AnimatedListState> _listKey = GlobalKey<AnimatedListState>();
 
-  final List<Map<String, String>> _reflections = [
-    {
-      'date': 'Oct 24',
-      'text': 'A quiet cup of tea in the morning before looking at any screens. Peaceful start.',
-    },
-    {
-      'date': 'Oct 21',
-      'text': '"A walk in the park reminded me that nature doesn\'t hurry, yet everything is accomplished."',
-    },
-  ];
+  late ReflectionsRepository _reflectionsRepo;
+  late IntentionalGoalsRepository _goalsRepo;
+  late SettingsRepository _settingsRepo;
 
-  final List<Map<String, dynamic>> _intentionalGoals = [
-    {'title': 'Morning breathwork (5 min)', 'completed': true},
-    {'title': 'Read 10 pages for growth', 'completed': false},
-    {'title': 'Evening tech detox', 'completed': false},
-  ];
+  List<Map<String, dynamic>> _reflections = [];
+  List<Map<String, dynamic>> _intentionalGoals = [];
+  bool _isFocusMode = false;
+  bool _isDndSchedule = false;
+  int _dailyScreenTime = 135;
+  int _screenTimeLimit = 180;
+  String _lastEntryTime = 'Never';
+
+  @override
+  void initState() {
+    super.initState();
+    _reflectionsRepo = context.read<ReflectionsRepository>();
+    _goalsRepo = context.read<IntentionalGoalsRepository>();
+    _settingsRepo = context.read<SettingsRepository>();
+
+    _reflections = List.from(_reflectionsRepo.getReflections());
+    _intentionalGoals = List.from(_goalsRepo.getGoals());
+    _isFocusMode = _settingsRepo.isFocusModeEnabled;
+    _isDndSchedule = _settingsRepo.isDndScheduleEnabled;
+    _dailyScreenTime = _settingsRepo.dailyScreenTimeMinutes;
+    _screenTimeLimit = _settingsRepo.screenTimeLimitMinutes;
+    _lastEntryTime = _reflectionsRepo.getLastEntryTime();
+  }
 
   @override
   void dispose() {
@@ -37,20 +52,101 @@ class _MindfulLivingPageState extends State<MindfulLivingPage> {
     super.dispose();
   }
 
-  void _saveReflection() {
+  Future<void> _saveReflection() async {
     final text = _journalController.text.trim();
     if (text.isEmpty) return;
 
     HapticFeedback.mediumImpact();
-    _reflections.insert(0, {
-      'date': 'Today',
-      'text': text,
-    });
-    _listKey.currentState?.insertItem(0, duration: const Duration(milliseconds: 500));
-    _journalController.clear();
+    final newRef = await _reflectionsRepo.addReflection(text);
+    if (mounted) {
+      setState(() {
+        _reflections.insert(0, newRef);
+        _lastEntryTime = 'Just now';
+      });
+      _listKey.currentState?.insertItem(0, duration: const Duration(milliseconds: 500));
+      _journalController.clear();
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Gratitude entry saved!')),
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Gratitude entry saved!')),
+      );
+    }
+  }
+
+  void _toggleGoal(int index) {
+    final goal = _intentionalGoals[index];
+    final id = goal['id'] as String;
+    final newStatus = !(goal['completed'] == true);
+    if (newStatus) {
+      HapticFeedback.mediumImpact();
+    } else {
+      HapticFeedback.lightImpact();
+    }
+    _goalsRepo.toggleGoal(id);
+    setState(() {
+      _intentionalGoals[index]['completed'] = newStatus;
+    });
+  }
+
+  void _showAddGoalDialog() {
+    final titleController = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (context) {
+        final isDark = Theme.of(context).brightness == Brightness.dark;
+        return AlertDialog(
+          backgroundColor: isDark ? const Color(0xff1e201e) : Colors.white,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: Text(
+            'New Intentional Goal',
+            style: TextStyle(
+              fontFamily: 'Hanken Grotesk',
+              fontWeight: FontWeight.bold,
+              color: isDark ? Colors.white : Colors.black,
+            ),
+          ),
+          content: TextField(
+            controller: titleController,
+            autofocus: true,
+            style: TextStyle(color: isDark ? Colors.white : Colors.black),
+            decoration: InputDecoration(
+              hintText: 'e.g., Afternoon 10m walk',
+              hintStyle: TextStyle(
+                color: isDark ? const Color(0xffc2c8c0).withValues(alpha: 0.4) : const Color(0xff615e56).withValues(alpha: 0.4),
+              ),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                final title = titleController.text.trim();
+                if (title.isNotEmpty) {
+                  final newGoal = await _goalsRepo.addGoal(title);
+                  if (mounted) {
+                    setState(() {
+                      _intentionalGoals.add(newGoal);
+                    });
+                    HapticFeedback.lightImpact();
+                  }
+                }
+                if (context.mounted) {
+                  Navigator.pop(context);
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xff8ba88e),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              ),
+              child: const Text('Add'),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -83,7 +179,7 @@ class _MindfulLivingPageState extends State<MindfulLivingPage> {
     );
   }
 
-  Widget _buildReflectionItem(Map<String, String> ref, Animation<double> animation, Color primaryColor, bool isDark) {
+  Widget _buildReflectionItem(Map<String, dynamic> ref, Animation<double> animation, Color primaryColor, bool isDark) {
     return SizeTransition(
       sizeFactor: animation,
       child: FadeTransition(
@@ -102,7 +198,7 @@ class _MindfulLivingPageState extends State<MindfulLivingPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  ref['date']!,
+                  (ref['date'] as String?) ?? 'Today',
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.bold,
@@ -111,7 +207,7 @@ class _MindfulLivingPageState extends State<MindfulLivingPage> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  ref['text']!,
+                  (ref['text'] as String?) ?? '',
                   style: TextStyle(
                     fontFamily: 'Hanken Grotesk',
                     fontSize: 14,
@@ -200,7 +296,7 @@ class _MindfulLivingPageState extends State<MindfulLivingPage> {
           ),
           const SizedBox(height: 6),
           Text(
-            'Last entry: Yesterday, 9:15 PM',
+            'Last entry: $_lastEntryTime',
             style: TextStyle(
               fontSize: 12,
               color: isDark ? const Color(0xffc2c8c0).withValues(alpha: 0.5) : const Color(0xff615e56).withValues(alpha: 0.5),
@@ -278,78 +374,83 @@ class _MindfulLivingPageState extends State<MindfulLivingPage> {
                 icon: const Icon(Icons.add, size: 20),
                 onPressed: () {
                   HapticFeedback.lightImpact();
-                  // custom simple goal additions
-                  setState(() {
-                    _intentionalGoals.add({'title': 'Walk in Nature (10 min)', 'completed': false});
-                  });
+                  _showAddGoalDialog();
                 },
                 color: primaryColor,
               ),
             ],
           ),
           const SizedBox(height: 12),
-          ..._intentionalGoals.asMap().entries.map((entry) {
-            final idx = entry.key;
-            final g = entry.value;
-            final isCompleted = g['completed'] == true;
-
-            return TweenAnimationBuilder<double>(
-              key: ValueKey(g['title']),
-              tween: Tween<double>(begin: 0.0, end: 1.0),
-              duration: const Duration(milliseconds: 350),
-              curve: Curves.easeOutQuad,
-              builder: (context, val, child) {
-                return Opacity(
-                  opacity: AppAnimations.clampOpacity(val),
-                  child: Transform.translate(
-                    offset: Offset(0, 15 * (1.0 - val)),
-                    child: child,
-                  ),
-                );
-              },
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 6.0),
-                child: InkWell(
-                  onTap: () {
-                    final newStatus = !isCompleted;
-                    if (newStatus) {
-                      HapticFeedback.mediumImpact();
-                    } else {
-                      HapticFeedback.lightImpact();
-                    }
-                    setState(() {
-                      _intentionalGoals[idx]['completed'] = newStatus;
-                    });
-                  },
-                  child: Row(
-                    children: [
-                      _buildGoalCheckbox(isCompleted, primaryColor, isDark),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          g['title'] as String,
-                          style: TextStyle(
-                            fontFamily: 'Hanken Grotesk',
-                            fontSize: 14,
-                            decoration: isCompleted ? TextDecoration.lineThrough : null,
-                            color: isCompleted
-                                ? (isDark ? const Color(0xffc2c8c0).withValues(alpha: 0.5) : const Color(0xff615e56).withValues(alpha: 0.5))
-                                : (isDark ? Colors.white : Colors.black),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+          if (_intentionalGoals.isEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 12.0),
+              child: Text(
+                'No intentional goals set. Tap + to add one!',
+                style: TextStyle(
+                  fontFamily: 'Hanken Grotesk',
+                  fontSize: 13,
+                  color: isDark ? const Color(0xffc2c8c0).withValues(alpha: 0.5) : const Color(0xff615e56).withValues(alpha: 0.5),
                 ),
               ),
-            );
-          }),
+            )
+          else
+            ..._intentionalGoals.asMap().entries.map((entry) {
+              final idx = entry.key;
+              final g = entry.value;
+              final isCompleted = g['completed'] == true;
+
+              return TweenAnimationBuilder<double>(
+                key: ValueKey(g['id'] ?? g['title']),
+                tween: Tween<double>(begin: 0.0, end: 1.0),
+                duration: const Duration(milliseconds: 350),
+                curve: Curves.easeOutQuad,
+                builder: (context, val, child) {
+                  return Opacity(
+                    opacity: AppAnimations.clampOpacity(val),
+                    child: Transform.translate(
+                      offset: Offset(0, 15 * (1.0 - val)),
+                      child: child,
+                    ),
+                  );
+                },
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 6.0),
+                  child: InkWell(
+                    onTap: () => _toggleGoal(idx),
+                    child: Row(
+                      children: [
+                        _buildGoalCheckbox(isCompleted, primaryColor, isDark),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            g['title'] as String,
+                            style: TextStyle(
+                              fontFamily: 'Hanken Grotesk',
+                              fontSize: 14,
+                              decoration: isCompleted ? TextDecoration.lineThrough : null,
+                              color: isCompleted
+                                  ? (isDark ? const Color(0xffc2c8c0).withValues(alpha: 0.5) : const Color(0xff615e56).withValues(alpha: 0.5))
+                                  : (isDark ? Colors.white : Colors.black),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            }),
         ],
       ),
     );
   }
 
   Widget _buildWellBeingCard(bool isDark, Color primaryColor, Color cardBg) {
+    final dailyHours = _dailyScreenTime ~/ 60;
+    final dailyMins = _dailyScreenTime % 60;
+    final limitHours = _screenTimeLimit ~/ 60;
+    final screenRatio = (_dailyScreenTime / (_screenTimeLimit > 0 ? _screenTimeLimit : 1)).clamp(0.0, 1.0);
+
     return Container(
       padding: const EdgeInsets.all(22),
       decoration: BoxDecoration(
@@ -393,7 +494,7 @@ class _MindfulLivingPageState extends State<MindfulLivingPage> {
                 ),
               ),
               Text(
-                '2h 15m / 3h',
+                '${dailyHours}h ${dailyMins}m / ${limitHours}h',
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.bold,
@@ -406,7 +507,7 @@ class _MindfulLivingPageState extends State<MindfulLivingPage> {
           ClipRRect(
             borderRadius: BorderRadius.circular(4),
             child: LinearProgressIndicator(
-              value: 0.75,
+              value: screenRatio,
               minHeight: 6,
               backgroundColor: isDark ? const Color(0xff1a1c1a) : const Color(0xfff2f1ee),
               valueColor: AlwaysStoppedAnimation<Color>(primaryColor),
@@ -414,15 +515,28 @@ class _MindfulLivingPageState extends State<MindfulLivingPage> {
           ),
           const SizedBox(height: 20),
           // Focus mode scheduler row
-          _buildWellBeingToggle('Focus Mode', Icons.bedtime_outlined, true, primaryColor, isDark),
+          _buildWellBeingToggle('Focus Mode', Icons.bedtime_outlined, _isFocusMode, primaryColor, isDark, (val) {
+            setState(() => _isFocusMode = val);
+            _settingsRepo.setFocusModeEnabled(val);
+          }),
           const SizedBox(height: 12),
-          _buildWellBeingToggle('DND Schedule', Icons.notifications_paused_outlined, false, primaryColor, isDark),
+          _buildWellBeingToggle('DND Schedule', Icons.notifications_paused_outlined, _isDndSchedule, primaryColor, isDark, (val) {
+            setState(() => _isDndSchedule = val);
+            _settingsRepo.setDndScheduleEnabled(val);
+          }),
         ],
       ),
     );
   }
 
-  Widget _buildWellBeingToggle(String label, IconData icon, bool active, Color primary, bool isDark) {
+  Widget _buildWellBeingToggle(
+    String label,
+    IconData icon,
+    bool active,
+    Color primary,
+    bool isDark,
+    ValueChanged<bool> onChanged,
+  ) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -443,9 +557,10 @@ class _MindfulLivingPageState extends State<MindfulLivingPage> {
         ),
         Switch.adaptive(
           value: active,
-          activeColor: primary,
+          activeTrackColor: primary,
           onChanged: (val) {
             HapticFeedback.selectionClick();
+            onChanged(val);
           },
         ),
       ],
@@ -476,16 +591,29 @@ class _MindfulLivingPageState extends State<MindfulLivingPage> {
             ),
           ),
           const SizedBox(height: 16),
-          AnimatedList(
-            key: _listKey,
-            initialItemCount: _reflections.length,
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemBuilder: (context, index, animation) {
-              final ref = _reflections[index];
-              return _buildReflectionItem(ref, animation, primaryColor, isDark);
-            },
-          ),
+          if (_reflections.isEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8.0),
+              child: Text(
+                'No reflections yet. Write your first entry above!',
+                style: TextStyle(
+                  fontFamily: 'Hanken Grotesk',
+                  fontSize: 13,
+                  color: isDark ? const Color(0xffc2c8c0).withValues(alpha: 0.5) : const Color(0xff615e56).withValues(alpha: 0.5),
+                ),
+              ),
+            )
+          else
+            AnimatedList(
+              key: _listKey,
+              initialItemCount: _reflections.length,
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemBuilder: (context, index, animation) {
+                final ref = _reflections[index];
+                return _buildReflectionItem(ref, animation, primaryColor, isDark);
+              },
+            ),
         ],
       ),
     );

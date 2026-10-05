@@ -37,7 +37,6 @@ class _AppShellState extends State<AppShell> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final navBg = isDark ? const Color(0xff121412) : const Color(0xfffaf9f6);
     final slideDirection = _currentIndex > _previousIndex ? 1.0 : -1.0;
 
     return Scaffold(

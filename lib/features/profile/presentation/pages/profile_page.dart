@@ -5,6 +5,7 @@ import 'package:habitrak/core/animations/app_animations.dart';
 import 'package:habitrak/core/animations/staggered_entrance.dart';
 import 'package:habitrak/core/theme/theme_cubit.dart';
 import 'package:habitrak/core/storage/settings_repository.dart';
+import '../../data/repositories/profile_repository.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -15,13 +16,93 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> {
   late SettingsRepository _settingsRepository;
+  late ProfileRepository _profileRepo;
+
   bool _remindersEnabled = true;
+  String _userName = 'Jordan Smith';
+  int _streakDays = 12;
+  int _totalMindfulMinutes = 480;
+  List<double> _heatmapIntensities = [];
+  List<Map<String, dynamic>> _badges = [];
 
   @override
   void initState() {
     super.initState();
     _settingsRepository = context.read<SettingsRepository>();
+    _profileRepo = context.read<ProfileRepository>();
     _remindersEnabled = _settingsRepository.getRemindersEnabled();
+    _loadProfileData();
+  }
+
+  void _loadProfileData() {
+    _userName = _profileRepo.getUserName();
+    _streakDays = _profileRepo.getStreakDays();
+    _totalMindfulMinutes = _profileRepo.getTotalMindfulMinutes();
+    _heatmapIntensities = _profileRepo.getHeatmapIntensities();
+    _badges = _profileRepo.getBadges();
+  }
+
+  String _getInitials(String name) {
+    final parts = name.trim().split(RegExp(r'\s+'));
+    if (parts.isEmpty || parts[0].isEmpty) return 'U';
+    if (parts.length == 1) return parts[0][0].toUpperCase();
+    return (parts[0][0] + parts[1][0]).toUpperCase();
+  }
+
+  void _showEditNameDialog() {
+    final nameCtrl = TextEditingController(text: _userName);
+    showDialog(
+      context: context,
+      builder: (context) {
+        final isDark = Theme.of(context).brightness == Brightness.dark;
+        return AlertDialog(
+          backgroundColor: isDark ? const Color(0xff1e201e) : Colors.white,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: Text(
+            'Edit Profile Name',
+            style: TextStyle(
+              fontFamily: 'Hanken Grotesk',
+              fontWeight: FontWeight.bold,
+              color: isDark ? Colors.white : Colors.black,
+            ),
+          ),
+          content: TextField(
+            controller: nameCtrl,
+            autofocus: true,
+            style: TextStyle(color: isDark ? Colors.white : Colors.black),
+            decoration: InputDecoration(
+              labelText: 'Display Name',
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                final newName = nameCtrl.text.trim();
+                if (newName.isNotEmpty) {
+                  _profileRepo.setUserName(newName);
+                  setState(() {
+                    _userName = newName;
+                  });
+                  HapticFeedback.lightImpact();
+                }
+                Navigator.pop(context);
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xff8ba88e),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              ),
+              child: const Text('Save'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -66,6 +147,8 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Widget _buildProfileCard(bool isDark, Color primaryColor, Color cardBg) {
+    final initials = _getInitials(_userName);
+
     return TweenAnimationBuilder<double>(
       duration: const Duration(milliseconds: 600),
       curve: Curves.easeOutBack,
@@ -94,28 +177,51 @@ class _ProfilePageState extends State<ProfilePage> {
             CircleAvatar(
               radius: 36,
               backgroundColor: primaryColor.withValues(alpha: 0.2),
-              child: Icon(Icons.person, size: 40, color: primaryColor),
+              child: Text(
+                initials,
+                style: TextStyle(
+                  fontFamily: 'Hanken Grotesk',
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: primaryColor,
+                ),
+              ),
             ),
             const SizedBox(width: 20),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    'Jordan Smith',
-                    style: TextStyle(
-                      fontFamily: 'Hanken Grotesk',
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: isDark ? Colors.white : Colors.black,
-                    ),
+                  Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          _userName,
+                          style: TextStyle(
+                            fontFamily: 'Hanken Grotesk',
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                            color: isDark ? Colors.white : Colors.black,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.edit_outlined, size: 18),
+                        color: primaryColor,
+                        padding: const EdgeInsets.only(left: 6),
+                        constraints: const BoxConstraints(),
+                        tooltip: 'Edit Name',
+                        onPressed: _showEditNameDialog,
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 6),
                   Row(
                     children: [
-                      _buildProfileBadge(Icons.bolt, '12 Day Streak', primaryColor, isDark),
+                      _buildProfileBadge(Icons.bolt, '$_streakDays Day Streak', primaryColor, isDark),
                       const SizedBox(width: 8),
-                      _buildProfileBadge(Icons.timer_outlined, '480m total', primaryColor, isDark),
+                      _buildProfileBadge(Icons.timer_outlined, '${_totalMindfulMinutes}m total', primaryColor, isDark),
                     ],
                   ),
                 ],
@@ -152,9 +258,9 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Widget _buildHeatmapCard(bool isDark, Color primaryColor, Color cardBg) {
-    final weeks = 5;
-    final days = 7;
-    final dayNames = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+    const weeks = 5;
+    const days = 7;
+    const dayNames = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
     return Container(
       padding: const EdgeInsets.all(22),
@@ -224,14 +330,9 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                   itemCount: weeks * days,
                   itemBuilder: (context, idx) {
-                    // simulate varying shade levels of sage green
-                    final intensities = [
-                      0.0, 0.1, 0.4, 0.8, 0.2, 0.5, 0.9, 0.0, 0.3, 0.7,
-                      0.1, 0.8, 0.9, 0.5, 0.3, 0.0, 0.2, 0.9, 0.8, 0.4,
-                      0.6, 0.7, 0.9, 0.3, 0.8, 0.9, 0.9, 0.1, 0.0, 0.4,
-                      0.9, 0.8, 0.7, 0.9, 0.5
-                    ];
-                    final intensity = intensities[idx % intensities.length];
+                    final intensity = idx < _heatmapIntensities.length
+                        ? _heatmapIntensities[idx]
+                        : 0.0;
 
                     return TweenAnimationBuilder<double>(
                       duration: Duration(milliseconds: 300 + (idx * 15)),
@@ -248,9 +349,9 @@ class _ProfilePageState extends State<ProfilePage> {
                       },
                       child: Container(
                         decoration: BoxDecoration(
-                          color: intensity == 0.0
+                          color: intensity <= 0.05
                               ? (isDark ? const Color(0xff1a1c1a) : const Color(0xfff2f1ee))
-                              : primaryColor.withValues(alpha: intensity),
+                              : primaryColor.withValues(alpha: intensity.clamp(0.2, 1.0)),
                           borderRadius: BorderRadius.circular(6),
                         ),
                       ),
@@ -305,12 +406,6 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Widget _buildBadgesCard(bool isDark, Color primaryColor, Color cardBg) {
-    final badges = [
-      {'title': 'Zen Master', 'desc': 'Complete meditation 7 days in a row', 'icon': Icons.self_improvement, 'color': const Color(0xffb2cad3)},
-      {'title': 'Consistency King', 'desc': 'Logged a perfect streak of 12 days', 'icon': Icons.bolt, 'color': const Color(0xffedb9c3)},
-      {'title': 'Hydration Star', 'desc': 'Drink 2L water daily for 1 week', 'icon': Icons.opacity, 'color': const Color(0xffb0ceb2)},
-    ];
-
     return Container(
       padding: const EdgeInsets.all(22),
       decoration: BoxDecoration(
@@ -334,65 +429,75 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
           ),
           const SizedBox(height: 16),
-          ...badges.asMap().entries.map((entry) {
+          ..._badges.asMap().entries.map((entry) {
             final b = entry.value;
+            final isUnlocked = b['unlocked'] == true;
+
             return StaggeredEntrance(
               index: entry.key,
               child: Padding(
-              padding: const EdgeInsets.only(bottom: 14.0),
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: (b['color'] as Color).withValues(alpha: 0.2),
-                      shape: BoxShape.circle,
+                padding: const EdgeInsets.only(bottom: 14.0),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: (b['color'] as Color).withValues(alpha: isUnlocked ? 0.2 : 0.08),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        b['icon'] as IconData,
+                        color: isUnlocked ? (b['color'] as Color) : (isDark ? Colors.white30 : Colors.black26),
+                        size: 24,
+                      ),
                     ),
-                    child: Icon(
-                      b['icon'] as IconData,
-                      color: b['color'] as Color,
-                      size: 24,
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          b['title'] as String,
-                          style: TextStyle(
-                            fontFamily: 'Hanken Grotesk',
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            color: isDark ? Colors.white : Colors.black,
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Text(
+                                b['title'] as String,
+                                style: TextStyle(
+                                  fontFamily: 'Hanken Grotesk',
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                  color: isDark ? Colors.white : Colors.black,
+                                ),
+                              ),
+                              if (isUnlocked) ...[
+                                const SizedBox(width: 6),
+                                Icon(Icons.check_circle, size: 14, color: primaryColor),
+                              ],
+                            ],
                           ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          b['desc'] as String,
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: isDark ? const Color(0xffc2c8c0).withValues(alpha: 0.5) : const Color(0xff615e56).withValues(alpha: 0.5),
+                          const SizedBox(height: 2),
+                          Text(
+                            b['desc'] as String,
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: isDark ? const Color(0xffc2c8c0).withValues(alpha: 0.5) : const Color(0xff615e56).withValues(alpha: 0.5),
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                  IconButton(
-                    icon: Icon(
-                      Icons.share_outlined,
-                      size: 20,
-                      color: isDark ? const Color(0xffc2c8c0) : const Color(0xff615e56),
+                    IconButton(
+                      icon: Icon(
+                        Icons.share_outlined,
+                        size: 20,
+                        color: isDark ? const Color(0xffc2c8c0) : const Color(0xff615e56),
+                      ),
+                      tooltip: 'Share Achievement',
+                      onPressed: () {
+                        _showShareDialog(context, b);
+                      },
                     ),
-                    tooltip: 'Share Achievement',
-                    onPressed: () {
-                      _showShareDialog(context, b);
-                    },
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
             );
           }),
         ],
@@ -410,6 +515,7 @@ class _ProfilePageState extends State<ProfilePage> {
     final badgeIcon = badge['icon'] as IconData;
     final badgeTitle = badge['title'] as String;
     final badgeDesc = badge['desc'] as String;
+    final initials = _getInitials(_userName);
 
     final gradientColors = isDark
         ? [
@@ -516,7 +622,7 @@ class _ProfilePageState extends State<ProfilePage> {
               radius: 28,
               backgroundColor: primaryColor.withValues(alpha: 0.15),
               child: Text(
-                'JS',
+                initials,
                 style: TextStyle(
                   fontFamily: 'Hanken Grotesk',
                   fontSize: 18,
@@ -528,7 +634,7 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
           const SizedBox(height: 12),
           Text(
-            'Jordan Smith',
+            _userName,
             style: TextStyle(
               fontFamily: 'Hanken Grotesk',
               fontSize: 20,
@@ -640,7 +746,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       ),
                       const SizedBox(width: 6),
                       Text(
-                        '12-Day Streak',
+                        '$_streakDays-Day Streak',
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.bold,
@@ -670,7 +776,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       ),
                       const SizedBox(width: 6),
                       Text(
-                        '480m Total',
+                        '${_totalMindfulMinutes}m Total',
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.bold,
@@ -696,7 +802,7 @@ class _ProfilePageState extends State<ProfilePage> {
               ),
               const SizedBox(width: 4),
               Text(
-                'Successfully completed via HabiTrak • May 2026',
+                'Successfully completed via HabiTrak',
                 style: TextStyle(
                   fontSize: 10,
                   fontWeight: FontWeight.w500,
@@ -837,16 +943,16 @@ class _ProfilePageState extends State<ProfilePage> {
                               ),
                               onPressed: () {
                                 final textToCopy =
-                                    '🏆 I successfully completed the "${badge['title']}" milestone on HabiTrak! 🧘\nDescription: ${badge['desc']}\nStats: 12-Day Streak 🔥 & 480m total activity ⏱️\nJoin me in building consistency with HabiTrak!';
+                                    '🏆 I completed the "${badge['title']}" milestone on HabiTrak! 🧘\nDescription: ${badge['desc']}\nStats: $_streakDays-Day Streak 🔥 & ${_totalMindfulMinutes}m total mindful activity ⏱️\nJoin me in building consistency with HabiTrak!';
                                 Clipboard.setData(ClipboardData(text: textToCopy));
                                 
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
-                                    content: Row(
+                                    content: const Row(
                                       children: [
-                                        const Icon(Icons.copy, color: Colors.white, size: 20),
-                                        const SizedBox(width: 8),
-                                        const Text('Copied achievement details to clipboard!'),
+                                        Icon(Icons.copy, color: Colors.white, size: 20),
+                                        SizedBox(width: 8),
+                                        Text('Copied achievement details to clipboard!'),
                                       ],
                                     ),
                                     behavior: SnackBarBehavior.floating,
@@ -962,8 +1068,8 @@ class _ProfilePageState extends State<ProfilePage> {
               fontSize: 18,
               fontWeight: FontWeight.bold,
               color: isDark ? Colors.white : Colors.black,
-                ),
-              ),
+            ),
+          ),
           const SizedBox(height: 16),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -985,7 +1091,7 @@ class _ProfilePageState extends State<ProfilePage> {
               ),
               Switch.adaptive(
                 value: _remindersEnabled,
-                activeColor: primaryColor,
+                activeTrackColor: primaryColor,
                 onChanged: (val) {
                   HapticFeedback.selectionClick();
                   setState(() {
@@ -1017,7 +1123,7 @@ class _ProfilePageState extends State<ProfilePage> {
               ),
               Switch.adaptive(
                 value: context.watch<ThemeCubit>().state == ThemeMode.dark,
-                activeColor: primaryColor,
+                activeTrackColor: primaryColor,
                 onChanged: (val) {
                   HapticFeedback.selectionClick();
                   context.read<ThemeCubit>().toggleTheme(val);

@@ -1,7 +1,13 @@
+import 'dart:async';
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:habitrak/core/animations/app_animations.dart';
 import 'package:habitrak/core/animations/staggered_entrance.dart';
+import 'package:habitrak/features/habit/domain/entities/habit.dart';
+import 'package:habitrak/features/habit/presentation/bloc/habit_bloc.dart';
+import '../../data/repositories/activity_repository.dart';
 
 class WalkTrackerPage extends StatefulWidget {
   const WalkTrackerPage({super.key});
@@ -15,7 +21,38 @@ class _WalkTrackerPageState extends State<WalkTrackerPage> with TickerProviderSt
   bool _isPlaying = true;
   int _currentPromptIndex = 0;
 
+  Timer? _stopwatchTimer;
+  int _elapsedSeconds = 24 * 60 + 18; // 24:18 initial baseline
+
   late AnimationController _pulseController;
+
+  final List<Map<String, String>> _tracks = [
+    {
+      'title': 'Evening Flow Mix',
+      'artist': 'Solstice Echoes',
+      'bpm': '112',
+      'duration': '4:55',
+    },
+    {
+      'title': 'Forest Stream Walk',
+      'artist': 'Whispering Pines',
+      'bpm': '106',
+      'duration': '5:20',
+    },
+    {
+      'title': 'Lo-Fi Morning Pace',
+      'artist': 'Midnight Beats',
+      'bpm': '116',
+      'duration': '3:45',
+    },
+    {
+      'title': 'Ocean Calm Waves',
+      'artist': 'Coastal Breaths',
+      'bpm': '102',
+      'duration': '6:10',
+    },
+  ];
+  int _currentTrackIndex = 0;
 
   final List<String> _conversationPrompts = [
     'What was the high point and low point of your day so far?',
@@ -35,10 +72,19 @@ class _WalkTrackerPageState extends State<WalkTrackerPage> with TickerProviderSt
     if (_isPlaying) {
       _pulseController.repeat(reverse: true);
     }
+
+    _stopwatchTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (mounted) {
+        setState(() {
+          _elapsedSeconds++;
+        });
+      }
+    });
   }
 
   @override
   void dispose() {
+    _stopwatchTimer?.cancel();
     _pulseController.dispose();
     super.dispose();
   }
@@ -46,6 +92,32 @@ class _WalkTrackerPageState extends State<WalkTrackerPage> with TickerProviderSt
   void _nextPrompt() {
     setState(() {
       _currentPromptIndex = (_currentPromptIndex + 1) % _conversationPrompts.length;
+    });
+  }
+
+  void _previousTrack() {
+    HapticFeedback.lightImpact();
+    setState(() {
+      _currentTrackIndex = (_currentTrackIndex - 1 + _tracks.length) % _tracks.length;
+    });
+  }
+
+  void _nextTrack() {
+    HapticFeedback.lightImpact();
+    setState(() {
+      _currentTrackIndex = (_currentTrackIndex + 1) % _tracks.length;
+    });
+  }
+
+  void _togglePlayPause() {
+    HapticFeedback.lightImpact();
+    setState(() {
+      _isPlaying = !_isPlaying;
+      if (_isPlaying) {
+        _pulseController.repeat(reverse: true);
+      } else {
+        _pulseController.stop();
+      }
     });
   }
 
@@ -87,7 +159,13 @@ class _WalkTrackerPageState extends State<WalkTrackerPage> with TickerProviderSt
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final primaryColor = isDark ? const Color(0xffb0ceb2) : const Color(0xff8ba88e);
-    final cardBg = isDark ? const Color(0xff1e201e) : const Color(0xffffffff);
+
+    final minutes = _elapsedSeconds ~/ 60;
+    final seconds = _elapsedSeconds % 60;
+    final timeStr = '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
+    final distanceKm = _elapsedSeconds * 0.075 / 60.0;
+    final distanceStr = '${distanceKm.toStringAsFixed(1)}km';
+    final paceStr = '12\'45"';
 
     return Scaffold(
       appBar: AppBar(
@@ -109,60 +187,85 @@ class _WalkTrackerPageState extends State<WalkTrackerPage> with TickerProviderSt
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             const SizedBox(height: 10),
-            StaggeredEntrance(index: 0, child: _buildReadouts(isDark)),
+            StaggeredEntrance(index: 0, child: _buildReadouts(isDark, timeStr, paceStr, distanceStr)),
             const SizedBox(height: 28),
             StaggeredEntrance(index: 1, child: _buildModeSelector(isDark)),
             const SizedBox(height: 28),
             StaggeredEntrance(
               index: 2,
               child: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 400),
-              switchInCurve: Curves.easeOutBack,
-              switchOutCurve: Curves.easeIn,
-              transitionBuilder: (child, animation) {
-                return FadeTransition(
-                  opacity: animation,
-                  child: SlideTransition(
-                    position: Tween<Offset>(
-                      begin: Offset(_isMusicMode ? -0.05 : 0.05, 0),
-                      end: Offset.zero,
-                    ).animate(animation),
-                    child: child,
-                  ),
-                );
-              },
-              child: _isMusicMode ? _buildMusicModeCard(isDark) : _buildSocialModeCard(isDark),
-            ),
+                duration: const Duration(milliseconds: 400),
+                switchInCurve: Curves.easeOutBack,
+                switchOutCurve: Curves.easeIn,
+                transitionBuilder: (child, animation) {
+                  return FadeTransition(
+                    opacity: animation,
+                    child: SlideTransition(
+                      position: Tween<Offset>(
+                        begin: Offset(_isMusicMode ? -0.05 : 0.05, 0),
+                        end: Offset.zero,
+                      ).animate(animation),
+                      child: child,
+                    ),
+                  );
+                },
+                child: _isMusicMode ? _buildMusicModeCard(isDark) : _buildSocialModeCard(isDark),
+              ),
             ),
             const SizedBox(height: 32),
             StaggeredEntrance(
               index: 3,
               child: ElevatedButton(
-              onPressed: () {
-                HapticFeedback.heavyImpact();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Walk Session completed & logged!')),
-                );
-                Navigator.of(context).pop();
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xffba1a1a),
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 18),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                onPressed: () {
+                  HapticFeedback.heavyImpact();
+                  final durationMinutes = max(1, _elapsedSeconds ~/ 60);
+                  final distance = _elapsedSeconds * 0.075 / 60.0;
+                  final calories = ((_elapsedSeconds / 60) * 4.5).round();
+
+                  // Log session to Hive activity_logs
+                  context.read<ActivityRepository>().logWalkSession(
+                    durationMinutes: durationMinutes,
+                    distanceKm: distance,
+                    caloriesBurned: calories,
+                  );
+
+                  // Update health habit in HabitBloc
+                  context.read<HabitBloc>().add(
+                    const CompleteActivityHabitEvent(category: HabitCategory.health),
+                  );
+
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Row(
+                        children: [
+                          const Icon(Icons.check_circle, color: Colors.white, size: 20),
+                          const SizedBox(width: 8),
+                          Text('Walk logged: $durationMinutes mins, ${distance.toStringAsFixed(1)}km, $calories kcal!'),
+                        ],
+                      ),
+                      backgroundColor: primaryColor,
+                    ),
+                  );
+                  Navigator.of(context).pop();
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xffba1a1a),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 18),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                ),
+                child: const Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.stop_rounded),
+                    SizedBox(width: 8),
+                    Text(
+                      'End Session',
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, letterSpacing: 0.5),
+                    ),
+                  ],
+                ),
               ),
-              child: const Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.stop_rounded),
-                  SizedBox(width: 8),
-                  Text(
-                    'End Session',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, letterSpacing: 0.5),
-                  ),
-                ],
-              ),
-            ),
             ),
             const SizedBox(height: 30),
           ],
@@ -171,7 +274,7 @@ class _WalkTrackerPageState extends State<WalkTrackerPage> with TickerProviderSt
     );
   }
 
-  Widget _buildReadouts(bool isDark) {
+  Widget _buildReadouts(bool isDark, String timeStr, String paceStr, String distanceStr) {
     final textColor = isDark ? const Color(0xffe2e3df) : const Color(0xff2f312f);
     final labelColor = isDark ? const Color(0xffc2c8c0).withValues(alpha: 0.5) : const Color(0xff615e56).withValues(alpha: 0.6);
 
@@ -197,11 +300,11 @@ class _WalkTrackerPageState extends State<WalkTrackerPage> with TickerProviderSt
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            _buildStatColumn('Time', '24:18', textColor, labelColor),
+            _buildStatColumn('Time', timeStr, textColor, labelColor),
             Container(width: 1, height: 40, color: labelColor.withValues(alpha: 0.2)),
-            _buildStatColumn('Pace', '12\'45"', textColor, labelColor),
+            _buildStatColumn('Pace', paceStr, textColor, labelColor),
             Container(width: 1, height: 40, color: labelColor.withValues(alpha: 0.2)),
-            _buildStatColumn('Distance', '1.8km', textColor, labelColor),
+            _buildStatColumn('Distance', distanceStr, textColor, labelColor),
           ],
         ),
       ),
@@ -343,6 +446,7 @@ class _WalkTrackerPageState extends State<WalkTrackerPage> with TickerProviderSt
   Widget _buildMusicModeCard(bool isDark) {
     final primaryColor = isDark ? const Color(0xffb0ceb2) : const Color(0xff8ba88e);
     final cardColor = isDark ? const Color(0xff1e201e) : const Color(0xffffffff);
+    final track = _tracks[_currentTrackIndex];
 
     return Container(
       key: const ValueKey('music'),
@@ -374,7 +478,7 @@ class _WalkTrackerPageState extends State<WalkTrackerPage> with TickerProviderSt
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Evening Flow Mix',
+                      track['title'] ?? '',
                       style: TextStyle(
                         fontFamily: 'Hanken Grotesk',
                         fontSize: 18,
@@ -384,7 +488,7 @@ class _WalkTrackerPageState extends State<WalkTrackerPage> with TickerProviderSt
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'Solstice Echoes',
+                      track['artist'] ?? '',
                       style: TextStyle(
                         fontFamily: 'Hanken Grotesk',
                         fontSize: 13,
@@ -403,9 +507,7 @@ class _WalkTrackerPageState extends State<WalkTrackerPage> with TickerProviderSt
             children: [
               IconButton(
                 icon: const Icon(Icons.skip_previous),
-                onPressed: () {
-                  HapticFeedback.lightImpact();
-                },
+                onPressed: _previousTrack,
                 color: isDark ? Colors.white : Colors.black,
               ),
               const SizedBox(width: 16),
@@ -427,17 +529,7 @@ class _WalkTrackerPageState extends State<WalkTrackerPage> with TickerProviderSt
                       },
                     ),
                   FloatingActionButton(
-                    onPressed: () {
-                      HapticFeedback.lightImpact();
-                      setState(() {
-                        _isPlaying = !_isPlaying;
-                        if (_isPlaying) {
-                          _pulseController.repeat(reverse: true);
-                        } else {
-                          _pulseController.stop();
-                        }
-                      });
-                    },
+                    onPressed: _togglePlayPause,
                     backgroundColor: primaryColor,
                     foregroundColor: isDark ? const Color(0xff1c3622) : Colors.white,
                     mini: true,
@@ -456,9 +548,7 @@ class _WalkTrackerPageState extends State<WalkTrackerPage> with TickerProviderSt
               const SizedBox(width: 16),
               IconButton(
                 icon: const Icon(Icons.skip_next),
-                onPressed: () {
-                  HapticFeedback.lightImpact();
-                },
+                onPressed: _nextTrack,
                 color: isDark ? Colors.white : Colors.black,
               ),
             ],
@@ -469,7 +559,7 @@ class _WalkTrackerPageState extends State<WalkTrackerPage> with TickerProviderSt
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                '1:42',
+                '${(_elapsedSeconds % 180) ~/ 60}:${((_elapsedSeconds % 180) % 60).toString().padLeft(2, '0')}',
                 style: TextStyle(
                   fontSize: 11,
                   color: isDark ? const Color(0xffc2c8c0).withValues(alpha: 0.5) : const Color(0xff615e56).withValues(alpha: 0.5),
@@ -481,7 +571,7 @@ class _WalkTrackerPageState extends State<WalkTrackerPage> with TickerProviderSt
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(2),
                     child: LinearProgressIndicator(
-                      value: 0.35,
+                      value: ((_elapsedSeconds % 180) / 180.0).clamp(0.0, 1.0),
                       backgroundColor: isDark ? const Color(0xff1a1c1a) : const Color(0xffefeeeb),
                       valueColor: AlwaysStoppedAnimation<Color>(primaryColor),
                     ),
@@ -489,7 +579,7 @@ class _WalkTrackerPageState extends State<WalkTrackerPage> with TickerProviderSt
                 ),
               ),
               Text(
-                '4:55',
+                track['duration'] ?? '4:55',
                 style: TextStyle(
                   fontSize: 11,
                   color: isDark ? const Color(0xffc2c8c0).withValues(alpha: 0.5) : const Color(0xff615e56).withValues(alpha: 0.5),
@@ -502,11 +592,11 @@ class _WalkTrackerPageState extends State<WalkTrackerPage> with TickerProviderSt
           Row(
             children: [
               Expanded(
-                child: _buildAudioStat(Icons.speed, 'BPM MATCH', '112', primaryColor, isDark),
+                child: _buildAudioStat(Icons.speed, 'BPM MATCH', track['bpm'] ?? '112', primaryColor, isDark),
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: _buildAudioStat(Icons.equalizer, 'SYNC STATUS', 'Active', primaryColor, isDark),
+                child: _buildAudioStat(Icons.equalizer, 'SYNC STATUS', _isPlaying ? 'Active' : 'Paused', primaryColor, isDark),
               ),
             ],
           ),
@@ -731,7 +821,7 @@ class _WalkTrackerPageState extends State<WalkTrackerPage> with TickerProviderSt
                   borderRadius: BorderRadius.circular(4),
                   child: LinearProgressIndicator(
                     value: 0.75,
-                    backgroundColor: isDark ? const Color(0xff1a1c1a) : const Color(0xffefeeeb),
+                    backgroundColor: isDark ? const Color(0xff1a1c1a) : const Color(0xfff2f1ee),
                     valueColor: AlwaysStoppedAnimation<Color>(primaryColor),
                     minHeight: 6,
                   ),
