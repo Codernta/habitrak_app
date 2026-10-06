@@ -7,6 +7,13 @@ on:
     branches: [ main ]
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
 jobs:
   lint-and-test:
     name: Analyze & Test
@@ -95,6 +102,13 @@ jobs:
 
       - name: Build iOS Simulator App
         run: flutter build ios --no-codesign --simulator
+
+      - name: Upload iOS Simulator Build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: habitrak-ios-simulator-app
+          path: build/ios/iphonesimulator/Runner.app
+          if-no-files-found: warn
 
   build-web:
     name: Build Web App
