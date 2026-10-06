@@ -11,6 +11,9 @@ import 'package:habitrak/features/habit/domain/entities/habit.dart';
 import 'library_page.dart';
 import '../../../activity/presentation/pages/walk_tracker_page.dart';
 import '../../../activity/presentation/pages/yoga_exercises_page.dart';
+import '../../../mindfulness/presentation/pages/mindful_garden_puzzle_page.dart';
+import '../../../mindfulness/data/repositories/mindful_puzzle_repository.dart';
+import '../../../../core/services/notification_service.dart';
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
@@ -212,6 +215,28 @@ class _DashboardPageState extends State<DashboardPage>
         ),
         actions: [
           IconButton(
+            icon: const Icon(Icons.notifications_active_outlined),
+            tooltip: 'Test Streak Alert',
+            onPressed: () async {
+              HapticFeedback.lightImpact();
+              final puzzleRepo = context.read<MindfulPuzzleRepository>();
+              await NotificationService().showTestStreakNotification(
+                streak: puzzleRepo.streak,
+              );
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text(
+                      '🔔 Cool Streak Alert sent with Habitrak logo!',
+                    ),
+                    backgroundColor: Color(0xFF38573E),
+                    duration: Duration(seconds: 2),
+                  ),
+                );
+              }
+            },
+          ),
+          IconButton(
             icon: const Icon(Icons.settings_outlined),
             onPressed: () {
               HapticFeedback.mediumImpact();
@@ -268,13 +293,18 @@ class _DashboardPageState extends State<DashboardPage>
                     index: 1,
                     child: _buildDateSlider(state.activeDate),
                   ),
-                  const SizedBox(height: 28),
+                  const SizedBox(height: 24),
                   StaggeredEntrance(
                     index: 2,
+                    child: _buildMindfulGardenPuzzleBanner(isDark),
+                  ),
+                  const SizedBox(height: 28),
+                  StaggeredEntrance(
+                    index: 3,
                     child: _buildHabitList(state.habits),
                   ),
                   const SizedBox(height: 28),
-                  StaggeredEntrance(index: 3, child: _buildQuoteBanner(isDark)),
+                  StaggeredEntrance(index: 4, child: _buildQuoteBanner(isDark)),
                   const SizedBox(height: 40),
                 ],
               ),
@@ -981,6 +1011,183 @@ class _DashboardPageState extends State<DashboardPage>
                   ),
                 ],
               ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMindfulGardenPuzzleBanner(bool isDark) {
+    final puzzleRepo = context.watch<MindfulPuzzleRepository>();
+    final count = puzzleRepo.harmonizedCount;
+    final percentage = puzzleRepo.harmonizedPercentage.toInt();
+
+    return PressableScale(
+      onTap: () {
+        HapticFeedback.mediumImpact();
+        Navigator.push(
+          context,
+          AppPageRoute(
+            page: MindfulGardenPuzzlePage(repository: puzzleRepo),
+          ),
+        );
+      },
+      child: Container(
+        padding: const EdgeInsets.all(18),
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF1B1E1B) : const Color(0xFFF6F3ED),
+          borderRadius: BorderRadius.circular(22),
+          border: Border.all(
+            color: const Color(0xFF38573E).withValues(alpha: 0.25),
+            width: 1.2,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 5,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFD6E9D7),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.eco_rounded,
+                            size: 14,
+                            color: Color(0xFF285432),
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            'Day ${puzzleRepo.dayNumber} • Zen Mosaic',
+                            style: const TextStyle(
+                              fontFamily: 'Hanken Grotesk',
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF285432),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 5,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF5EBE1),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.local_fire_department_rounded,
+                            size: 14,
+                            color: Color(0xFF7A4F23),
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            '${puzzleRepo.streak} Day Streak',
+                            style: const TextStyle(
+                              fontFamily: 'Hanken Grotesk',
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF6B4E2B),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFD6E9D7),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    '$count/9 • $percentage%',
+                    style: const TextStyle(
+                      fontFamily: 'Hanken Grotesk',
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF285432),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 14),
+            Row(
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(14),
+                  child: Image.asset(
+                    'assets/images/puzzle/full_garden_original.jpg',
+                    width: 54,
+                    height: 54,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Mindful Garden Puzzle',
+                        style: TextStyle(
+                          fontFamily: 'Hanken Grotesk',
+                          fontSize: 16.5,
+                          fontWeight: FontWeight.bold,
+                          color: isDark
+                              ? Colors.white
+                              : const Color(0xFF1E201E),
+                        ),
+                      ),
+                      const SizedBox(height: 3),
+                      Text(
+                        'Assemble tranquil moments to restore focus & calm.',
+                        style: TextStyle(
+                          fontFamily: 'Hanken Grotesk',
+                          fontSize: 12.5,
+                          color: isDark
+                              ? Colors.white60
+                              : const Color(0xFF6E736E),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Icon(
+                  Icons.arrow_forward_ios_rounded,
+                  size: 16,
+                  color: Color(0xFF38573E),
+                ),
+              ],
             ),
           ],
         ),

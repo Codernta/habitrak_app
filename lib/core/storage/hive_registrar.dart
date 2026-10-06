@@ -9,6 +9,7 @@ class HiveRegistrar {
   static const String activityLogsBoxName = 'activity_logs';
   static const String habitHistoryBoxName = 'habit_history';
   static const String profileBoxName = 'user_profile';
+  static const String mindfulPuzzleBoxName = 'mindful_puzzle';
 
   static Future<void> init() async {
     await Hive.initFlutter();
@@ -25,5 +26,6 @@ class HiveRegistrar {
     await Hive.openBox<Map>(activityLogsBoxName);
     await Hive.openBox<Map>(habitHistoryBoxName);
     await Hive.openBox<dynamic>(profileBoxName);
+    await Hive.openBox<dynamic>(mindfulPuzzleBoxName);
   }
 }

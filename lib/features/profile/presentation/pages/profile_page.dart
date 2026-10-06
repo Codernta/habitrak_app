@@ -5,6 +5,8 @@ import 'package:habitrak/core/animations/app_animations.dart';
 import 'package:habitrak/core/animations/staggered_entrance.dart';
 import 'package:habitrak/core/theme/theme_cubit.dart';
 import 'package:habitrak/core/storage/settings_repository.dart';
+import 'package:habitrak/core/services/notification_service.dart';
+import 'package:habitrak/features/mindfulness/data/repositories/mindful_puzzle_repository.dart';
 import '../../data/repositories/profile_repository.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -1215,6 +1217,52 @@ class _ProfilePageState extends State<ProfilePage> {
               ),
             ],
           ),
+          if (_remindersEnabled) ...[
+            const SizedBox(height: 6),
+            InkWell(
+              borderRadius: BorderRadius.circular(12),
+              onTap: () async {
+                HapticFeedback.lightImpact();
+                final puzzleRepo = context.read<MindfulPuzzleRepository>();
+                await NotificationService().showTestStreakNotification(
+                  streak: puzzleRepo.streak,
+                );
+                if (!mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text(
+                      '🔔 Cool Streak Alert sent with Habitrak logo!',
+                    ),
+                    backgroundColor: Color(0xFF38573E),
+                  ),
+                );
+              },
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.notifications_active_rounded,
+                      size: 17,
+                      color: Color(0xFF38573E),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Send Test Streak Notification',
+                      style: TextStyle(
+                        fontFamily: 'Hanken Grotesk',
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                        color: isDark
+                            ? const Color(0xffb0ceb2)
+                            : const Color(0xFF38573E),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
           const SizedBox(height: 12),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
