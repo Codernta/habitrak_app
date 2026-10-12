@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
+import '../../../../core/security/secure_data_manager.dart';
 import '../../../../core/storage/hive_registrar.dart';
 
 class ProfileRepository {
@@ -19,7 +20,11 @@ class ProfileRepository {
   }
 
   Future<void> setUserName(String name) async {
-    await _profileBox.put(_keyUserName, name.trim());
+    final sanitized = SecureDataManager().sanitizeText(name, maxLength: 40);
+    await _profileBox.put(
+      _keyUserName,
+      sanitized.isNotEmpty ? sanitized : 'Jordan Smith',
+    );
   }
 
   String getAvatarInitials() {

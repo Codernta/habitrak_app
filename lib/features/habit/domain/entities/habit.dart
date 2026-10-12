@@ -72,6 +72,7 @@ class Habit extends Equatable {
     bool? isCompleted,
     int? streak,
     String? completedAt,
+    bool clearCompletedAt = false,
     String? scheduledTime,
   }) {
     return Habit(
@@ -83,7 +84,7 @@ class Habit extends Equatable {
       unit: unit ?? this.unit,
       isCompleted: isCompleted ?? this.isCompleted,
       streak: streak ?? this.streak,
-      completedAt: completedAt ?? this.completedAt,
+      completedAt: clearCompletedAt ? null : (completedAt ?? this.completedAt),
       scheduledTime: scheduledTime ?? this.scheduledTime,
     );
   }

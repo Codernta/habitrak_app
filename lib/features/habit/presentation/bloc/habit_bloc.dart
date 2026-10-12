@@ -57,6 +57,8 @@ class AddCustomHabitEvent extends HabitEvent {
 
 class ResetHabitsEvent extends HabitEvent {}
 
+class SyncDailyHabitsEvent extends HabitEvent {}
+
 class ChangeActiveDateEvent extends HabitEvent {
   final DateTime date;
   const ChangeActiveDateEvent(this.date);
@@ -133,6 +135,7 @@ class HabitBloc extends Bloc<HabitEvent, HabitState> {
 
   HabitBloc({required this.repository}) : super(HabitInitial()) {
     on<LoadHabitsEvent>(_onLoadHabits);
+    on<SyncDailyHabitsEvent>(_onSyncDailyHabits);
     on<ToggleHabitEvent>(_onToggleHabit);
     on<UpdateHabitProgressEvent>(_onUpdateProgress);
     on<AddCustomHabitEvent>(_onAddCustomHabit);
@@ -147,6 +150,7 @@ class HabitBloc extends Bloc<HabitEvent, HabitState> {
   ) async {
     emit(HabitLoading());
     try {
+      await repository.syncDailyHabits();
       final habits = await repository.getHabits();
       final percentage = _calculatePercentage(habits);
       emit(
@@ -161,13 +165,45 @@ class HabitBloc extends Bloc<HabitEvent, HabitState> {
     }
   }
 
-  void _onChangeActiveDate(
+  Future<void> _onSyncDailyHabits(
+    SyncDailyHabitsEvent event,
+    Emitter<HabitState> emit,
+  ) async {
+    try {
+      await repository.syncDailyHabits();
+      final targetDate = state is HabitLoaded
+          ? (state as HabitLoaded).activeDate
+          : DateTime.now();
+      final habits = await repository.getHabitsForDate(targetDate);
+      final percentage = _calculatePercentage(habits);
+      emit(
+        HabitLoaded(
+          habits: habits,
+          completionPercentage: percentage,
+          activeDate: targetDate,
+        ),
+      );
+    } catch (e) {
+      emit(HabitError('Failed to sync daily habits: $e'));
+    }
+  }
+
+  Future<void> _onChangeActiveDate(
     ChangeActiveDateEvent event,
     Emitter<HabitState> emit,
-  ) {
-    if (state is HabitLoaded) {
-      final current = state as HabitLoaded;
-      emit(current.copyWith(activeDate: event.date));
+  ) async {
+    try {
+      final habits = await repository.getHabitsForDate(event.date);
+      final percentage = _calculatePercentage(habits);
+      emit(
+        HabitLoaded(
+          habits: habits,
+          completionPercentage: percentage,
+          activeDate: event.date,
+        ),
+      );
+    } catch (e) {
+      emit(HabitError('Failed to load habits for selected date: $e'));
     }
   }
 
@@ -201,7 +237,9 @@ class HabitBloc extends Bloc<HabitEvent, HabitState> {
               await repository.toggleHabitCompletion(match.id);
             }
           }
-          final updatedHabits = await repository.getHabits();
+          final updatedHabits = await repository.getHabitsForDate(
+            current.activeDate,
+          );
           emit(
             current.copyWith(
               habits: updatedHabits,
@@ -223,7 +261,9 @@ class HabitBloc extends Bloc<HabitEvent, HabitState> {
       final currentState = state as HabitLoaded;
       try {
         await repository.toggleHabitCompletion(event.habitId);
-        final habits = await repository.getHabits();
+        final habits = await repository.getHabitsForDate(
+          currentState.activeDate,
+        );
         final percentage = _calculatePercentage(habits);
         emit(
           currentState.copyWith(
@@ -245,7 +285,9 @@ class HabitBloc extends Bloc<HabitEvent, HabitState> {
       final currentState = state as HabitLoaded;
       try {
         await repository.updateHabitProgress(event.habitId, event.progress);
-        final habits = await repository.getHabits();
+        final habits = await repository.getHabitsForDate(
+          currentState.activeDate,
+        );
         final percentage = _calculatePercentage(habits);
         emit(
           currentState.copyWith(
@@ -271,13 +313,13 @@ class HabitBloc extends Bloc<HabitEvent, HabitState> {
           title: event.title,
           category: event.category,
           targetProgress: event.targetProgress,
-          currentProgress: 0.0,
           unit: event.unit,
-          isCompleted: false,
           scheduledTime: event.scheduledTime,
         );
         await repository.addHabit(newHabit);
-        final habits = await repository.getHabits();
+        final habits = await repository.getHabitsForDate(
+          currentState.activeDate,
+        );
         final percentage = _calculatePercentage(habits);
         emit(
           currentState.copyWith(

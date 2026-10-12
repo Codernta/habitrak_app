@@ -6,8 +6,6 @@ import 'package:habitrak/core/animations/staggered_entrance.dart';
 import 'package:habitrak/core/storage/settings_repository.dart';
 import '../../data/repositories/reflections_repository.dart';
 import '../../data/repositories/intentional_goals_repository.dart';
-import '../../data/repositories/mindful_puzzle_repository.dart';
-import 'mindful_garden_puzzle_page.dart';
 
 class MindfulLivingPage extends StatefulWidget {
   const MindfulLivingPage({super.key});
@@ -20,7 +18,6 @@ class _MindfulLivingPageState extends State<MindfulLivingPage> {
   final TextEditingController _journalController = TextEditingController();
   final GlobalKey<AnimatedListState> _listKey = GlobalKey<AnimatedListState>();
 
-  int _selectedSegment = 0; // 0: Zen Garden Game, 1: Gratitude & Goals
   late ReflectionsRepository _reflectionsRepo;
   late IntentionalGoalsRepository _goalsRepo;
   late SettingsRepository _settingsRepo;
@@ -41,12 +38,21 @@ class _MindfulLivingPageState extends State<MindfulLivingPage> {
     _settingsRepo = context.read<SettingsRepository>();
 
     _reflections = List.from(_reflectionsRepo.getReflections());
-    _intentionalGoals = List.from(_goalsRepo.getGoals());
     _isFocusMode = _settingsRepo.isFocusModeEnabled;
     _isDndSchedule = _settingsRepo.isDndScheduleEnabled;
     _dailyScreenTime = _settingsRepo.dailyScreenTimeMinutes;
     _screenTimeLimit = _settingsRepo.screenTimeLimitMinutes;
     _lastEntryTime = _reflectionsRepo.getLastEntryTime();
+
+    // Ensure intentional goals are synced for today
+    _goalsRepo.syncDailyGoals().then((_) {
+      if (mounted) {
+        setState(() {
+          _intentionalGoals = List.from(_goalsRepo.getGoals());
+        });
+      }
+    });
+    _intentionalGoals = List.from(_goalsRepo.getGoals());
   }
 
   @override
@@ -271,141 +277,36 @@ class _MindfulLivingPageState extends State<MindfulLivingPage> {
         ),
         backgroundColor: Colors.transparent,
         elevation: 0,
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(50),
-          child: Container(
-            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-            padding: const EdgeInsets.all(4),
-            decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF1E221E) : const Color(0xFFEBE6DC),
-              borderRadius: BorderRadius.circular(24),
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.only(left: 16, right: 16, bottom: 120),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const SizedBox(height: 10),
+            StaggeredEntrance(
+              index: 0,
+              child: _buildGratitudeCard(isDark, primaryColor, cardBg),
             ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () {
-                      HapticFeedback.selectionClick();
-                      setState(() => _selectedSegment = 0);
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      decoration: BoxDecoration(
-                        color: _selectedSegment == 0
-                            ? const Color(0xFF38573E)
-                            : Colors.transparent,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.spa_rounded,
-                            size: 16,
-                            color: _selectedSegment == 0
-                                ? Colors.white
-                                : (isDark ? Colors.white60 : Colors.black54),
-                          ),
-                          const SizedBox(width: 6),
-                          Text(
-                            'Zen Garden Game',
-                            style: TextStyle(
-                              fontFamily: 'Hanken Grotesk',
-                              fontWeight: FontWeight.bold,
-                              fontSize: 13,
-                              color: _selectedSegment == 0
-                                  ? Colors.white
-                                  : (isDark ? Colors.white60 : Colors.black54),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () {
-                      HapticFeedback.selectionClick();
-                      setState(() => _selectedSegment = 1);
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      decoration: BoxDecoration(
-                        color: _selectedSegment == 1
-                            ? const Color(0xFF38573E)
-                            : Colors.transparent,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.edit_note_rounded,
-                            size: 16,
-                            color: _selectedSegment == 1
-                                ? Colors.white
-                                : (isDark ? Colors.white60 : Colors.black54),
-                          ),
-                          const SizedBox(width: 6),
-                          Text(
-                            'Journal & Goals',
-                            style: TextStyle(
-                              fontFamily: 'Hanken Grotesk',
-                              fontWeight: FontWeight.bold,
-                              fontSize: 13,
-                              color: _selectedSegment == 1
-                                  ? Colors.white
-                                  : (isDark ? Colors.white60 : Colors.black54),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ],
+            const SizedBox(height: 24),
+            StaggeredEntrance(
+              index: 1,
+              child: _buildGoalsCard(isDark, primaryColor, cardBg),
             ),
-          ),
+            const SizedBox(height: 24),
+            StaggeredEntrance(
+              index: 2,
+              child: _buildWellBeingCard(isDark, primaryColor, cardBg),
+            ),
+            const SizedBox(height: 24),
+            StaggeredEntrance(
+              index: 3,
+              child: _buildRecentReflections(isDark, primaryColor, cardBg),
+            ),
+            const SizedBox(height: 30),
+          ],
         ),
       ),
-      body: _selectedSegment == 0
-          ? MindfulGardenPuzzlePage(
-              repository: context.read<MindfulPuzzleRepository>(),
-            )
-          : SingleChildScrollView(
-              padding: const EdgeInsets.only(left: 16, right: 16, bottom: 120),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  const SizedBox(height: 10),
-                  StaggeredEntrance(
-                    index: 0,
-                    child: _buildGratitudeCard(isDark, primaryColor, cardBg),
-                  ),
-                  const SizedBox(height: 24),
-                  StaggeredEntrance(
-                    index: 1,
-                    child: _buildGoalsCard(isDark, primaryColor, cardBg),
-                  ),
-                  const SizedBox(height: 24),
-                  StaggeredEntrance(
-                    index: 2,
-                    child: _buildWellBeingCard(isDark, primaryColor, cardBg),
-                  ),
-                  const SizedBox(height: 24),
-                  StaggeredEntrance(
-                    index: 3,
-                    child: _buildRecentReflections(
-                      isDark,
-                      primaryColor,
-                      cardBg,
-                    ),
-                  ),
-                  const SizedBox(height: 30),
-                ],
-              ),
-            ),
     );
   }
 

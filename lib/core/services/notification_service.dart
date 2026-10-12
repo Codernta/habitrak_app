@@ -24,27 +24,27 @@ class NotificationService {
     {
       'title': '🔥 Streak Rescue: Don\'t Break the Chain!',
       'body':
-          'Your habits and Mindful Zen Garden need you today. 2 minutes is all it takes to keep your 7-day flame alive 🌱',
+          'Your habits need you today. 2 minutes is all it takes to keep your streak glowing strong 🌱',
     },
     {
-      'title': '🌿 Zen Garden Calling: Unwind & Restore',
+      'title': '🌿 Habitrak Calling: Momentum in Motion',
       'body':
-          'Mind feeling cluttered? Place today\'s stones in your Zen Mosaic and reclaim tranquil focus ✨',
+          'Small consistent actions build giant transformations. Check in on your daily intentions today ✨',
     },
     {
       'title': '⚡ Streak Rescue Mission!',
       'body':
-          'You\'re 1 harmonious mosaic piece away from protecting your momentum. Breathe, align, and conquer!',
+          'You\'re just 1 check-in away from protecting your momentum. Breathe, reflect, and conquer!',
     },
     {
-      'title': '🍃 Stillness in Motion',
+      'title': '🍃 Stillness & Discipline',
       'body':
           'A gentle nudge from Habitrak: Your habits shape your future self. Keep your streak glowing before midnight 🌙',
     },
     {
       'title': '✨ Vitality Boost Waiting',
       'body':
-          'Your Mindful Garden has +15 Vitality and peace of mind reserved for you today. Step into harmony 🧘',
+          'Consistent habits bring peace of mind and vitality. Step into harmony and check off your day 🧘',
     },
   ];
 
@@ -121,8 +121,8 @@ class NotificationService {
           .resolvePlatformSpecificImplementation<
             AndroidFlutterLocalNotificationsPlugin
           >();
-      final result =
-          await androidImplementation?.requestNotificationsPermission();
+      final result = await androidImplementation
+          ?.requestNotificationsPermission();
       return result ?? false;
     }
     return true;
@@ -138,7 +138,7 @@ class NotificationService {
           priority: Priority.high,
           icon: '@mipmap/ic_launcher',
           largeIcon: DrawableResourceAndroidBitmap('app_logo'),
-          color: Color(0xFF38573E),
+          color: Color(0xFFFFFFFF),
           styleInformation: BigTextStyleInformation(''),
           playSound: true,
           enableVibration: true,
@@ -171,7 +171,7 @@ class NotificationService {
     final title = '🔥 Streak Alert: Keep your $streak-day momentum alive!';
     final body =
         reason ??
-        '${message['body']} • Jump into the Mindful Garden Puzzle to stay unbroken.';
+        '${message['body']} • Jump into Habitrak now to protect your streak.';
 
     await _notificationsPlugin.show(
       id: 1001,
@@ -189,11 +189,11 @@ class NotificationService {
 
     await _notificationsPlugin.show(
       id: 9999,
-      title: '🔥 Habitrak Streak Saved! (7-Day Momentum)',
+      title: '🔥 Habitrak Streak Saved! ($streak-Day Momentum)',
       body:
-          '✨ "Patience is the calm acceptance of things in order." Your Mindful Garden is thriving 🌱',
+          '✨ "Consistency is the quiet bridge between goals and reality." Your streak is safe! 🌱',
       notificationDetails: _buildNotificationDetails(),
-      payload: 'mindful_garden_puzzle',
+      payload: 'streak_reminder',
     );
   }
 
@@ -222,9 +222,9 @@ class NotificationService {
 
       await _notificationsPlugin.zonedSchedule(
         id: 2001,
-        title: '🔥 Evening Streak Check: 1 Puzzle Away!',
+        title: '🔥 Evening Streak Check: Keep The Fire Alive!',
         body:
-            'You haven\'t completed today\'s Zen Garden puzzle. Take a 2-minute mindful pause before your streak resets 🧘',
+            'You haven\'t completed all your daily habits yet. Take a 2-minute pause before your streak resets 🧘',
         scheduledDate: scheduledDate,
         notificationDetails: _buildNotificationDetails(),
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,

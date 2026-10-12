@@ -1,10 +1,13 @@
 import 'package:hive_flutter/hive_flutter.dart';
+import '../../../../core/security/secure_data_manager.dart';
 import '../../../../core/storage/hive_registrar.dart';
 import '../../domain/entities/habit.dart';
 import '../../domain/repositories/habit_repository.dart';
 
 class HiveHabitRepository implements HabitRepository {
   final Box<Habit> _box = Hive.box<Habit>(HiveRegistrar.habitsBoxName);
+
+  static const String _keyLastActiveDate = 'last_active_date';
 
   final List<Habit> _defaultHabits = [
     const Habit(
@@ -16,6 +19,7 @@ class HiveHabitRepository implements HabitRepository {
       isCompleted: true,
       completedAt: '7:15 AM',
       scheduledTime: '7:15 AM',
+      streak: 7,
     ),
     const Habit(
       id: '2',
@@ -25,6 +29,7 @@ class HiveHabitRepository implements HabitRepository {
       currentProgress: 1.2,
       unit: 'L',
       isCompleted: false,
+      streak: 4,
     ),
     const Habit(
       id: '3',
@@ -43,6 +48,7 @@ class HiveHabitRepository implements HabitRepository {
       currentProgress: 0.0,
       isCompleted: false,
       scheduledTime: '9:00 PM',
+      streak: 3,
     ),
   ];
 
@@ -51,8 +57,172 @@ class HiveHabitRepository implements HabitRepository {
     if (_box.isEmpty) {
       await _box.addAll(_defaultHabits);
       await _seedInitialHistory();
+      final settingsBox = _getSettingsBox();
+      await settingsBox.put(_keyLastActiveDate, _formatDateKey(DateTime.now()));
     }
+
+    // Automatically perform everyday sync and daily rollover
+    await syncDailyHabits();
     return _box.values.toList();
+  }
+
+  @override
+  Future<void> syncDailyHabits() async {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final todayKey = _formatDateKey(today);
+
+    final settingsBox = _getSettingsBox();
+    final lastActiveDateStr = settingsBox.get(_keyLastActiveDate) as String?;
+
+    if (lastActiveDateStr == null) {
+      // First run: establish today as the active date
+      await settingsBox.put(_keyLastActiveDate, todayKey);
+      await _recordDailyCompletion();
+      return;
+    }
+
+    if (lastActiveDateStr == todayKey) {
+      // Already on today, ensure today is recorded
+      await _recordDailyCompletion();
+      return;
+    }
+
+    // A day or multiple days have passed since the last session!
+    final parts = lastActiveDateStr.split('-').map(int.parse).toList();
+    final lastActiveDate = DateTime(parts[0], parts[1], parts[2]);
+    final daysElapsed = today.difference(lastActiveDate).inDays;
+
+    if (daysElapsed > 0) {
+      final historyBox = _getHistoryBox();
+
+      // 1. Snapshot previous active day's completion in history if missing
+      if (!historyBox.containsKey(lastActiveDateStr)) {
+        final currentHabits = _box.values.toList();
+        final completed = currentHabits.where((h) => h.isCompleted).toList();
+        await historyBox.put(lastActiveDateStr, {
+          'date': lastActiveDateStr,
+          'completedCount': completed.length,
+          'totalHabits': currentHabits.length,
+          'completedHabitIds': completed.map((h) => h.id).toList(),
+        });
+      }
+
+      // 2. Mark any skipped days in between as 0 completed
+      for (int i = 1; i < daysElapsed; i++) {
+        final skippedDt = lastActiveDate.add(Duration(days: i));
+        final skippedKey = _formatDateKey(skippedDt);
+        if (!historyBox.containsKey(skippedKey)) {
+          await historyBox.put(skippedKey, {
+            'date': skippedKey,
+            'completedCount': 0,
+            'totalHabits': _box.length > 0 ? _box.length : 4,
+            'completedHabitIds': <String>[],
+          });
+        }
+      }
+
+      // 3. Evaluate streaks and reset habits for the new day
+      final keys = _box.keys.toList();
+      for (var key in keys) {
+        final habit = _box.get(key);
+        if (habit == null) continue;
+
+        int newStreak = habit.streak;
+        if (daysElapsed == 1) {
+          // If the habit was completed yesterday, maintain its streak!
+          // If it was NOT completed yesterday, the streak resets to 0.
+          if (!habit.isCompleted) {
+            newStreak = 0;
+          }
+        } else {
+          // More than 1 day skipped: streak broken
+          newStreak = 0;
+        }
+
+        // Daily reset: uncompleted, 0 progress, no completion timestamp
+        final resetHabit = habit.copyWith(
+          isCompleted: false,
+          currentProgress: 0.0,
+          clearCompletedAt: true,
+          streak: newStreak,
+        );
+
+        await _box.put(key, resetHabit);
+      }
+
+      // 4. Update last active date to today
+      await settingsBox.put(_keyLastActiveDate, todayKey);
+
+      // 5. Record today's fresh day snapshot
+      await _recordDailyCompletion();
+    }
+  }
+
+  @override
+  Future<List<Habit>> getHabitsForDate(DateTime date) async {
+    await syncDailyHabits();
+
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final target = DateTime(date.year, date.month, date.day);
+
+    if (target.isAtSameMomentAs(today)) {
+      return _box.values.toList();
+    }
+
+    final currentHabits = _box.values.toList();
+
+    if (target.isAfter(today)) {
+      // Future date: habits shown as planned, 0% completed
+      return currentHabits
+          .map(
+            (h) => h.copyWith(
+              isCompleted: false,
+              currentProgress: 0.0,
+              clearCompletedAt: true,
+            ),
+          )
+          .toList();
+    }
+
+    // Past date: fetch historical record
+    final targetKey = _formatDateKey(target);
+    final historyBox = _getHistoryBox();
+    final record = historyBox.get(targetKey);
+
+    if (record != null) {
+      final completedIds =
+          (record['completedHabitIds'] as List?)?.cast<String>() ?? [];
+      return currentHabits.map((h) {
+        final wasCompleted = completedIds.contains(h.id);
+        return h.copyWith(
+          isCompleted: wasCompleted,
+          currentProgress: wasCompleted ? h.targetProgress : 0.0,
+          completedAt: wasCompleted ? (h.scheduledTime ?? 'Completed') : null,
+          clearCompletedAt: !wasCompleted,
+        );
+      }).toList();
+    }
+
+    // No record found for past date
+    return currentHabits
+        .map(
+          (h) => h.copyWith(
+            isCompleted: false,
+            currentProgress: 0.0,
+            clearCompletedAt: true,
+          ),
+        )
+        .toList();
+  }
+
+  @override
+  Future<double> getCompletionPercentageForDate(DateTime date) async {
+    final habits = await getHabitsForDate(date);
+    if (habits.isEmpty) return 0.0;
+    final completed = habits.where((h) => h.isCompleted).length;
+    return (completed / habits.length) * 100.0;
   }
 
   @override
@@ -97,8 +267,12 @@ class HiveHabitRepository implements HabitRepository {
   Future<void> updateHabitProgress(String habitId, double progress) async {
     final habit = _getHabitById(habitId);
     if (habit != null) {
-      final double cappedProgress = progress.clamp(0.0, habit.targetProgress);
-      final bool newCompleted = cappedProgress >= habit.targetProgress;
+      final sanitizedProgress = SecureDataManager().sanitizeNumeric(
+        progress,
+        min: 0.0,
+        max: habit.targetProgress,
+      );
+      final bool newCompleted = sanitizedProgress >= habit.targetProgress;
 
       int newStreak = habit.streak;
       if (newCompleted && !habit.isCompleted) {
@@ -112,7 +286,7 @@ class HiveHabitRepository implements HabitRepository {
           : habit.completedAt;
 
       final updated = habit.copyWith(
-        currentProgress: cappedProgress,
+        currentProgress: sanitizedProgress,
         isCompleted: newCompleted,
         streak: newStreak,
         completedAt: newCompleted ? completedTime : null,
@@ -125,7 +299,24 @@ class HiveHabitRepository implements HabitRepository {
 
   @override
   Future<void> addHabit(Habit habit) async {
-    await _box.add(habit);
+    final secureManager = SecureDataManager();
+    final sanitizedTitle = secureManager.sanitizeText(
+      habit.title,
+      maxLength: 80,
+    );
+    final sanitizedUnit = secureManager.sanitizeText(habit.unit, maxLength: 10);
+    final sanitizedTarget = secureManager.sanitizeNumeric(
+      habit.targetProgress,
+      min: 0.1,
+    );
+
+    final safeHabit = habit.copyWith(
+      title: sanitizedTitle.isNotEmpty ? sanitizedTitle : 'New Intention',
+      unit: sanitizedUnit,
+      targetProgress: sanitizedTarget,
+    );
+
+    await _box.add(safeHabit);
     await _recordDailyCompletion();
   }
 
@@ -134,6 +325,16 @@ class HiveHabitRepository implements HabitRepository {
     await _box.clear();
     await _box.addAll(_defaultHabits);
     await _seedInitialHistory();
+    final settingsBox = _getSettingsBox();
+    await settingsBox.put(_keyLastActiveDate, _formatDateKey(DateTime.now()));
+  }
+
+  Box<dynamic> _getSettingsBox() {
+    return Hive.box<dynamic>(HiveRegistrar.settingsBoxName);
+  }
+
+  Box<Map> _getHistoryBox() {
+    return Hive.box<Map>(HiveRegistrar.habitHistoryBoxName);
   }
 
   Habit? _getHabitById(String id) {
@@ -161,7 +362,7 @@ class HiveHabitRepository implements HabitRepository {
 
   Future<void> _recordDailyCompletion() async {
     if (Hive.isBoxOpen(HiveRegistrar.habitHistoryBoxName)) {
-      final historyBox = Hive.box<Map>(HiveRegistrar.habitHistoryBoxName);
+      final historyBox = _getHistoryBox();
       final todayKey = _formatDateKey(DateTime.now());
       final allHabits = _box.values.toList();
       final completed = allHabits.where((h) => h.isCompleted).length;
@@ -179,14 +380,13 @@ class HiveHabitRepository implements HabitRepository {
 
   Future<void> _seedInitialHistory() async {
     if (Hive.isBoxOpen(HiveRegistrar.habitHistoryBoxName)) {
-      final historyBox = Hive.box<Map>(HiveRegistrar.habitHistoryBoxName);
+      final historyBox = _getHistoryBox();
       if (historyBox.isEmpty) {
         final now = DateTime.now();
         // Seed past 35 days with realistic active streak history
         for (int i = 35; i >= 1; i--) {
           final dt = now.subtract(Duration(days: i));
           final key = _formatDateKey(dt);
-          // Realistic variation: weekends and weekdays
           final int completed = (i % 7 == 0 || i % 7 == 6) ? 3 : 4;
           await historyBox.put(key, {
             'date': key,

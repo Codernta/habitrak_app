@@ -6,4 +6,7 @@ abstract class HabitRepository {
   Future<void> updateHabitProgress(String habitId, double progress);
   Future<void> addHabit(Habit habit);
   Future<void> resetHabits();
+  Future<void> syncDailyHabits();
+  Future<List<Habit>> getHabitsForDate(DateTime date);
+  Future<double> getCompletionPercentageForDate(DateTime date);
 }

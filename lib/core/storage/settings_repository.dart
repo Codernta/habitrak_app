@@ -11,6 +11,12 @@ class SettingsRepository {
   static const String _keyDndSchedule = 'dnd_schedule';
   static const String _keyScreenTimeLimit = 'screen_time_limit';
   static const String _keyDailyScreenTime = 'daily_screen_time';
+  static const String _keyScreenTimeDate = 'screen_time_date';
+
+  String _formatToday() {
+    final now = DateTime.now();
+    return '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+  }
 
   ThemeMode getThemeMode() {
     final isDark = _box.get(_keyThemeMode, defaultValue: true) as bool;
@@ -50,15 +56,41 @@ class SettingsRepository {
   }
 
   Future<void> setScreenTimeLimitMinutes(int minutes) async {
-    await _box.put(_keyScreenTimeLimit, minutes);
+    await _box.put(_keyScreenTimeLimit, minutes.clamp(15, 720));
   }
 
   int getDailyScreenTimeMinutes() {
-    return _box.get(_keyDailyScreenTime, defaultValue: 135) as int;
+    final today = _formatToday();
+    final recordedDate = _box.get(_keyScreenTimeDate) as String?;
+
+    if (recordedDate == null) {
+      _box.put(_keyScreenTimeDate, today);
+      return _box.get(_keyDailyScreenTime, defaultValue: 45) as int;
+    }
+
+    if (recordedDate != today) {
+      // New day: roll over and start fresh today
+      _box.put(
+        'screen_time_$recordedDate',
+        _box.get(_keyDailyScreenTime, defaultValue: 45),
+      );
+      _box.put(_keyScreenTimeDate, today);
+      _box.put(_keyDailyScreenTime, 25); // Fresh starting value for today
+      return 25;
+    }
+
+    return _box.get(_keyDailyScreenTime, defaultValue: 45) as int;
   }
 
   Future<void> setDailyScreenTimeMinutes(int minutes) async {
-    await _box.put(_keyDailyScreenTime, minutes);
+    final today = _formatToday();
+    await _box.put(_keyScreenTimeDate, today);
+    await _box.put(_keyDailyScreenTime, minutes.clamp(0, 1440));
+  }
+
+  Future<void> addScreenTimeMinutes(int delta) async {
+    final current = getDailyScreenTimeMinutes();
+    await setDailyScreenTimeMinutes(current + delta);
   }
 
   // Getters for convenience

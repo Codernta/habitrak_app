@@ -13,7 +13,6 @@ import 'features/profile/data/repositories/profile_repository.dart';
 import 'features/splash/presentation/pages/splash_page.dart';
 
 import 'core/services/notification_service.dart';
-import 'features/mindfulness/data/repositories/mindful_puzzle_repository.dart';
 import 'core/widgets/river_flow_background.dart';
 
 void main() async {
@@ -34,11 +33,9 @@ void main() async {
   final goalsRepository = IntentionalGoalsRepository();
   final activityRepository = ActivityRepository();
   final profileRepository = ProfileRepository();
-  final puzzleRepository = MindfulPuzzleRepository();
 
   await reflectionsRepository.ensureInitialized();
   await goalsRepository.ensureInitialized();
-  await puzzleRepository.checkStreakAndNotify();
 
   runApp(
     MultiRepositoryProvider(
@@ -53,9 +50,6 @@ void main() async {
         ),
         RepositoryProvider<ActivityRepository>.value(value: activityRepository),
         RepositoryProvider<ProfileRepository>.value(value: profileRepository),
-        RepositoryProvider<MindfulPuzzleRepository>.value(
-          value: puzzleRepository,
-        ),
       ],
       child: MultiBlocProvider(
         providers: [

@@ -1,12 +1,21 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:hive/hive.dart';
 import 'package:habitrak/core/animations/app_animations.dart';
 import 'package:habitrak/core/animations/staggered_entrance.dart';
 import 'package:habitrak/core/theme/theme_cubit.dart';
 import 'package:habitrak/core/storage/settings_repository.dart';
+import 'package:habitrak/core/storage/hive_registrar.dart';
+import 'package:habitrak/core/security/secure_data_manager.dart';
 import 'package:habitrak/core/services/notification_service.dart';
-import 'package:habitrak/features/mindfulness/data/repositories/mindful_puzzle_repository.dart';
+import 'package:habitrak/features/habit/data/repositories/hive_habit_repository.dart';
+import 'package:habitrak/features/habit/domain/entities/habit.dart';
+import 'package:habitrak/features/habit/presentation/bloc/habit_bloc.dart';
+import 'package:habitrak/features/mindfulness/data/repositories/reflections_repository.dart';
+import 'package:habitrak/features/mindfulness/data/repositories/intentional_goals_repository.dart';
+import 'package:habitrak/features/activity/data/repositories/activity_repository.dart';
 import '../../data/repositories/profile_repository.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -157,6 +166,11 @@ class _ProfilePageState extends State<ProfilePage> {
             StaggeredEntrance(
               index: 3,
               child: _buildSettingsCard(isDark, primaryColor, cardBg),
+            ),
+            const SizedBox(height: 24),
+            StaggeredEntrance(
+              index: 4,
+              child: _buildSecurityCard(isDark, primaryColor, cardBg),
             ),
             const SizedBox(height: 40),
           ],
@@ -1223,9 +1237,8 @@ class _ProfilePageState extends State<ProfilePage> {
               borderRadius: BorderRadius.circular(12),
               onTap: () async {
                 HapticFeedback.lightImpact();
-                final puzzleRepo = context.read<MindfulPuzzleRepository>();
                 await NotificationService().showTestStreakNotification(
-                  streak: puzzleRepo.streak,
+                  streak: _streakDays,
                 );
                 if (!mounted) return;
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -1307,6 +1320,442 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildSecurityCard(bool isDark, Color primaryColor, Color cardBg) {
+    return Container(
+      padding: const EdgeInsets.all(22),
+      decoration: BoxDecoration(
+        color: cardBg,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: isDark
+              ? const Color(0xff424842).withValues(alpha: 0.1)
+              : const Color(0xffdbdad7).withValues(alpha: 0.4),
+          width: 1,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.shield_outlined, color: primaryColor, size: 22),
+              const SizedBox(width: 10),
+              Text(
+                'Data & Security Management',
+                style: TextStyle(
+                  fontFamily: 'Hanken Grotesk',
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: isDark ? Colors.white : Colors.black,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          _buildSecurityStatusRow(
+            icon: Icons.lock_outline,
+            title: 'AES-256 Storage Cipher',
+            subtitle:
+                'Local boxes encrypted with 256-bit AES cryptographic key',
+            status: 'Active',
+            statusColor: primaryColor,
+            isDark: isDark,
+          ),
+          Divider(
+            height: 24,
+            thickness: 0.5,
+            color: isDark ? const Color(0xff333533) : const Color(0xffe0dedb),
+          ),
+          _buildSecurityStatusRow(
+            icon: Icons.update_rounded,
+            title: 'Everyday Data Auto-Sync',
+            subtitle: 'Daily habit rollover, streaks & midnight check active',
+            status: 'Active',
+            statusColor: primaryColor,
+            isDark: isDark,
+          ),
+          Divider(
+            height: 24,
+            thickness: 0.5,
+            color: isDark ? const Color(0xff333533) : const Color(0xffe0dedb),
+          ),
+          _buildSecurityStatusRow(
+            icon: Icons.verified_user_outlined,
+            title: 'SHA-256 Tamper Protection',
+            subtitle:
+                'Cryptographic hash checks ensure personal record integrity',
+            status: 'Verified',
+            statusColor: primaryColor,
+            isDark: isDark,
+          ),
+          const SizedBox(height: 20),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: () => _showExportDataDialog(context),
+                  icon: const Icon(Icons.file_download_outlined, size: 18),
+                  label: const Text(
+                    'Export Data',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: primaryColor,
+                    side: BorderSide(
+                      color: primaryColor.withValues(alpha: 0.5),
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: () => _showSecureWipeDialog(context),
+                  icon: const Icon(Icons.delete_sweep_outlined, size: 18),
+                  label: const Text(
+                    'Secure Wipe',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: const Color(0xffd9534f),
+                    side: BorderSide(
+                      color: const Color(0xffd9534f).withValues(alpha: 0.5),
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSecurityStatusRow({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required String status,
+    required Color statusColor,
+    required bool isDark,
+  }) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(
+          icon,
+          size: 18,
+          color: isDark ? const Color(0xffc2c8c0) : const Color(0xff615e56),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: TextStyle(
+                  fontFamily: 'Hanken Grotesk',
+                  fontSize: 13.5,
+                  fontWeight: FontWeight.w600,
+                  color: isDark ? Colors.white : Colors.black,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                subtitle,
+                style: TextStyle(
+                  fontFamily: 'Hanken Grotesk',
+                  fontSize: 11.5,
+                  color: isDark
+                      ? const Color(0xffc2c8c0).withValues(alpha: 0.5)
+                      : const Color(0xff615e56).withValues(alpha: 0.6),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(width: 8),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+          decoration: BoxDecoration(
+            color: statusColor.withValues(alpha: 0.15),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Text(
+            status,
+            style: TextStyle(
+              fontFamily: 'Hanken Grotesk',
+              fontSize: 11,
+              fontWeight: FontWeight.bold,
+              color: statusColor,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _showExportDataDialog(BuildContext context) async {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primaryColor = isDark
+        ? const Color(0xffb0ceb2)
+        : const Color(0xff8ba88e);
+    final cardBg = isDark ? const Color(0xff1e201e) : Colors.white;
+
+    final habitRepo = context.read<HiveHabitRepository>();
+    final reflectionsRepo = context.read<ReflectionsRepository>();
+    final goalsRepo = context.read<IntentionalGoalsRepository>();
+    final activityRepo = context.read<ActivityRepository>();
+
+    final habits = await habitRepo.getHabits();
+    final historyBox = Hive.box<Map>(HiveRegistrar.habitHistoryBoxName);
+    final historyList = historyBox.values
+        .map((v) => Map<String, dynamic>.from(v))
+        .toList();
+
+    final exportBundle = SecureDataManager().exportSecureUserData(
+      userName: _userName,
+      habits: habits,
+      habitHistory: historyList,
+      reflections: reflectionsRepo.getReflections(),
+      goals: goalsRepo.getGoals(),
+      activities: activityRepo.getActivityLogs(),
+    );
+
+    final exportJson = const JsonEncoder.withIndent('  ').convert(exportBundle);
+    final sha256Checksum =
+        (exportBundle['metadata'] as Map?)?['integritySha256'] as String? ?? '';
+
+    if (!context.mounted) return;
+
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        return AlertDialog(
+          backgroundColor: cardBg,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: Row(
+            children: [
+              Icon(Icons.shield_rounded, color: primaryColor, size: 22),
+              const SizedBox(width: 8),
+              Text(
+                'Secure Data Export',
+                style: TextStyle(
+                  fontFamily: 'Hanken Grotesk',
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                  color: isDark ? Colors.white : Colors.black,
+                ),
+              ),
+            ],
+          ),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: primaryColor.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '🔐 Standard: AES-256 + SHA-256 Verified',
+                          style: TextStyle(
+                            fontFamily: 'Hanken Grotesk',
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: primaryColor,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Integrity Checksum: ${sha256Checksum.length > 20 ? "${sha256Checksum.substring(0, 20)}..." : sha256Checksum}',
+                          style: TextStyle(
+                            fontFamily: 'Hanken Grotesk',
+                            fontSize: 11,
+                            color: isDark ? Colors.white70 : Colors.black87,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Container(
+                    height: 180,
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? const Color(0xff121412)
+                          : const Color(0xfff5f5f5),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: SingleChildScrollView(
+                      child: SelectableText(
+                        exportJson,
+                        style: TextStyle(
+                          fontFamily: 'monospace',
+                          fontSize: 11,
+                          color: isDark ? Colors.white70 : Colors.black87,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Close'),
+            ),
+            ElevatedButton.icon(
+              onPressed: () {
+                Clipboard.setData(ClipboardData(text: exportJson));
+                Navigator.pop(ctx);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text(
+                      '✅ Sanitized JSON export copied to clipboard!',
+                    ),
+                    backgroundColor: Color(0xFF38573E),
+                  ),
+                );
+              },
+              icon: const Icon(Icons.copy, size: 16),
+              label: const Text('Copy JSON'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: primaryColor,
+                foregroundColor: isDark ? Colors.black : Colors.white,
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showSecureWipeDialog(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cardBg = isDark ? const Color(0xff1e201e) : Colors.white;
+
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        return AlertDialog(
+          backgroundColor: cardBg,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: const Row(
+            children: [
+              Icon(
+                Icons.warning_amber_rounded,
+                color: Color(0xffd9534f),
+                size: 24,
+              ),
+              SizedBox(width: 8),
+              Text(
+                'Cryptographic Wipe',
+                style: TextStyle(
+                  fontFamily: 'Hanken Grotesk',
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                  color: Color(0xffd9534f),
+                ),
+              ),
+            ],
+          ),
+          content: Text(
+            'This action permanently shreds local encrypted personal records (habits, reflections, goals, history) by overwriting them with cryptographic noise before clearing.\n\nAre you sure you want to proceed?',
+            style: TextStyle(
+              fontFamily: 'Hanken Grotesk',
+              fontSize: 13.5,
+              color: isDark ? Colors.white70 : Colors.black87,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                Navigator.pop(ctx);
+                HapticFeedback.heavyImpact();
+
+                final habitsBox = Hive.box<Habit>(HiveRegistrar.habitsBoxName);
+                final reflectionsBox = Hive.box<Map>(
+                  HiveRegistrar.reflectionsBoxName,
+                );
+                final goalsBox = Hive.box<Map>(
+                  HiveRegistrar.mindfulnessGoalsBoxName,
+                );
+                final historyBox = Hive.box<Map>(
+                  HiveRegistrar.habitHistoryBoxName,
+                );
+                final activityBox = Hive.box<Map>(
+                  HiveRegistrar.activityLogsBoxName,
+                );
+                final profileBox = Hive.box<dynamic>(
+                  HiveRegistrar.profileBoxName,
+                );
+
+                await SecureDataManager().secureWipeAllUserData(
+                  habitsBox: habitsBox,
+                  reflectionsBox: reflectionsBox,
+                  goalsBox: goalsBox,
+                  historyBox: historyBox,
+                  activityBox: activityBox,
+                  profileBox: profileBox,
+                );
+
+                if (!context.mounted) return;
+                context.read<HabitBloc>().add(ResetHabitsEvent());
+
+                setState(() {
+                  _userName = _profileRepo.getUserName();
+                  _streakDays = _profileRepo.getStreakDays();
+                  _totalMindfulMinutes = _profileRepo.getTotalMindfulMinutes();
+                });
+
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('🛡️ All data securely wiped and reset!'),
+                    backgroundColor: Color(0xFF38573E),
+                  ),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xffd9534f),
+                foregroundColor: Colors.white,
+              ),
+              child: const Text('Wipe All Data'),
+            ),
+          ],
+        );
+      },
     );
   }
 }

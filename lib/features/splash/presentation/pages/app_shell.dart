@@ -1,9 +1,13 @@
+import 'dart:async';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:habitrak/core/animations/app_animations.dart';
+import 'package:habitrak/features/habit/presentation/bloc/habit_bloc.dart';
 import 'package:habitrak/features/habit/presentation/pages/dashboard_page.dart';
 import 'package:habitrak/features/habit/presentation/pages/library_page.dart';
+import 'package:habitrak/features/mindfulness/data/repositories/intentional_goals_repository.dart';
 import 'package:habitrak/features/mindfulness/presentation/pages/mindful_living_page.dart';
 import 'package:habitrak/features/profile/presentation/pages/profile_page.dart';
 
@@ -14,9 +18,10 @@ class AppShell extends StatefulWidget {
   State<AppShell> createState() => _AppShellState();
 }
 
-class _AppShellState extends State<AppShell> {
+class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
   int _currentIndex = 0;
   int _previousIndex = 0;
+  Timer? _midnightTimer;
 
   static const _pages = [
     DashboardPage(),
@@ -24,6 +29,47 @@ class _AppShellState extends State<AppShell> {
     MindfulLivingPage(),
     ProfilePage(),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _scheduleMidnightSync();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _midnightTimer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _triggerDailySync();
+      _scheduleMidnightSync();
+    }
+  }
+
+  void _triggerDailySync() {
+    if (mounted) {
+      context.read<HabitBloc>().add(SyncDailyHabitsEvent());
+      context.read<IntentionalGoalsRepository>().syncDailyGoals();
+    }
+  }
+
+  void _scheduleMidnightSync() {
+    _midnightTimer?.cancel();
+    final now = DateTime.now();
+    final tomorrow = DateTime(now.year, now.month, now.day + 1);
+    final durationUntilMidnight =
+        tomorrow.difference(now) + const Duration(seconds: 1);
+    _midnightTimer = Timer(durationUntilMidnight, () {
+      _triggerDailySync();
+      _scheduleMidnightSync();
+    });
+  }
 
   void _onTabSelected(int index) {
     if (index == _currentIndex) return;
