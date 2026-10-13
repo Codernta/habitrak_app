@@ -12,6 +12,7 @@ import 'library_page.dart';
 import '../../../activity/presentation/pages/walk_tracker_page.dart';
 import '../../../activity/presentation/pages/yoga_exercises_page.dart';
 import '../../../../core/services/notification_service.dart';
+import '../../../music/presentation/widgets/soulful_music_card.dart';
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
@@ -288,13 +289,18 @@ class _DashboardPageState extends State<DashboardPage>
                     index: 1,
                     child: _buildDateSlider(state.activeDate),
                   ),
+                  const SizedBox(height: 24),
+                  const StaggeredEntrance(
+                    index: 2,
+                    child: SoulfulMusicCard(),
+                  ),
                   const SizedBox(height: 28),
                   StaggeredEntrance(
-                    index: 2,
+                    index: 3,
                     child: _buildHabitList(state.habits, state.activeDate),
                   ),
                   const SizedBox(height: 28),
-                  StaggeredEntrance(index: 3, child: _buildQuoteBanner(isDark)),
+                  StaggeredEntrance(index: 4, child: _buildQuoteBanner(isDark)),
                   const SizedBox(height: 40),
                 ],
               ),

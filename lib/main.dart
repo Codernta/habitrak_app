@@ -13,7 +13,10 @@ import 'features/profile/data/repositories/profile_repository.dart';
 import 'features/splash/presentation/pages/splash_page.dart';
 
 import 'core/services/notification_service.dart';
+import 'core/services/connectivity_service.dart';
 import 'core/widgets/river_flow_background.dart';
+import 'core/widgets/offline_global_indicator.dart';
+import 'features/music/services/soulful_music_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -33,6 +36,8 @@ void main() async {
   final goalsRepository = IntentionalGoalsRepository();
   final activityRepository = ActivityRepository();
   final profileRepository = ProfileRepository();
+  final connectivityService = ConnectivityService()..initialize();
+  final musicService = SoulfulMusicService();
 
   await reflectionsRepository.ensureInitialized();
   await goalsRepository.ensureInitialized();
@@ -50,6 +55,10 @@ void main() async {
         ),
         RepositoryProvider<ActivityRepository>.value(value: activityRepository),
         RepositoryProvider<ProfileRepository>.value(value: profileRepository),
+        RepositoryProvider<ConnectivityService>.value(
+          value: connectivityService,
+        ),
+        RepositoryProvider<SoulfulMusicService>.value(value: musicService),
       ],
       child: MultiBlocProvider(
         providers: [
@@ -84,7 +93,9 @@ class HabitrakApp extends StatelessWidget {
           themeAnimationDuration: const Duration(milliseconds: 400),
           themeAnimationCurve: Curves.easeInOutCubic,
           builder: (context, child) {
-            return RiverFlowBackground(child: child ?? const SizedBox());
+            return RiverFlowBackground(
+              child: OfflineGlobalIndicator(child: child ?? const SizedBox()),
+            );
           },
           home: const SplashPage(),
         );
