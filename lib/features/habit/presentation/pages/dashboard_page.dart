@@ -7,12 +7,17 @@ import 'package:habitrak/core/animations/app_page_route.dart';
 import 'package:habitrak/core/animations/pressable_scale.dart';
 import 'package:habitrak/core/animations/staggered_entrance.dart';
 import '../bloc/habit_bloc.dart';
+import 'package:habitrak/core/animations/animated_modal_sheet.dart';
 import 'package:habitrak/features/habit/domain/entities/habit.dart';
 import 'library_page.dart';
 import '../../../activity/presentation/pages/walk_tracker_page.dart';
 import '../../../activity/presentation/pages/yoga_exercises_page.dart';
 import '../../../../core/services/notification_service.dart';
 import '../../../music/presentation/widgets/soulful_music_card.dart';
+import '../../../mindfulness/data/repositories/soulfulness_repository.dart';
+import '../../../mindfulness/presentation/widgets/breathwork_modal.dart';
+import '../../../mindfulness/presentation/widgets/meditation_timer_modal.dart';
+import '../../../mindfulness/presentation/widgets/thought_release_modal.dart';
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
@@ -180,6 +185,9 @@ class _DashboardPageState extends State<DashboardPage>
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primaryColor = isDark
+        ? const Color(0xffb0ceb2)
+        : const Color(0xff8ba88e);
 
     return Scaffold(
       appBar: AppBar(
@@ -290,17 +298,19 @@ class _DashboardPageState extends State<DashboardPage>
                     child: _buildDateSlider(state.activeDate),
                   ),
                   const SizedBox(height: 24),
-                  const StaggeredEntrance(
-                    index: 2,
-                    child: SoulfulMusicCard(),
+                  const StaggeredEntrance(index: 2, child: SoulfulMusicCard()),
+                  const SizedBox(height: 20),
+                  StaggeredEntrance(
+                    index: 3,
+                    child: _buildSoulfulPauseCard(isDark, primaryColor),
                   ),
                   const SizedBox(height: 28),
                   StaggeredEntrance(
-                    index: 3,
+                    index: 4,
                     child: _buildHabitList(state.habits, state.activeDate),
                   ),
                   const SizedBox(height: 28),
-                  StaggeredEntrance(index: 4, child: _buildQuoteBanner(isDark)),
+                  StaggeredEntrance(index: 5, child: _buildQuoteBanner(isDark)),
                   const SizedBox(height: 40),
                 ],
               ),
@@ -1091,6 +1101,166 @@ class _DashboardPageState extends State<DashboardPage>
                     blurRadius: 4,
                   ),
                 ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSoulfulPauseCard(bool isDark, Color primaryColor) {
+    final soulRepo = context.read<SoulfulnessRepository>();
+    final streak = soulRepo.getMindfulStreak();
+    final cardBg = isDark ? const Color(0xff1e201e) : const Color(0xffffffff);
+
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: cardBg,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: isDark
+              ? const Color(0xff424842).withValues(alpha: 0.1)
+              : const Color(0xffdbdad7).withValues(alpha: 0.4),
+          width: 1,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  Icon(Icons.spa_rounded, color: primaryColor, size: 20),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Soulful Micro-Pause',
+                    style: TextStyle(
+                      fontFamily: 'Hanken Grotesk',
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                      color: isDark ? Colors.white : Colors.black,
+                    ),
+                  ),
+                ],
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: primaryColor.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.local_fire_department_rounded,
+                      size: 13,
+                      color: primaryColor,
+                    ),
+                    const SizedBox(width: 3),
+                    Text(
+                      '$streak d',
+                      style: TextStyle(
+                        fontFamily: 'Hanken Grotesk',
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                        color: primaryColor,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: _buildPauseAction(
+                  label: '1m Breath',
+                  icon: Icons.air_rounded,
+                  primaryColor: primaryColor,
+                  isDark: isDark,
+                  onTap: () {
+                    HapticFeedback.selectionClick();
+                    showAnimatedModalSheet(
+                      context: context,
+                      builder: (_) => const BreathworkModal(),
+                    ).then((_) => setState(() {}));
+                  },
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _buildPauseAction(
+                  label: '3m Meditate',
+                  icon: Icons.self_improvement_rounded,
+                  primaryColor: primaryColor,
+                  isDark: isDark,
+                  onTap: () {
+                    HapticFeedback.selectionClick();
+                    showAnimatedModalSheet(
+                      context: context,
+                      builder: (_) =>
+                          const MeditationTimerModal(initialMinutes: 3),
+                    ).then((_) => setState(() {}));
+                  },
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _buildPauseAction(
+                  label: 'Let Go',
+                  icon: Icons.waves_rounded,
+                  primaryColor: primaryColor,
+                  isDark: isDark,
+                  onTap: () {
+                    HapticFeedback.selectionClick();
+                    showAnimatedModalSheet(
+                      context: context,
+                      builder: (_) => const ThoughtReleaseModal(),
+                    ).then((_) => setState(() {}));
+                  },
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPauseAction({
+    required String label,
+    required IconData icon,
+    required Color primaryColor,
+    required bool isDark,
+    required VoidCallback onTap,
+  }) {
+    return PressableScale(
+      onPressed: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 6),
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xff2a2d2a) : const Color(0xfff0efe9),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 15, color: primaryColor),
+            const SizedBox(width: 4),
+            Text(
+              label,
+              style: TextStyle(
+                fontFamily: 'Hanken Grotesk',
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+                color: isDark ? Colors.white : Colors.black,
               ),
             ),
           ],

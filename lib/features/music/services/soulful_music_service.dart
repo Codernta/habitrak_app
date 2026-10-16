@@ -42,7 +42,8 @@ class SoulfulMusicService {
   Duration get position => _position;
   Duration get duration => _duration;
 
-  Stream<SoulfulTrack?> get currentTrackStream => _currentTrackController.stream;
+  Stream<SoulfulTrack?> get currentTrackStream =>
+      _currentTrackController.stream;
   Stream<PlayerState> get playerStateStream => _playerStateController.stream;
   Stream<Duration> get positionStream => _positionController.stream;
   Stream<Duration> get durationStream => _durationController.stream;
@@ -225,7 +226,9 @@ class SoulfulMusicService {
 
       // Check whether track is a bundled asset or a remote stream
       if (track.isLocalAsset) {
-        await player.play(AssetSource(track.audioUrl.replaceFirst('assets/', '')));
+        await player.play(
+          AssetSource(track.audioUrl.replaceFirst('assets/', '')),
+        );
       } else {
         // If device is offline and user attempted to play a remote stream,
         // seamlessly fall back to the bundled offline track
@@ -369,12 +372,15 @@ class SoulfulMusicService {
             SoulfulTrack(
               id: 'archive_$id',
               title: title.length > 36 ? '${title.substring(0, 33)}...' : title,
-              artist: creator.length > 28 ? '${creator.substring(0, 25)}...' : creator,
+              artist: creator.length > 28
+                  ? '${creator.substring(0, 25)}...'
+                  : creator,
               category: 'Meditation & Zen',
               durationSeconds: durationSec,
               audioUrl: 'https://archive.org/download/$id/$id.mp3',
               tags: ['Free API', 'Creative Commons', trimmed],
-              description: 'Public domain & Creative Commons audio from Open Archive.',
+              description:
+                  'Public domain & Creative Commons audio from Open Archive.',
             ),
           );
         }

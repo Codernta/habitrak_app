@@ -128,15 +128,18 @@ class _SoulfulMusicCardState extends State<SoulfulMusicCard> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryColor = isDark ? AppColors.darkPrimary : AppColors.lightPrimary;
+    final primaryColor = isDark
+        ? AppColors.darkPrimary
+        : AppColors.lightPrimary;
     final isPlaying = _playerState == PlayerState.playing;
 
     final maxSeconds = _duration.inSeconds > 0
         ? _duration.inSeconds.toDouble()
         : _activeTrack.durationSeconds.toDouble();
-    final currentSeconds = _position.inSeconds
-        .toDouble()
-        .clamp(0.0, maxSeconds);
+    final currentSeconds = _position.inSeconds.toDouble().clamp(
+      0.0,
+      maxSeconds,
+    );
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(24),
@@ -180,10 +183,11 @@ class _SoulfulMusicCardState extends State<SoulfulMusicCard> {
                     width: 38,
                     height: 38,
                     decoration: BoxDecoration(
-                      color: (isDark
-                              ? AppColors.darkPrimaryContainer
-                              : AppColors.lightPrimaryContainer)
-                          .withValues(alpha: 0.6),
+                      color:
+                          (isDark
+                                  ? AppColors.darkPrimaryContainer
+                                  : AppColors.lightPrimaryContainer)
+                              .withValues(alpha: 0.6),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Icon(
@@ -230,9 +234,7 @@ class _SoulfulMusicCardState extends State<SoulfulMusicCard> {
                         vertical: 6,
                       ),
                       decoration: BoxDecoration(
-                        color: (isDark
-                                ? Colors.white
-                                : Colors.black)
+                        color: (isDark ? Colors.white : Colors.black)
                             .withValues(alpha: 0.06),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
@@ -314,16 +316,18 @@ class _SoulfulMusicCardState extends State<SoulfulMusicCard> {
                           vertical: 4,
                         ),
                         decoration: BoxDecoration(
-                          color: (isDark
-                                  ? AppColors.darkTertiary
-                                  : const Color(0xffd9777f))
-                              .withValues(alpha: 0.2),
+                          color:
+                              (isDark
+                                      ? AppColors.darkTertiary
+                                      : const Color(0xffd9777f))
+                                  .withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(
-                            color: (isDark
-                                    ? AppColors.darkTertiary
-                                    : const Color(0xffd9777f))
-                                .withValues(alpha: 0.4),
+                            color:
+                                (isDark
+                                        ? AppColors.darkTertiary
+                                        : const Color(0xffd9777f))
+                                    .withValues(alpha: 0.4),
                           ),
                         ),
                         child: const Row(
@@ -391,9 +395,7 @@ class _SoulfulMusicCardState extends State<SoulfulMusicCard> {
                     overlayRadius: 12,
                   ),
                   activeTrackColor: primaryColor,
-                  inactiveTrackColor: (isDark
-                          ? Colors.white
-                          : Colors.black)
+                  inactiveTrackColor: (isDark ? Colors.white : Colors.black)
                       .withValues(alpha: 0.1),
                   thumbColor: primaryColor,
                 ),
@@ -444,13 +446,15 @@ class _SoulfulMusicCardState extends State<SoulfulMusicCard> {
                   // Loop Toggle
                   IconButton(
                     icon: Icon(
-                      _isLooping ? Icons.repeat_one_rounded : Icons.repeat_rounded,
+                      _isLooping
+                          ? Icons.repeat_one_rounded
+                          : Icons.repeat_rounded,
                       size: 20,
                       color: _isLooping
                           ? primaryColor
                           : (isDark
-                              ? AppColors.darkOutline
-                              : AppColors.lightOutline),
+                                ? AppColors.darkOutline
+                                : AppColors.lightOutline),
                     ),
                     tooltip: 'Repeat Track',
                     onPressed: () {
@@ -481,10 +485,10 @@ class _SoulfulMusicCardState extends State<SoulfulMusicCard> {
                         ],
                       ),
                       child: Icon(
-                        isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
-                        color: isDark
-                            ? AppColors.darkOnPrimary
-                            : Colors.white,
+                        isPlaying
+                            ? Icons.pause_rounded
+                            : Icons.play_arrow_rounded,
+                        color: isDark ? AppColors.darkOnPrimary : Colors.white,
                         size: 32,
                       ),
                     ),

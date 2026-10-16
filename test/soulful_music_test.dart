@@ -36,7 +36,10 @@ void main() {
         tags: ['Calm'],
       );
 
-      final updated = track.copyWith(title: 'Updated Title', durationSeconds: 180);
+      final updated = track.copyWith(
+        title: 'Updated Title',
+        durationSeconds: 180,
+      );
       expect(updated.title, 'Updated Title');
       expect(updated.durationSeconds, 180);
       expect(updated.formattedDuration, '03:00');
@@ -83,10 +86,12 @@ void main() {
       final yogaMatches = await service.searchTracks('yoga');
       expect(yogaMatches, isNotEmpty);
       expect(
-        yogaMatches.any((t) =>
-            t.title.toLowerCase().contains('yoga') ||
-            t.category.toLowerCase().contains('yoga') ||
-            t.tags.any((tag) => tag.toLowerCase().contains('yoga'))),
+        yogaMatches.any(
+          (t) =>
+              t.title.toLowerCase().contains('yoga') ||
+              t.category.toLowerCase().contains('yoga') ||
+              t.tags.any((tag) => tag.toLowerCase().contains('yoga')),
+        ),
         isTrue,
       );
 

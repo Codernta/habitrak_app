@@ -1,11 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:habitrak/core/animations/animated_modal_sheet.dart';
 import 'package:habitrak/core/animations/app_animations.dart';
+import 'package:habitrak/core/animations/pressable_scale.dart';
 import 'package:habitrak/core/animations/staggered_entrance.dart';
 import 'package:habitrak/core/storage/settings_repository.dart';
 import '../../data/repositories/reflections_repository.dart';
 import '../../data/repositories/intentional_goals_repository.dart';
+import '../../data/repositories/soulfulness_repository.dart';
+import '../widgets/breathwork_modal.dart';
+import '../widgets/meditation_timer_modal.dart';
+import '../widgets/thought_release_modal.dart';
+import '../widgets/sound_bath_modal.dart';
 
 class MindfulLivingPage extends StatefulWidget {
   const MindfulLivingPage({super.key});
@@ -21,9 +28,14 @@ class _MindfulLivingPageState extends State<MindfulLivingPage> {
   late ReflectionsRepository _reflectionsRepo;
   late IntentionalGoalsRepository _goalsRepo;
   late SettingsRepository _settingsRepo;
+  late SoulfulnessRepository _soulfulnessRepo;
 
   List<Map<String, dynamic>> _reflections = [];
   List<Map<String, dynamic>> _intentionalGoals = [];
+  SoulWisdom? _dailyWisdom;
+  String _dailyPrompt = '';
+  Map<String, dynamic> _soulStats = {};
+  int _mindfulStreak = 0;
   bool _isFocusMode = false;
   bool _isDndSchedule = false;
   int _dailyScreenTime = 135;
@@ -36,6 +48,7 @@ class _MindfulLivingPageState extends State<MindfulLivingPage> {
     _reflectionsRepo = context.read<ReflectionsRepository>();
     _goalsRepo = context.read<IntentionalGoalsRepository>();
     _settingsRepo = context.read<SettingsRepository>();
+    _soulfulnessRepo = context.read<SoulfulnessRepository>();
 
     _reflections = List.from(_reflectionsRepo.getReflections());
     _isFocusMode = _settingsRepo.isFocusModeEnabled;
@@ -43,6 +56,16 @@ class _MindfulLivingPageState extends State<MindfulLivingPage> {
     _dailyScreenTime = _settingsRepo.dailyScreenTimeMinutes;
     _screenTimeLimit = _settingsRepo.screenTimeLimitMinutes;
     _lastEntryTime = _reflectionsRepo.getLastEntryTime();
+
+    _dailyWisdom = _soulfulnessRepo.getDailyWisdom();
+    _dailyPrompt = _soulfulnessRepo.getDailyPrompt();
+    _soulStats = _soulfulnessRepo.getTodayStats();
+    _mindfulStreak = _soulfulnessRepo.getMindfulStreak();
+
+    // Ensure daily syncs
+    _soulfulnessRepo.syncDailySoulfulness().then((_) {
+      if (mounted) _refreshSoulData();
+    });
 
     // Ensure intentional goals are synced for today
     _goalsRepo.syncDailyGoals().then((_) {
@@ -59,6 +82,59 @@ class _MindfulLivingPageState extends State<MindfulLivingPage> {
   void dispose() {
     _journalController.dispose();
     super.dispose();
+  }
+
+  void _refreshSoulData() {
+    if (mounted) {
+      setState(() {
+        _soulStats = _soulfulnessRepo.getTodayStats();
+        _mindfulStreak = _soulfulnessRepo.getMindfulStreak();
+        _dailyWisdom = _soulfulnessRepo.getDailyWisdom();
+        _dailyPrompt = _soulfulnessRepo.getDailyPrompt();
+      });
+    }
+  }
+
+  void _openBreathwork() {
+    HapticFeedback.selectionClick();
+    showAnimatedModalSheet(
+      context: context,
+      builder: (_) => const BreathworkModal(),
+    ).then((_) => _refreshSoulData());
+  }
+
+  void _openMeditation() {
+    HapticFeedback.selectionClick();
+    showAnimatedModalSheet(
+      context: context,
+      builder: (_) => const MeditationTimerModal(),
+    ).then((_) => _refreshSoulData());
+  }
+
+  void _openThoughtRelease() {
+    HapticFeedback.selectionClick();
+    showAnimatedModalSheet(
+      context: context,
+      builder: (_) => const ThoughtReleaseModal(),
+    ).then((_) => _refreshSoulData());
+  }
+
+  void _openSoundBath() {
+    HapticFeedback.selectionClick();
+    showAnimatedModalSheet(
+      context: context,
+      builder: (_) => const SoundBathModal(),
+    ).then((_) => _refreshSoulData());
+  }
+
+  Future<void> _shuffleDailyPrompt() async {
+    HapticFeedback.selectionClick();
+    final newPrompt = await _soulfulnessRepo.shuffleDailyPrompt();
+    if (mounted) {
+      setState(() {
+        _dailyPrompt = newPrompt;
+      });
+    }
   }
 
   Future<void> _saveReflection() async {
@@ -284,29 +360,424 @@ class _MindfulLivingPageState extends State<MindfulLivingPage> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             const SizedBox(height: 10),
-            StaggeredEntrance(
-              index: 0,
-              child: _buildGratitudeCard(isDark, primaryColor, cardBg),
-            ),
-            const SizedBox(height: 24),
+            if (_dailyWisdom != null) ...[
+              StaggeredEntrance(
+                index: 0,
+                child: _buildDailyWisdomCard(isDark, primaryColor, cardBg),
+              ),
+              const SizedBox(height: 20),
+            ],
             StaggeredEntrance(
               index: 1,
-              child: _buildGoalsCard(isDark, primaryColor, cardBg),
+              child: _buildSoulSanctuaryHub(isDark, primaryColor, cardBg),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 18),
             StaggeredEntrance(
               index: 2,
-              child: _buildWellBeingCard(isDark, primaryColor, cardBg),
+              child: _buildMindfulStatsStrip(isDark, primaryColor, cardBg),
             ),
             const SizedBox(height: 24),
             StaggeredEntrance(
               index: 3,
+              child: _buildGratitudeCard(isDark, primaryColor, cardBg),
+            ),
+            const SizedBox(height: 24),
+            StaggeredEntrance(
+              index: 4,
+              child: _buildGoalsCard(isDark, primaryColor, cardBg),
+            ),
+            const SizedBox(height: 24),
+            StaggeredEntrance(
+              index: 5,
+              child: _buildWellBeingCard(isDark, primaryColor, cardBg),
+            ),
+            const SizedBox(height: 24),
+            StaggeredEntrance(
+              index: 6,
               child: _buildRecentReflections(isDark, primaryColor, cardBg),
             ),
             const SizedBox(height: 30),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildDailyWisdomCard(bool isDark, Color primaryColor, Color cardBg) {
+    if (_dailyWisdom == null) return const SizedBox.shrink();
+
+    return Container(
+      padding: const EdgeInsets.all(22),
+      decoration: BoxDecoration(
+        color: cardBg,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: isDark
+              ? const Color(0xff424842).withValues(alpha: 0.1)
+              : const Color(0xffdbdad7).withValues(alpha: 0.4),
+          width: 1,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
+                decoration: BoxDecoration(
+                  color: primaryColor.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.auto_awesome, color: primaryColor, size: 14),
+                    const SizedBox(width: 6),
+                    Text(
+                      'DAILY SOUL WISDOM • ${_dailyWisdom!.theme.toUpperCase()}',
+                      style: TextStyle(
+                        fontFamily: 'Hanken Grotesk',
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 0.8,
+                        color: primaryColor,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Text(
+                'Today',
+                style: TextStyle(
+                  fontFamily: 'Hanken Grotesk',
+                  fontSize: 11,
+                  color: isDark
+                      ? const Color(0xffc2c8c0).withValues(alpha: 0.5)
+                      : const Color(0xff615e56).withValues(alpha: 0.5),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          Text(
+            '"${_dailyWisdom!.quote}"',
+            style: TextStyle(
+              fontFamily: 'Hanken Grotesk',
+              fontSize: 16,
+              fontStyle: FontStyle.italic,
+              fontWeight: FontWeight.w600,
+              color: isDark ? Colors.white : Colors.black,
+              height: 1.4,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            '— ${_dailyWisdom!.author}',
+            style: TextStyle(
+              fontFamily: 'Hanken Grotesk',
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+              color: primaryColor,
+            ),
+          ),
+          const SizedBox(height: 14),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            decoration: BoxDecoration(
+              color: isDark
+                  ? const Color(0xff182219).withValues(alpha: 0.5)
+                  : const Color(0xfff3f7f3),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(
+                  Icons.lightbulb_outline_rounded,
+                  size: 16,
+                  color: primaryColor,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    _dailyWisdom!.reflection,
+                    style: TextStyle(
+                      fontFamily: 'Hanken Grotesk',
+                      fontSize: 12,
+                      color: isDark
+                          ? const Color(0xffc2c8c0).withValues(alpha: 0.85)
+                          : const Color(0xff615e56).withValues(alpha: 0.85),
+                      height: 1.3,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSoulSanctuaryHub(bool isDark, Color primaryColor, Color cardBg) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4),
+          child: Row(
+            children: [
+              Icon(Icons.spa_rounded, color: primaryColor, size: 20),
+              const SizedBox(width: 8),
+              Text(
+                'Soulful Practices',
+                style: TextStyle(
+                  fontFamily: 'Hanken Grotesk',
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: isDark ? Colors.white : Colors.black,
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            Expanded(
+              child: _buildSanctuaryCard(
+                title: 'Breathwork',
+                subtitle: 'Box, 4-7-8, Prana',
+                icon: Icons.air_rounded,
+                primaryColor: primaryColor,
+                isDark: isDark,
+                cardBg: cardBg,
+                onTap: _openBreathwork,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _buildSanctuaryCard(
+                title: 'Meditation',
+                subtitle: 'Singing bowl timer',
+                icon: Icons.self_improvement_rounded,
+                primaryColor: primaryColor,
+                isDark: isDark,
+                cardBg: cardBg,
+                onTap: _openMeditation,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            Expanded(
+              child: _buildSanctuaryCard(
+                title: 'Release Thought',
+                subtitle: 'Surrender to river',
+                icon: Icons.waves_rounded,
+                primaryColor: primaryColor,
+                isDark: isDark,
+                cardBg: cardBg,
+                onTap: _openThoughtRelease,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _buildSanctuaryCard(
+                title: 'Sound Bath',
+                subtitle: 'Ambient nature mixer',
+                icon: Icons.graphic_eq_rounded,
+                primaryColor: primaryColor,
+                isDark: isDark,
+                cardBg: cardBg,
+                onTap: _openSoundBath,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSanctuaryCard({
+    required String title,
+    required String subtitle,
+    required IconData icon,
+    required Color primaryColor,
+    required bool isDark,
+    required Color cardBg,
+    required VoidCallback onTap,
+  }) {
+    return PressableScale(
+      onPressed: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: cardBg,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(
+            color: isDark
+                ? const Color(0xff424842).withValues(alpha: 0.1)
+                : const Color(0xffdbdad7).withValues(alpha: 0.4),
+            width: 1,
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: primaryColor.withValues(alpha: 0.15),
+              ),
+              child: Icon(icon, color: primaryColor, size: 20),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              title,
+              style: TextStyle(
+                fontFamily: 'Hanken Grotesk',
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+                color: isDark ? Colors.white : Colors.black,
+              ),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              subtitle,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontFamily: 'Hanken Grotesk',
+                fontSize: 11,
+                color: isDark
+                    ? const Color(0xffc2c8c0).withValues(alpha: 0.6)
+                    : const Color(0xff615e56).withValues(alpha: 0.6),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMindfulStatsStrip(
+    bool isDark,
+    Color primaryColor,
+    Color cardBg,
+  ) {
+    final todayMins = (_soulStats['todayMeditationMinutes'] as int?) ?? 0;
+    final todayBreaths = (_soulStats['todayBreathworkSessions'] as int?) ?? 0;
+    final todayThoughts = (_soulStats['todayReleasedThoughts'] as int?) ?? 0;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      decoration: BoxDecoration(
+        color: cardBg,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isDark
+              ? const Color(0xff424842).withValues(alpha: 0.1)
+              : const Color(0xffdbdad7).withValues(alpha: 0.4),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          _buildStatItem(
+            'Meditated',
+            '${todayMins}m',
+            Icons.self_improvement_rounded,
+            primaryColor,
+            isDark,
+          ),
+          _buildStatDivider(isDark),
+          _buildStatItem(
+            'Breaths',
+            '$todayBreaths',
+            Icons.air_rounded,
+            primaryColor,
+            isDark,
+          ),
+          _buildStatDivider(isDark),
+          _buildStatItem(
+            'Released',
+            '$todayThoughts',
+            Icons.waves_rounded,
+            primaryColor,
+            isDark,
+          ),
+          _buildStatDivider(isDark),
+          _buildStatItem(
+            'Streak',
+            '$_mindfulStreak d',
+            Icons.local_fire_department_rounded,
+            primaryColor,
+            isDark,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatItem(
+    String label,
+    String value,
+    IconData icon,
+    Color primary,
+    bool isDark,
+  ) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 14, color: primary),
+            const SizedBox(width: 4),
+            Text(
+              value,
+              style: TextStyle(
+                fontFamily: 'Hanken Grotesk',
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+                color: isDark ? Colors.white : Colors.black,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 2),
+        Text(
+          label,
+          style: TextStyle(
+            fontFamily: 'Hanken Grotesk',
+            fontSize: 10,
+            color: isDark
+                ? const Color(0xffc2c8c0).withValues(alpha: 0.5)
+                : const Color(0xff615e56).withValues(alpha: 0.5),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStatDivider(bool isDark) {
+    return Container(
+      height: 24,
+      width: 1,
+      color: isDark
+          ? const Color(0xff424842).withValues(alpha: 0.3)
+          : const Color(0xffdbdad7).withValues(alpha: 0.5),
     );
   }
 
@@ -351,7 +822,56 @@ class _MindfulLivingPageState extends State<MindfulLivingPage> {
                   : const Color(0xff615e56).withValues(alpha: 0.5),
             ),
           ),
-          const SizedBox(height: 18),
+          const SizedBox(height: 14),
+
+          // Dynamic daily prompt banner with shuffle button
+          if (_dailyPrompt.isNotEmpty) ...[
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              decoration: BoxDecoration(
+                color: isDark
+                    ? const Color(0xff182219).withValues(alpha: 0.5)
+                    : const Color(0xfff3f7f3),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: primaryColor.withValues(alpha: 0.2),
+                  width: 1,
+                ),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.format_quote_rounded,
+                    size: 18,
+                    color: primaryColor,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      _dailyPrompt,
+                      style: TextStyle(
+                        fontFamily: 'Hanken Grotesk',
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: isDark ? Colors.white : Colors.black,
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    icon: Icon(
+                      Icons.shuffle_rounded,
+                      size: 18,
+                      color: primaryColor,
+                    ),
+                    tooltip: 'Shuffle Inspiration',
+                    onPressed: _shuffleDailyPrompt,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 14),
+          ],
+
           TextField(
             controller: _journalController,
             maxLines: 3,
@@ -360,7 +880,7 @@ class _MindfulLivingPageState extends State<MindfulLivingPage> {
               fontSize: 14,
             ),
             decoration: InputDecoration(
-              hintText: 'What is one thing you are grateful for today?',
+              hintText: 'Reflect and write freely...',
               hintStyle: TextStyle(
                 color: isDark
                     ? const Color(0xffc2c8c0).withValues(alpha: 0.4)

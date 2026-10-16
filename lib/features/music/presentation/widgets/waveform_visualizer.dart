@@ -55,7 +55,9 @@ class _WaveformVisualizerState extends State<WaveformVisualizer>
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryColor = isDark ? AppColors.darkPrimary : AppColors.lightPrimary;
+    final primaryColor = isDark
+        ? AppColors.darkPrimary
+        : AppColors.lightPrimary;
     final secondaryColor = isDark
         ? AppColors.darkPrimaryContainer
         : AppColors.lightPrimaryContainer;
@@ -72,8 +74,8 @@ class _WaveformVisualizerState extends State<WaveformVisualizer>
               final t = _controller.value * 2 * math.pi;
               final wave = widget.isPlaying
                   ? (math.sin(t + phase) * 0.4 +
-                      math.sin(2 * t + phase * 1.5) * 0.2 +
-                      0.5)
+                        math.sin(2 * t + phase * 1.5) * 0.2 +
+                        0.5)
                   : 0.15 + (math.sin(index * 0.8) * 0.08);
 
               final barHeight = (wave.clamp(0.12, 1.0) * widget.height);
@@ -85,10 +87,7 @@ class _WaveformVisualizerState extends State<WaveformVisualizer>
                   gradient: LinearGradient(
                     begin: Alignment.bottomCenter,
                     end: Alignment.topCenter,
-                    colors: [
-                      secondaryColor,
-                      primaryColor,
-                    ],
+                    colors: [secondaryColor, primaryColor],
                   ),
                   borderRadius: BorderRadius.circular(2),
                 ),

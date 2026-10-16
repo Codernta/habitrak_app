@@ -8,6 +8,7 @@ import 'package:habitrak/core/animations/staggered_entrance.dart';
 import 'package:habitrak/features/habit/domain/entities/habit.dart';
 import 'package:habitrak/features/habit/presentation/bloc/habit_bloc.dart';
 import '../../data/repositories/activity_repository.dart';
+import '../../../mindfulness/data/repositories/soulfulness_repository.dart';
 
 class WalkTrackerPage extends StatefulWidget {
   const WalkTrackerPage({super.key});
@@ -18,9 +19,19 @@ class WalkTrackerPage extends StatefulWidget {
 
 class _WalkTrackerPageState extends State<WalkTrackerPage>
     with TickerProviderStateMixin {
-  bool _isMusicMode = true;
+  int _selectedModeIndex = 0; // 0: Music, 1: Mindful, 2: Social
   bool _isPlaying = true;
   int _currentPromptIndex = 0;
+  int _currentMindfulPromptIndex = 0;
+
+  final List<String> _mindfulPrompts = [
+    'Feel the sole of each foot make contact with the earth. Notice the heel-to-toe roll.',
+    'Observe the temperature of the air as you breathe in, and the warmth as you breathe out.',
+    'Notice the furthest sound you can hear. Do not judge it—simply let it arrive and fade.',
+    'Drop your shoulders, unclamp your jaw, and let your arms swing with natural ease.',
+    'Look around and identify three distinct shades of green or shapes of light in the trees.',
+    'Coordinate your breath: take 4 steps for your inhale, and 4 gentle steps for your exhale.',
+  ];
 
   Timer? _stopwatchTimer;
   int _elapsedSeconds = 24 * 60 + 18; // 24:18 initial baseline
@@ -216,15 +227,20 @@ class _WalkTrackerPageState extends State<WalkTrackerPage>
                     opacity: animation,
                     child: SlideTransition(
                       position: Tween<Offset>(
-                        begin: Offset(_isMusicMode ? -0.05 : 0.05, 0),
+                        begin: Offset(
+                          _selectedModeIndex == 0 ? -0.05 : 0.05,
+                          0,
+                        ),
                         end: Offset.zero,
                       ).animate(animation),
                       child: child,
                     ),
                   );
                 },
-                child: _isMusicMode
+                child: _selectedModeIndex == 0
                     ? _buildMusicModeCard(isDark)
+                    : _selectedModeIndex == 1
+                    ? _buildMindfulModeCard(isDark)
                     : _buildSocialModeCard(isDark),
               ),
             ),
@@ -251,6 +267,16 @@ class _WalkTrackerPageState extends State<WalkTrackerPage>
                       category: HabitCategory.health,
                     ),
                   );
+
+                  // If in mindful walk mode, record into SoulfulnessRepository
+                  if (_selectedModeIndex == 1) {
+                    context
+                        .read<SoulfulnessRepository>()
+                        .recordMeditationSession(
+                          durationMinutes: durationMinutes,
+                          technique: 'Mindful Walk',
+                        );
+                  }
 
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
@@ -398,6 +424,10 @@ class _WalkTrackerPageState extends State<WalkTrackerPage>
         ? const Color(0xffc2c8c0).withValues(alpha: 0.6)
         : const Color(0xff615e56).withValues(alpha: 0.6);
 
+    final alignment = _selectedModeIndex == 0
+        ? Alignment.centerLeft
+        : (_selectedModeIndex == 1 ? Alignment.center : Alignment.centerRight);
+
     return Container(
       height: 50,
       decoration: BoxDecoration(
@@ -411,11 +441,9 @@ class _WalkTrackerPageState extends State<WalkTrackerPage>
           AnimatedAlign(
             duration: const Duration(milliseconds: 300),
             curve: Curves.easeOutBack,
-            alignment: _isMusicMode
-                ? Alignment.centerLeft
-                : Alignment.centerRight,
+            alignment: alignment,
             child: FractionallySizedBox(
-              widthFactor: 0.5,
+              widthFactor: 0.333,
               child: Container(
                 decoration: BoxDecoration(
                   color: isDark ? const Color(0xff1e201e) : Colors.white,
@@ -433,7 +461,7 @@ class _WalkTrackerPageState extends State<WalkTrackerPage>
               ),
             ),
           ),
-          // Interactive Text buttons on top
+          // Interactive 3 buttons
           Row(
             children: [
               Expanded(
@@ -441,7 +469,7 @@ class _WalkTrackerPageState extends State<WalkTrackerPage>
                   behavior: HitTestBehavior.opaque,
                   onTap: () {
                     HapticFeedback.selectionClick();
-                    setState(() => _isMusicMode = true);
+                    setState(() => _selectedModeIndex = 0);
                   },
                   child: Center(
                     child: Row(
@@ -449,16 +477,19 @@ class _WalkTrackerPageState extends State<WalkTrackerPage>
                       children: [
                         Icon(
                           Icons.music_note,
-                          color: _isMusicMode ? activeColor : inactiveTextColor,
-                          size: 20,
+                          color: _selectedModeIndex == 0
+                              ? activeColor
+                              : inactiveTextColor,
+                          size: 18,
                         ),
-                        const SizedBox(width: 8),
+                        const SizedBox(width: 4),
                         Text(
                           'Music',
                           style: TextStyle(
                             fontFamily: 'Hanken Grotesk',
+                            fontSize: 12,
                             fontWeight: FontWeight.bold,
-                            color: _isMusicMode
+                            color: _selectedModeIndex == 0
                                 ? activeColor
                                 : inactiveTextColor,
                           ),
@@ -473,7 +504,42 @@ class _WalkTrackerPageState extends State<WalkTrackerPage>
                   behavior: HitTestBehavior.opaque,
                   onTap: () {
                     HapticFeedback.selectionClick();
-                    setState(() => _isMusicMode = false);
+                    setState(() => _selectedModeIndex = 1);
+                  },
+                  child: Center(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.spa_rounded,
+                          color: _selectedModeIndex == 1
+                              ? activeColor
+                              : inactiveTextColor,
+                          size: 18,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Mindful',
+                          style: TextStyle(
+                            fontFamily: 'Hanken Grotesk',
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: _selectedModeIndex == 1
+                                ? activeColor
+                                : inactiveTextColor,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              Expanded(
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () {
+                    HapticFeedback.selectionClick();
+                    setState(() => _selectedModeIndex = 2);
                   },
                   child: Center(
                     child: Row(
@@ -481,18 +547,19 @@ class _WalkTrackerPageState extends State<WalkTrackerPage>
                       children: [
                         Icon(
                           Icons.group,
-                          color: !_isMusicMode
+                          color: _selectedModeIndex == 2
                               ? activeColor
                               : inactiveTextColor,
-                          size: 20,
+                          size: 18,
                         ),
-                        const SizedBox(width: 8),
+                        const SizedBox(width: 4),
                         Text(
                           'Social',
                           style: TextStyle(
                             fontFamily: 'Hanken Grotesk',
+                            fontSize: 12,
                             fontWeight: FontWeight.bold,
-                            color: !_isMusicMode
+                            color: _selectedModeIndex == 2
                                 ? activeColor
                                 : inactiveTextColor,
                           ),
@@ -503,6 +570,154 @@ class _WalkTrackerPageState extends State<WalkTrackerPage>
                 ),
               ),
             ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMindfulModeCard(bool isDark) {
+    final primaryColor = isDark
+        ? const Color(0xffb0ceb2)
+        : const Color(0xff8ba88e);
+    final cardColor = isDark
+        ? const Color(0xff1e201e)
+        : const Color(0xffffffff);
+
+    final prompt = _mindfulPrompts[_currentMindfulPromptIndex];
+
+    return Container(
+      key: const ValueKey('mindful_walk'),
+      padding: const EdgeInsets.all(22),
+      decoration: BoxDecoration(
+        color: cardColor,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: isDark
+              ? const Color(0xff424842).withValues(alpha: 0.1)
+              : const Color(0xffdbdad7).withValues(alpha: 0.4),
+          width: 1,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  Icon(Icons.spa_rounded, color: primaryColor, size: 22),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Walking Meditation',
+                    style: TextStyle(
+                      fontFamily: 'Hanken Grotesk',
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: isDark ? Colors.white : Colors.black,
+                    ),
+                  ),
+                ],
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
+                decoration: BoxDecoration(
+                  color: primaryColor.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  'Sensory Focus',
+                  style: TextStyle(
+                    fontFamily: 'Hanken Grotesk',
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                    color: primaryColor,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 18),
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: isDark
+                  ? const Color(0xff182219).withValues(alpha: 0.5)
+                  : const Color(0xfff3f7f3),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(
+                color: primaryColor.withValues(alpha: 0.2),
+                width: 1,
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      Icons.remove_red_eye_outlined,
+                      size: 16,
+                      color: primaryColor,
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      'SENSORY AWARENESS',
+                      style: TextStyle(
+                        fontFamily: 'Hanken Grotesk',
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1.0,
+                        color: primaryColor,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  '"$prompt"',
+                  style: TextStyle(
+                    fontFamily: 'Hanken Grotesk',
+                    fontSize: 15,
+                    fontStyle: FontStyle.italic,
+                    fontWeight: FontWeight.w600,
+                    color: isDark ? Colors.white : Colors.black,
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 18),
+          OutlinedButton.icon(
+            onPressed: () {
+              HapticFeedback.selectionClick();
+              setState(() {
+                _currentMindfulPromptIndex =
+                    (_currentMindfulPromptIndex + 1) % _mindfulPrompts.length;
+              });
+            },
+            icon: Icon(Icons.refresh_rounded, size: 16, color: primaryColor),
+            label: Text(
+              'Next Awareness Cue',
+              style: TextStyle(
+                fontFamily: 'Hanken Grotesk',
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: primaryColor,
+              ),
+            ),
+            style: OutlinedButton.styleFrom(
+              side: BorderSide(color: primaryColor.withValues(alpha: 0.4)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              padding: const EdgeInsets.symmetric(vertical: 12),
+            ),
           ),
         ],
       ),

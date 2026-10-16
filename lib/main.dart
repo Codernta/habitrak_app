@@ -8,6 +8,7 @@ import 'features/habit/data/repositories/hive_habit_repository.dart';
 import 'features/habit/presentation/bloc/habit_bloc.dart';
 import 'features/mindfulness/data/repositories/reflections_repository.dart';
 import 'features/mindfulness/data/repositories/intentional_goals_repository.dart';
+import 'features/mindfulness/data/repositories/soulfulness_repository.dart';
 import 'features/activity/data/repositories/activity_repository.dart';
 import 'features/profile/data/repositories/profile_repository.dart';
 import 'features/splash/presentation/pages/splash_page.dart';
@@ -34,6 +35,7 @@ void main() async {
   final settingsRepository = SettingsRepository();
   final reflectionsRepository = ReflectionsRepository();
   final goalsRepository = IntentionalGoalsRepository();
+  final soulfulnessRepository = SoulfulnessRepository();
   final activityRepository = ActivityRepository();
   final profileRepository = ProfileRepository();
   final connectivityService = ConnectivityService()..initialize();
@@ -41,6 +43,7 @@ void main() async {
 
   await reflectionsRepository.ensureInitialized();
   await goalsRepository.ensureInitialized();
+  await soulfulnessRepository.ensureInitialized();
 
   runApp(
     MultiRepositoryProvider(
@@ -52,6 +55,9 @@ void main() async {
         ),
         RepositoryProvider<IntentionalGoalsRepository>.value(
           value: goalsRepository,
+        ),
+        RepositoryProvider<SoulfulnessRepository>.value(
+          value: soulfulnessRepository,
         ),
         RepositoryProvider<ActivityRepository>.value(value: activityRepository),
         RepositoryProvider<ProfileRepository>.value(value: profileRepository),

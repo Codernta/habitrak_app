@@ -10,10 +10,7 @@ import 'package:habitrak/features/music/services/soulful_music_service.dart';
 class MusicSearchSheet extends StatefulWidget {
   final Function(SoulfulTrack) onTrackSelected;
 
-  const MusicSearchSheet({
-    super.key,
-    required this.onTrackSelected,
-  });
+  const MusicSearchSheet({super.key, required this.onTrackSelected});
 
   static Future<void> show(
     BuildContext context, {
@@ -83,7 +80,9 @@ class _MusicSearchSheetState extends State<MusicSearchSheet> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryColor = isDark ? AppColors.darkPrimary : AppColors.lightPrimary;
+    final primaryColor = isDark
+        ? AppColors.darkPrimary
+        : AppColors.lightPrimary;
 
     return ClipRRect(
       borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
@@ -126,13 +125,18 @@ class _MusicSearchSheetState extends State<MusicSearchSheet> {
                     Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: (isDark
-                                ? AppColors.darkPrimaryContainer
-                                : AppColors.lightPrimaryContainer)
-                            .withValues(alpha: 0.5),
+                        color:
+                            (isDark
+                                    ? AppColors.darkPrimaryContainer
+                                    : AppColors.lightPrimaryContainer)
+                                .withValues(alpha: 0.5),
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      child: Icon(Icons.music_note, color: primaryColor, size: 20),
+                      child: Icon(
+                        Icons.music_note,
+                        color: primaryColor,
+                        size: 20,
+                      ),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
@@ -202,9 +206,7 @@ class _MusicSearchSheetState extends State<MusicSearchSheet> {
                           )
                         : null,
                     filled: true,
-                    fillColor: (isDark
-                            ? Colors.white
-                            : Colors.black)
+                    fillColor: (isDark ? Colors.white : Colors.black)
                         .withValues(alpha: 0.05),
                     contentPadding: const EdgeInsets.symmetric(vertical: 12),
                     border: OutlineInputBorder(
@@ -238,7 +240,7 @@ class _MusicSearchSheetState extends State<MusicSearchSheet> {
                           color: isSelected
                               ? primaryColor
                               : (isDark ? Colors.white : Colors.black)
-                                  .withValues(alpha: 0.06),
+                                    .withValues(alpha: 0.06),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
@@ -249,11 +251,11 @@ class _MusicSearchSheetState extends State<MusicSearchSheet> {
                             fontWeight: FontWeight.w600,
                             color: isSelected
                                 ? (isDark
-                                    ? AppColors.darkOnPrimary
-                                    : Colors.white)
+                                      ? AppColors.darkOnPrimary
+                                      : Colors.white)
                                 : (isDark
-                                    ? AppColors.darkOnSurface
-                                    : AppColors.lightOnSurface),
+                                      ? AppColors.darkOnSurface
+                                      : AppColors.lightOnSurface),
                           ),
                         ),
                       ),
@@ -268,156 +270,161 @@ class _MusicSearchSheetState extends State<MusicSearchSheet> {
                 child: _isLoading
                     ? const Center(child: CircularProgressIndicator())
                     : _tracks.isEmpty
-                        ? Center(
-                            child: Text(
-                              'No music tracks found.\nTry "yoga", "meditation", or "rain"',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontFamily: 'Hanken Grotesk',
-                                color: isDark
-                                    ? AppColors.darkOnSurfaceVariant
-                                    : AppColors.lightOnSurfaceVariant,
+                    ? Center(
+                        child: Text(
+                          'No music tracks found.\nTry "yoga", "meditation", or "rain"',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontFamily: 'Hanken Grotesk',
+                            color: isDark
+                                ? AppColors.darkOnSurfaceVariant
+                                : AppColors.lightOnSurfaceVariant,
+                          ),
+                        ),
+                      )
+                    : ListView.separated(
+                        padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
+                        itemCount: _tracks.length,
+                        separatorBuilder: (_, __) => const SizedBox(height: 8),
+                        itemBuilder: (context, index) {
+                          final track = _tracks[index];
+                          final isCurrent =
+                              _musicService.currentTrack?.id == track.id;
+                          final isPlaying =
+                              isCurrent && _musicService.isPlaying;
+
+                          return Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 10,
+                            ),
+                            decoration: BoxDecoration(
+                              color: isCurrent
+                                  ? (isDark
+                                            ? AppColors.darkPrimaryContainer
+                                            : AppColors.lightPrimaryContainer)
+                                        .withValues(alpha: 0.35)
+                                  : (isDark ? Colors.white : Colors.black)
+                                        .withValues(alpha: 0.03),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: isCurrent
+                                    ? primaryColor.withValues(alpha: 0.5)
+                                    : Colors.transparent,
                               ),
                             ),
-                          )
-                        : ListView.separated(
-                            padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
-                            itemCount: _tracks.length,
-                            separatorBuilder: (_, __) => const SizedBox(height: 8),
-                            itemBuilder: (context, index) {
-                              final track = _tracks[index];
-                              final isCurrent =
-                                  _musicService.currentTrack?.id == track.id;
-                              final isPlaying =
-                                  isCurrent && _musicService.isPlaying;
-
-                              return Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 14,
-                                  vertical: 10,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: isCurrent
-                                      ? (isDark
-                                              ? AppColors.darkPrimaryContainer
-                                              : AppColors.lightPrimaryContainer)
-                                          .withValues(alpha: 0.35)
-                                      : (isDark
-                                              ? Colors.white
-                                              : Colors.black)
-                                          .withValues(alpha: 0.03),
-                                  borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(
-                                    color: isCurrent
-                                        ? primaryColor.withValues(alpha: 0.5)
-                                        : Colors.transparent,
+                            child: Row(
+                              children: [
+                                GestureDetector(
+                                  onTap: () {
+                                    HapticFeedback.lightImpact();
+                                    widget.onTrackSelected(track);
+                                    _musicService.togglePlayPause(track);
+                                    setState(() {});
+                                  },
+                                  child: Container(
+                                    width: 40,
+                                    height: 40,
+                                    decoration: BoxDecoration(
+                                      color: isPlaying
+                                          ? primaryColor
+                                          : (isDark
+                                                    ? Colors.white
+                                                    : Colors.black)
+                                                .withValues(alpha: 0.08),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: Icon(
+                                      isPlaying
+                                          ? Icons.pause_rounded
+                                          : Icons.play_arrow_rounded,
+                                      color: isPlaying
+                                          ? (isDark
+                                                ? AppColors.darkOnPrimary
+                                                : Colors.white)
+                                          : primaryColor,
+                                      size: 22,
+                                    ),
                                   ),
                                 ),
-                                child: Row(
-                                  children: [
-                                    GestureDetector(
-                                      onTap: () {
-                                        HapticFeedback.lightImpact();
-                                        widget.onTrackSelected(track);
-                                        _musicService.togglePlayPause(track);
-                                        setState(() {});
-                                      },
-                                      child: Container(
-                                        width: 40,
-                                        height: 40,
-                                        decoration: BoxDecoration(
-                                          color: isPlaying
-                                              ? primaryColor
-                                              : (isDark
-                                                      ? Colors.white
-                                                      : Colors.black)
-                                                  .withValues(alpha: 0.08),
-                                          shape: BoxShape.circle,
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        track.title,
+                                        style: TextStyle(
+                                          fontFamily: 'Hanken Grotesk',
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w600,
+                                          color: isDark
+                                              ? AppColors.darkOnSurface
+                                              : AppColors.lightOnSurface,
                                         ),
-                                        child: Icon(
-                                          isPlaying
-                                              ? Icons.pause_rounded
-                                              : Icons.play_arrow_rounded,
-                                          color: isPlaying
-                                              ? (isDark
-                                                  ? AppColors.darkOnPrimary
-                                                  : Colors.white)
-                                              : primaryColor,
-                                          size: 22,
-                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
                                       ),
-                                    ),
-                                    const SizedBox(width: 12),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            track.title,
-                                            style: TextStyle(
-                                              fontFamily: 'Hanken Grotesk',
-                                              fontSize: 14,
-                                              fontWeight: FontWeight.w600,
-                                              color: isDark
-                                                  ? AppColors.darkOnSurface
-                                                  : AppColors.lightOnSurface,
-                                            ),
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                          const SizedBox(height: 2),
-                                          Text(
-                                            '${track.artist} • ${track.category}',
-                                            style: TextStyle(
-                                              fontFamily: 'Hanken Grotesk',
-                                              fontSize: 11,
-                                              color: isDark
-                                                  ? AppColors.darkOnSurfaceVariant
-                                                  : AppColors.lightOnSurfaceVariant,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 8,
-                                        vertical: 4,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: (isDark
-                                                ? Colors.white
-                                                : Colors.black)
-                                            .withValues(alpha: 0.06),
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      child: Text(
-                                        track.formattedDuration,
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        '${track.artist} • ${track.category}',
                                         style: TextStyle(
                                           fontFamily: 'Hanken Grotesk',
                                           fontSize: 11,
-                                          fontWeight: FontWeight.w600,
-                                          color: primaryColor,
+                                          color: isDark
+                                              ? AppColors.darkOnSurfaceVariant
+                                              : AppColors.lightOnSurfaceVariant,
                                         ),
                                       ),
-                                    ),
-                                  ],
+                                    ],
+                                  ),
                                 ),
-                              );
-                            },
-                          ),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 4,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color:
+                                        (isDark ? Colors.white : Colors.black)
+                                            .withValues(alpha: 0.06),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Text(
+                                    track.formattedDuration,
+                                    style: TextStyle(
+                                      fontFamily: 'Hanken Grotesk',
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w600,
+                                      color: primaryColor,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
               ),
 
               // Bottom free license guarantee footer
               Container(
-                padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
-                color: (isDark ? Colors.white : Colors.black)
-                    .withValues(alpha: 0.02),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 10,
+                  horizontal: 16,
+                ),
+                color: (isDark ? Colors.white : Colors.black).withValues(
+                  alpha: 0.02,
+                ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.verified_outlined, size: 14, color: primaryColor),
+                    Icon(
+                      Icons.verified_outlined,
+                      size: 14,
+                      color: primaryColor,
+                    ),
                     const SizedBox(width: 6),
                     Text(
                       '100% Free & Royalty-Free (No licensing or paid fees)',

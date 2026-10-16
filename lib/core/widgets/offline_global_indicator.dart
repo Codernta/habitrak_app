@@ -78,7 +78,10 @@ class _OfflineGlobalIndicatorState extends State<OfflineGlobalIndicator> {
                 duration: const Duration(milliseconds: 300),
                 opacity: showBanner ? 1.0 : 0.0,
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(16),
                     child: BackdropFilter(
@@ -91,20 +94,36 @@ class _OfflineGlobalIndicatorState extends State<OfflineGlobalIndicator> {
                         decoration: BoxDecoration(
                           color: !_isOnline
                               ? (isDark
-                                  ? const Color(0xff2a2323).withValues(alpha: 0.88)
-                                  : const Color(0xfffdf2f2).withValues(alpha: 0.92))
+                                    ? const Color(
+                                        0xff2a2323,
+                                      ).withValues(alpha: 0.88)
+                                    : const Color(
+                                        0xfffdf2f2,
+                                      ).withValues(alpha: 0.92))
                               : (isDark
-                                  ? const Color(0xff1e2e20).withValues(alpha: 0.88)
-                                  : const Color(0xffeef7ef).withValues(alpha: 0.92)),
+                                    ? const Color(
+                                        0xff1e2e20,
+                                      ).withValues(alpha: 0.88)
+                                    : const Color(
+                                        0xffeef7ef,
+                                      ).withValues(alpha: 0.92)),
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(
                             color: !_isOnline
                                 ? (isDark
-                                    ? AppColors.darkTertiary.withValues(alpha: 0.3)
-                                    : const Color(0xffe8a2af).withValues(alpha: 0.5))
+                                      ? AppColors.darkTertiary.withValues(
+                                          alpha: 0.3,
+                                        )
+                                      : const Color(
+                                          0xffe8a2af,
+                                        ).withValues(alpha: 0.5))
                                 : (isDark
-                                    ? AppColors.darkPrimary.withValues(alpha: 0.4)
-                                    : AppColors.lightPrimary.withValues(alpha: 0.5)),
+                                      ? AppColors.darkPrimary.withValues(
+                                          alpha: 0.4,
+                                        )
+                                      : AppColors.lightPrimary.withValues(
+                                          alpha: 0.5,
+                                        )),
                             width: 1,
                           ),
                           boxShadow: [
@@ -125,11 +144,11 @@ class _OfflineGlobalIndicatorState extends State<OfflineGlobalIndicator> {
                               size: 18,
                               color: !_isOnline
                                   ? (isDark
-                                      ? AppColors.darkTertiary
-                                      : const Color(0xffc25e6b))
+                                        ? AppColors.darkTertiary
+                                        : const Color(0xffc25e6b))
                                   : (isDark
-                                      ? AppColors.darkPrimary
-                                      : AppColors.lightPrimary),
+                                        ? AppColors.darkPrimary
+                                        : AppColors.lightPrimary),
                             ),
                             const SizedBox(width: 8),
                             Flexible(
@@ -161,10 +180,9 @@ class _OfflineGlobalIndicatorState extends State<OfflineGlobalIndicator> {
                                     vertical: 4,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: (isDark
-                                            ? Colors.white
-                                            : Colors.black)
-                                        .withValues(alpha: 0.08),
+                                    color:
+                                        (isDark ? Colors.white : Colors.black)
+                                            .withValues(alpha: 0.08),
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: Text(

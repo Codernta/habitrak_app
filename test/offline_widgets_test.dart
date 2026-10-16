@@ -20,9 +20,7 @@ void main() {
   group('Offline Widgets Tests', () {
     testWidgets('OfflineLottieWidget renders without errors', (tester) async {
       await tester.pumpWidget(
-        buildTestableWidget(
-          const OfflineLottieWidget(width: 150, height: 150),
-        ),
+        buildTestableWidget(const OfflineLottieWidget(width: 150, height: 150)),
       );
 
       expect(find.byType(OfflineLottieWidget), findsOneWidget);
@@ -42,25 +40,23 @@ void main() {
   });
 
   group('SoulfulMusicCard Tests', () {
-    testWidgets('WaveformVisualizer renders in playing and paused modes',
-        (tester) async {
+    testWidgets('WaveformVisualizer renders in playing and paused modes', (
+      tester,
+    ) async {
       await tester.pumpWidget(
-        buildTestableWidget(
-          const WaveformVisualizer(isPlaying: false),
-        ),
+        buildTestableWidget(const WaveformVisualizer(isPlaying: false)),
       );
       expect(find.byType(WaveformVisualizer), findsOneWidget);
 
       await tester.pumpWidget(
-        buildTestableWidget(
-          const WaveformVisualizer(isPlaying: true),
-        ),
+        buildTestableWidget(const WaveformVisualizer(isPlaying: true)),
       );
       expect(find.byType(WaveformVisualizer), findsOneWidget);
     });
 
-    testWidgets('SoulfulMusicCard renders title and audio controls',
-        (tester) async {
+    testWidgets('SoulfulMusicCard renders title and audio controls', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         buildTestableWidget(
           const SingleChildScrollView(child: SoulfulMusicCard()),

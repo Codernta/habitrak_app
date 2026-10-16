@@ -7,6 +7,7 @@ class PressableScale extends StatefulWidget {
     super.key,
     required this.child,
     this.onTap,
+    this.onPressed,
     this.scale = 0.97,
     this.enabled = true,
     this.borderRadius,
@@ -14,9 +15,12 @@ class PressableScale extends StatefulWidget {
 
   final Widget child;
   final VoidCallback? onTap;
+  final VoidCallback? onPressed;
   final double scale;
   final bool enabled;
   final BorderRadius? borderRadius;
+
+  VoidCallback? get effectiveCallback => onTap ?? onPressed;
 
   @override
   State<PressableScale> createState() => _PressableScaleState();
@@ -62,7 +66,7 @@ class _PressableScaleState extends State<PressableScale>
   Widget build(BuildContext context) {
     final child = ScaleTransition(scale: _scaleAnim, child: widget.child);
 
-    if (widget.onTap == null || !widget.enabled) {
+    if (widget.effectiveCallback == null || !widget.enabled) {
       return child;
     }
 
@@ -70,7 +74,7 @@ class _PressableScaleState extends State<PressableScale>
       onTapDown: _onTapDown,
       onTapUp: _onTapUp,
       onTapCancel: _onTapCancel,
-      onTap: widget.onTap,
+      onTap: widget.effectiveCallback,
       behavior: HitTestBehavior.opaque,
       child: child,
     );

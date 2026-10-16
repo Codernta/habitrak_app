@@ -8,6 +8,7 @@ import 'package:habitrak/features/habit/presentation/bloc/habit_bloc.dart';
 import 'package:habitrak/features/habit/presentation/pages/dashboard_page.dart';
 import 'package:habitrak/features/habit/presentation/pages/library_page.dart';
 import 'package:habitrak/features/mindfulness/data/repositories/intentional_goals_repository.dart';
+import 'package:habitrak/features/mindfulness/data/repositories/soulfulness_repository.dart';
 import 'package:habitrak/features/mindfulness/presentation/pages/mindful_living_page.dart';
 import 'package:habitrak/features/profile/presentation/pages/profile_page.dart';
 
@@ -56,6 +57,7 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
     if (mounted) {
       context.read<HabitBloc>().add(SyncDailyHabitsEvent());
       context.read<IntentionalGoalsRepository>().syncDailyGoals();
+      context.read<SoulfulnessRepository>().syncDailySoulfulness();
     }
   }
 

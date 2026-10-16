@@ -60,7 +60,9 @@ class _OfflineStatusSheetState extends State<OfflineStatusSheet> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryColor = isDark ? AppColors.darkPrimary : AppColors.lightPrimary;
+    final primaryColor = isDark
+        ? AppColors.darkPrimary
+        : AppColors.lightPrimary;
 
     return ClipRRect(
       borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
@@ -106,7 +108,9 @@ class _OfflineStatusSheetState extends State<OfflineStatusSheet> {
                   fontFamily: 'Hanken Grotesk',
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
-                  color: isDark ? AppColors.darkOnSurface : AppColors.lightOnSurface,
+                  color: isDark
+                      ? AppColors.darkOnSurface
+                      : AppColors.lightOnSurface,
                 ),
               ),
               const SizedBox(height: 8),
@@ -128,12 +132,16 @@ class _OfflineStatusSheetState extends State<OfflineStatusSheet> {
 
               // Feature Highlights Row
               Container(
-                padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 12,
+                  horizontal: 16,
+                ),
                 decoration: BoxDecoration(
-                  color: (isDark
-                          ? AppColors.darkPrimaryContainer
-                          : AppColors.lightPrimaryContainer)
-                      .withValues(alpha: 0.35),
+                  color:
+                      (isDark
+                              ? AppColors.darkPrimaryContainer
+                              : AppColors.lightPrimaryContainer)
+                          .withValues(alpha: 0.35),
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Row(
@@ -149,11 +157,7 @@ class _OfflineStatusSheetState extends State<OfflineStatusSheet> {
                       'Local Journal',
                       primaryColor,
                     ),
-                    _buildFeatureItem(
-                      Icons.sync,
-                      'Auto-Syncs',
-                      primaryColor,
-                    ),
+                    _buildFeatureItem(Icons.sync, 'Auto-Syncs', primaryColor),
                   ],
                 ),
               ),
@@ -209,8 +213,9 @@ class _OfflineStatusSheetState extends State<OfflineStatusSheet> {
                               height: 18,
                               child: CircularProgressIndicator(
                                 strokeWidth: 2,
-                                valueColor:
-                                    AlwaysStoppedAnimation<Color>(Colors.white),
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  Colors.white,
+                                ),
                               ),
                             )
                           : const Row(
