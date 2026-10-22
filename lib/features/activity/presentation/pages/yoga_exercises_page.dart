@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:haptic_flow/haptic_flow.dart';
 import 'package:habitrak/core/animations/app_animations.dart';
 import 'package:habitrak/core/animations/staggered_entrance.dart';
 import 'package:habitrak/features/habit/domain/entities/habit.dart';
@@ -68,13 +68,13 @@ class _YogaExercisesPageState extends State<YogaExercisesPage>
         setState(() {
           _breathingStatus = 'Exhale';
         });
-        HapticFeedback.selectionClick();
+        HapticFlow.selection();
         _breathingController.reverse();
       } else if (status == AnimationStatus.dismissed) {
         setState(() {
           _breathingStatus = 'Inhale';
         });
-        HapticFeedback.selectionClick();
+        HapticFlow.selection();
         _breathingController.forward();
       }
     });
@@ -84,7 +84,7 @@ class _YogaExercisesPageState extends State<YogaExercisesPage>
 
   void _changePace(int seconds) {
     if (_selectedPaceSeconds == seconds) return;
-    HapticFeedback.lightImpact();
+    HapticFlow.light();
     _breathingController.dispose();
     setState(() {
       _selectedPaceSeconds = seconds;
@@ -134,9 +134,9 @@ class _YogaExercisesPageState extends State<YogaExercisesPage>
   void _togglePose(int index) {
     final newStatus = !_stretchPoses[index]['completed'];
     if (newStatus) {
-      HapticFeedback.mediumImpact();
+      HapticFlow.play(HapticPresets.successSnap);
     } else {
-      HapticFeedback.lightImpact();
+      HapticFlow.light();
     }
     setState(() {
       _stretchPoses[index]['completed'] = newStatus;
@@ -144,7 +144,7 @@ class _YogaExercisesPageState extends State<YogaExercisesPage>
   }
 
   void _finishRoutine() {
-    HapticFeedback.heavyImpact();
+    HapticFlow.play(HapticPresets.sparkle);
     final completedCount = _stretchPoses
         .where((p) => p['completed'] == true)
         .length;

@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:haptic_flow/haptic_flow.dart';
 import 'package:habitrak/core/services/connectivity_service.dart';
 import 'package:habitrak/core/theme/app_theme.dart';
 import 'package:habitrak/core/widgets/offline_status_sheet.dart';
@@ -171,7 +171,7 @@ class _OfflineGlobalIndicatorState extends State<OfflineGlobalIndicator> {
                               const SizedBox(width: 8),
                               GestureDetector(
                                 onTap: () {
-                                  HapticFeedback.lightImpact();
+                                  HapticFlow.light();
                                   OfflineStatusSheet.show(context);
                                 },
                                 child: Container(

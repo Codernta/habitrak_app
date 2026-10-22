@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:haptic_flow/haptic_flow.dart';
 import 'package:habitrak/core/animations/app_animations.dart';
 import 'package:habitrak/features/habit/presentation/bloc/habit_bloc.dart';
 import 'package:habitrak/features/habit/presentation/pages/dashboard_page.dart';
@@ -75,7 +75,7 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
 
   void _onTabSelected(int index) {
     if (index == _currentIndex) return;
-    HapticFeedback.selectionClick();
+    HapticFlow.selection();
     setState(() {
       _previousIndex = _currentIndex;
       _currentIndex = index;

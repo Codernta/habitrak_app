@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:haptic_flow/haptic_flow.dart';
 import 'package:habitrak/core/animations/animated_modal_sheet.dart';
 import 'package:habitrak/core/animations/pressable_scale.dart';
 import 'package:habitrak/core/animations/staggered_entrance.dart';
@@ -70,6 +70,10 @@ class _LibraryPageState extends State<LibraryPage> {
               child: Form(
                 key: _formKey,
                 child: SingleChildScrollView(
+                  physics: const HapticScrollPhysics(
+                    detentDistance: 120.0,
+                    triggerAtEdges: true,
+                  ),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -159,7 +163,7 @@ class _LibraryPageState extends State<LibraryPage> {
                                 ).withValues(alpha: 0.3),
                                 onSelected: (selected) {
                                   if (selected) {
-                                    HapticFeedback.selectionClick();
+                                    HapticFlow.selection();
                                     setModalState(() {
                                       _selectedCategory = cat;
                                     });
@@ -237,7 +241,7 @@ class _LibraryPageState extends State<LibraryPage> {
                       ElevatedButton(
                         onPressed: () {
                           if (_formKey.currentState!.validate()) {
-                            HapticFeedback.mediumImpact();
+                            HapticFlow.play(HapticPresets.successSnap);
                             final target =
                                 double.tryParse(_targetController.text) ?? 1.0;
 
@@ -410,6 +414,10 @@ class _LibraryPageState extends State<LibraryPage> {
         elevation: 0,
       ),
       body: SingleChildScrollView(
+        physics: const HapticScrollPhysics(
+          detentDistance: 120.0,
+          triggerAtEdges: true,
+        ),
         padding: const EdgeInsets.only(left: 16, right: 16, bottom: 120),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -460,7 +468,7 @@ class _LibraryPageState extends State<LibraryPage> {
               index: 1,
               child: PressableScale(
                 onTap: () {
-                  HapticFeedback.lightImpact();
+                  HapticFlow.light();
                   _showAddCustomHabitSheet();
                 },
                 borderRadius: BorderRadius.circular(16),
@@ -562,7 +570,7 @@ class _LibraryPageState extends State<LibraryPage> {
                   if (_filterCategory != null)
                     TextButton(
                       onPressed: () {
-                        HapticFeedback.lightImpact();
+                        HapticFlow.light();
                         setState(() => _filterCategory = null);
                       },
                       child: const Text(
@@ -615,7 +623,7 @@ class _LibraryPageState extends State<LibraryPage> {
                           slideAxis: Axis.horizontal,
                           child: GestureDetector(
                             onTap: () {
-                              HapticFeedback.selectionClick();
+                              HapticFlow.selection();
                               setState(() {
                                 _filterCategory = isSelected ? null : catType;
                               });
@@ -654,7 +662,7 @@ class _LibraryPageState extends State<LibraryPage> {
                   ),
                   TextButton(
                     onPressed: () {
-                      HapticFeedback.lightImpact();
+                      HapticFlow.light();
                       setState(() {
                         _filterCategory = null;
                         _searchController.clear();
@@ -766,7 +774,7 @@ class _LibraryPageState extends State<LibraryPage> {
                         ),
                         ElevatedButton(
                           onPressed: () {
-                            HapticFeedback.mediumImpact();
+                            HapticFlow.play(HapticPresets.successSnap);
                             _addPresetHabit(
                               preset['title'] as String,
                               preset['category'] as HabitCategory,

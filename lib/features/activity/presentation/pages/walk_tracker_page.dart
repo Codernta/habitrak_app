@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:haptic_flow/haptic_flow.dart';
 import 'package:habitrak/core/animations/app_animations.dart';
 import 'package:habitrak/core/animations/staggered_entrance.dart';
 import 'package:habitrak/features/habit/domain/entities/habit.dart';
@@ -109,7 +109,7 @@ class _WalkTrackerPageState extends State<WalkTrackerPage>
   }
 
   void _previousTrack() {
-    HapticFeedback.lightImpact();
+    HapticFlow.light();
     setState(() {
       _currentTrackIndex =
           (_currentTrackIndex - 1 + _tracks.length) % _tracks.length;
@@ -117,14 +117,14 @@ class _WalkTrackerPageState extends State<WalkTrackerPage>
   }
 
   void _nextTrack() {
-    HapticFeedback.lightImpact();
+    HapticFlow.light();
     setState(() {
       _currentTrackIndex = (_currentTrackIndex + 1) % _tracks.length;
     });
   }
 
   void _togglePlayPause() {
-    HapticFeedback.lightImpact();
+    HapticFlow.light();
     setState(() {
       _isPlaying = !_isPlaying;
       if (_isPlaying) {
@@ -249,7 +249,7 @@ class _WalkTrackerPageState extends State<WalkTrackerPage>
               index: 3,
               child: ElevatedButton(
                 onPressed: () {
-                  HapticFeedback.heavyImpact();
+                  HapticFlow.play(HapticPresets.successSnap);
                   final durationMinutes = max(1, _elapsedSeconds ~/ 60);
                   final distance = _elapsedSeconds * 0.075 / 60.0;
                   final calories = ((_elapsedSeconds / 60) * 4.5).round();
@@ -468,7 +468,7 @@ class _WalkTrackerPageState extends State<WalkTrackerPage>
                 child: GestureDetector(
                   behavior: HitTestBehavior.opaque,
                   onTap: () {
-                    HapticFeedback.selectionClick();
+                    HapticFlow.selection();
                     setState(() => _selectedModeIndex = 0);
                   },
                   child: Center(
@@ -503,7 +503,7 @@ class _WalkTrackerPageState extends State<WalkTrackerPage>
                 child: GestureDetector(
                   behavior: HitTestBehavior.opaque,
                   onTap: () {
-                    HapticFeedback.selectionClick();
+                    HapticFlow.selection();
                     setState(() => _selectedModeIndex = 1);
                   },
                   child: Center(
@@ -538,7 +538,7 @@ class _WalkTrackerPageState extends State<WalkTrackerPage>
                 child: GestureDetector(
                   behavior: HitTestBehavior.opaque,
                   onTap: () {
-                    HapticFeedback.selectionClick();
+                    HapticFlow.selection();
                     setState(() => _selectedModeIndex = 2);
                   },
                   child: Center(
@@ -695,7 +695,7 @@ class _WalkTrackerPageState extends State<WalkTrackerPage>
           const SizedBox(height: 18),
           OutlinedButton.icon(
             onPressed: () {
-              HapticFeedback.selectionClick();
+              HapticFlow.selection();
               setState(() {
                 _currentMindfulPromptIndex =
                     (_currentMindfulPromptIndex + 1) % _mindfulPrompts.length;
@@ -1116,7 +1116,7 @@ class _WalkTrackerPageState extends State<WalkTrackerPage>
                   alignment: Alignment.centerRight,
                   child: TextButton.icon(
                     onPressed: () {
-                      HapticFeedback.lightImpact();
+                      HapticFlow.light();
                       _nextPrompt();
                     },
                     icon: const Icon(

@@ -1,5 +1,6 @@
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:flutter/material.dart';
+import 'package:haptic_flow/haptic_flow.dart';
 import 'hive_registrar.dart';
 
 class SettingsRepository {
@@ -7,6 +8,7 @@ class SettingsRepository {
 
   static const String _keyThemeMode = 'theme_mode';
   static const String _keyRemindersEnabled = 'reminders_enabled';
+  static const String _keyHapticsEnabled = 'haptics_enabled';
   static const String _keyFocusMode = 'focus_mode';
   static const String _keyDndSchedule = 'dnd_schedule';
   static const String _keyScreenTimeLimit = 'screen_time_limit';
@@ -33,6 +35,17 @@ class SettingsRepository {
 
   Future<void> setRemindersEnabled(bool enabled) async {
     await _box.put(_keyRemindersEnabled, enabled);
+  }
+
+  bool getHapticsEnabled() {
+    final enabled = _box.get(_keyHapticsEnabled, defaultValue: true) as bool;
+    HapticFlow.enabled = enabled;
+    return enabled;
+  }
+
+  Future<void> setHapticsEnabled(bool enabled) async {
+    await _box.put(_keyHapticsEnabled, enabled);
+    HapticFlow.enabled = enabled;
   }
 
   bool getFocusMode() {
@@ -94,6 +107,7 @@ class SettingsRepository {
   }
 
   // Getters for convenience
+  bool get isHapticsEnabled => getHapticsEnabled();
   bool get isFocusModeEnabled => getFocusMode();
   bool get isDndScheduleEnabled => getDndSchedule();
   int get dailyScreenTimeMinutes => getDailyScreenTimeMinutes();

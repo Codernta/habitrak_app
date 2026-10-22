@@ -1,7 +1,7 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:haptic_flow/haptic_flow.dart';
 import 'package:habitrak/core/animations/app_animations.dart';
 import 'package:habitrak/core/animations/pressable_scale.dart';
 import '../../data/repositories/soulfulness_repository.dart';
@@ -82,7 +82,14 @@ class _ThoughtReleaseModalState extends State<ThoughtReleaseModal>
     final text = _thoughtController.text.trim();
     if (text.isEmpty) return;
 
-    HapticFeedback.mediumImpact();
+    // Tactile release sequence: fluttering pattern that dissolves into a delicate click
+    HapticFlow.play(
+      HapticSequence.fromPattern(
+        '...--_*',
+        tickDuration: const Duration(milliseconds: 35),
+        pauseDuration: const Duration(milliseconds: 60),
+      ),
+    );
     setState(() {
       _isReleasing = true;
     });
@@ -112,7 +119,10 @@ class _ThoughtReleaseModalState extends State<ThoughtReleaseModal>
       child: SafeArea(
         top: false,
         child: SingleChildScrollView(
-          physics: const BouncingScrollPhysics(),
+          physics: const HapticScrollPhysics(
+            parent: BouncingScrollPhysics(),
+            triggerAtEdges: true,
+          ),
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
           child: Column(
             mainAxisSize: MainAxisSize.min,

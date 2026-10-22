@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:haptic_flow/haptic_flow.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/theme_cubit.dart';
 import 'core/storage/hive_registrar.dart';
@@ -33,6 +34,7 @@ void main() async {
   // Setup dependencies
   final habitRepository = HiveHabitRepository();
   final settingsRepository = SettingsRepository();
+  HapticFlow.enabled = settingsRepository.getHapticsEnabled();
   final reflectionsRepository = ReflectionsRepository();
   final goalsRepository = IntentionalGoalsRepository();
   final soulfulnessRepository = SoulfulnessRepository();
@@ -99,8 +101,11 @@ class HabitrakApp extends StatelessWidget {
           themeAnimationDuration: const Duration(milliseconds: 400),
           themeAnimationCurve: Curves.easeInOutCubic,
           builder: (context, child) {
-            return RiverFlowBackground(
-              child: OfflineGlobalIndicator(child: child ?? const SizedBox()),
+            return HapticFeedbackBoundary(
+              enabled: HapticFlow.enabled,
+              child: RiverFlowBackground(
+                child: OfflineGlobalIndicator(child: child ?? const SizedBox()),
+              ),
             );
           },
           home: const SplashPage(),

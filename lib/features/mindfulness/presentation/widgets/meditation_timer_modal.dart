@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:haptic_flow/haptic_flow.dart';
 import 'package:habitrak/core/animations/pressable_scale.dart';
 import '../../data/repositories/soulfulness_repository.dart';
 import '../../../music/services/soulful_music_service.dart';
@@ -64,7 +64,7 @@ class _MeditationTimerModalState extends State<MeditationTimerModal>
   }
 
   void _startTimer() {
-    HapticFeedback.heavyImpact();
+    HapticFlow.play(HapticPresets.countdown);
     _playZenBell();
 
     if (_selectedAmbientSound != 'silence') {
@@ -120,7 +120,7 @@ class _MeditationTimerModalState extends State<MeditationTimerModal>
   void _onTimerComplete() {
     _ticker?.cancel();
     _playZenBell();
-    HapticFeedback.heavyImpact();
+    HapticFlow.play(HapticPresets.sparkle);
 
     if (_selectedAmbientSound != 'silence') {
       _musicService.pause();
@@ -141,7 +141,7 @@ class _MeditationTimerModalState extends State<MeditationTimerModal>
   }
 
   void _stopTimer() {
-    HapticFeedback.lightImpact();
+    HapticFlow.light();
     _ticker?.cancel();
     if (_selectedAmbientSound != 'silence') {
       _musicService.pause();
@@ -252,7 +252,7 @@ class _MeditationTimerModalState extends State<MeditationTimerModal>
                         padding: const EdgeInsets.symmetric(horizontal: 4),
                         child: InkWell(
                           onTap: () {
-                            HapticFeedback.selectionClick();
+                            HapticFlow.selection();
                             setState(() {
                               _selectedMinutes = mins;
                               _secondsRemaining = mins * 60;
@@ -554,7 +554,7 @@ class _MeditationTimerModalState extends State<MeditationTimerModal>
     final isSel = _selectedAmbientSound == id;
     return InkWell(
       onTap: () {
-        HapticFeedback.selectionClick();
+        HapticFlow.selection();
         setState(() => _selectedAmbientSound = id);
       },
       borderRadius: BorderRadius.circular(20),

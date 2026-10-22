@@ -1,6 +1,6 @@
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:haptic_flow/haptic_flow.dart';
 import 'package:habitrak/core/services/connectivity_service.dart';
 import 'package:habitrak/core/theme/app_theme.dart';
 import 'package:habitrak/core/widgets/offline_lottie_widget.dart';
@@ -27,7 +27,7 @@ class _OfflineStatusSheetState extends State<OfflineStatusSheet> {
   bool _isChecking = false;
 
   Future<void> _handleRetry() async {
-    HapticFeedback.mediumImpact();
+    HapticFlow.medium();
     setState(() => _isChecking = true);
 
     final isNowOnline = await ConnectivityService().checkConnectivity();
@@ -36,7 +36,7 @@ class _OfflineStatusSheetState extends State<OfflineStatusSheet> {
     setState(() => _isChecking = false);
 
     if (isNowOnline) {
-      HapticFeedback.lightImpact();
+      HapticFlow.play(HapticPresets.successSnap);
       Navigator.of(context).pop();
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -46,7 +46,7 @@ class _OfflineStatusSheetState extends State<OfflineStatusSheet> {
         ),
       );
     } else {
-      HapticFeedback.selectionClick();
+      HapticFlow.play(HapticPresets.warningBuzz);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Still offline. Mindful offline mode remains active.'),

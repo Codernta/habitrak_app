@@ -1,6 +1,6 @@
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:haptic_flow/haptic_flow.dart';
 import 'package:habitrak/core/theme/app_theme.dart';
 import 'package:habitrak/features/music/models/soulful_track.dart';
 import 'package:habitrak/features/music/services/soulful_music_service.dart';
@@ -68,7 +68,7 @@ class _MusicSearchSheetState extends State<MusicSearchSheet> {
   }
 
   void _onFilterTap(String filter) {
-    HapticFeedback.lightImpact();
+    HapticFlow.light();
     setState(() => _selectedFilter = filter);
     if (filter == 'All') {
       _performSearch(_searchController.text);
@@ -317,7 +317,7 @@ class _MusicSearchSheetState extends State<MusicSearchSheet> {
                               children: [
                                 GestureDetector(
                                   onTap: () {
-                                    HapticFeedback.lightImpact();
+                                    HapticFlow.light();
                                     widget.onTrackSelected(track);
                                     _musicService.togglePlayPause(track);
                                     setState(() {});

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hive/hive.dart';
+import 'package:haptic_flow/haptic_flow.dart';
 import 'package:habitrak/core/animations/app_animations.dart';
 import 'package:habitrak/core/animations/staggered_entrance.dart';
 import 'package:habitrak/core/theme/theme_cubit.dart';
@@ -10,6 +11,7 @@ import 'package:habitrak/core/storage/settings_repository.dart';
 import 'package:habitrak/core/storage/hive_registrar.dart';
 import 'package:habitrak/core/security/secure_data_manager.dart';
 import 'package:habitrak/core/services/notification_service.dart';
+import 'package:habitrak/core/widgets/tactile_studio_sheet.dart';
 import 'package:habitrak/features/habit/data/repositories/hive_habit_repository.dart';
 import 'package:habitrak/features/habit/domain/entities/habit.dart';
 import 'package:habitrak/features/habit/presentation/bloc/habit_bloc.dart';
@@ -30,6 +32,7 @@ class _ProfilePageState extends State<ProfilePage> {
   late ProfileRepository _profileRepo;
 
   bool _remindersEnabled = true;
+  bool _hapticsEnabled = true;
   String _userName = 'Jordan Smith';
   int _streakDays = 12;
   int _totalMindfulMinutes = 480;
@@ -42,6 +45,7 @@ class _ProfilePageState extends State<ProfilePage> {
     _settingsRepository = context.read<SettingsRepository>();
     _profileRepo = context.read<ProfileRepository>();
     _remindersEnabled = _settingsRepository.getRemindersEnabled();
+    _hapticsEnabled = _settingsRepository.getHapticsEnabled();
     _loadProfileData();
   }
 
@@ -103,7 +107,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   setState(() {
                     _userName = newName;
                   });
-                  HapticFeedback.lightImpact();
+                  HapticFlow.light();
                 }
                 Navigator.pop(context);
               },
@@ -1222,7 +1226,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 value: _remindersEnabled,
                 activeTrackColor: primaryColor,
                 onChanged: (val) {
-                  HapticFeedback.selectionClick();
+                  HapticFlow.selection();
                   setState(() {
                     _remindersEnabled = val;
                   });
@@ -1236,7 +1240,7 @@ class _ProfilePageState extends State<ProfilePage> {
             InkWell(
               borderRadius: BorderRadius.circular(12),
               onTap: () async {
-                HapticFeedback.lightImpact();
+                HapticFlow.light();
                 await NotificationService().showTestStreakNotification(
                   streak: _streakDays,
                 );
@@ -1304,7 +1308,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 value: context.watch<ThemeCubit>().state == ThemeMode.dark,
                 activeTrackColor: primaryColor,
                 onChanged: (val) {
-                  HapticFeedback.selectionClick();
+                  HapticFlow.selection();
                   context.read<ThemeCubit>().toggleTheme(val);
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
@@ -1317,6 +1321,128 @@ class _ProfilePageState extends State<ProfilePage> {
                 },
               ),
             ],
+          ),
+          const SizedBox(height: 12),
+          // Haptic Flow Toggle
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  Icon(
+                    Icons.vibration_rounded,
+                    color: isDark
+                        ? const Color(0xffc2c8c0)
+                        : const Color(0xff615e56),
+                  ),
+                  const SizedBox(width: 12),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Tactile Haptics',
+                        style: TextStyle(
+                          fontFamily: 'Hanken Grotesk',
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: isDark ? Colors.white : Colors.black,
+                        ),
+                      ),
+                      Text(
+                        'Physical flow feedback',
+                        style: TextStyle(
+                          fontFamily: 'Hanken Grotesk',
+                          fontSize: 11,
+                          color: isDark
+                              ? const Color(0xffc2c8c0)
+                              : const Color(0xff615e56),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              Switch.adaptive(
+                value: _hapticsEnabled,
+                activeTrackColor: primaryColor,
+                onChanged: (val) {
+                  setState(() => _hapticsEnabled = val);
+                  _settingsRepository.setHapticsEnabled(val);
+                  if (val) {
+                    HapticFlow.play(HapticPresets.successSnap);
+                  }
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        'Tactile Haptics ${val ? "Enabled" : "Disabled"}',
+                      ),
+                      duration: const Duration(milliseconds: 800),
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          // Tactile Studio Launcher Card
+          InkWell(
+            borderRadius: BorderRadius.circular(14),
+            onTap: () {
+              HapticFlow.selection();
+              TactileStudioSheet.show(context);
+            },
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              decoration: BoxDecoration(
+                color: primaryColor.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(
+                  color: primaryColor.withValues(alpha: 0.25),
+                  width: 1,
+                ),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.tune_rounded,
+                    size: 20,
+                    color: primaryColor,
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Tactile Sensation Studio',
+                          style: TextStyle(
+                            fontFamily: 'Hanken Grotesk',
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                            color: isDark ? Colors.white : Colors.black,
+                          ),
+                        ),
+                        Text(
+                          'Test 12 presets, wheels, sliders & pattern composer',
+                          style: TextStyle(
+                            fontFamily: 'Hanken Grotesk',
+                            fontSize: 11,
+                            color: isDark
+                                ? const Color(0xffb0ceb2)
+                                : const Color(0xff615e56),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Icon(
+                    Icons.arrow_forward_ios_rounded,
+                    size: 14,
+                    color: primaryColor,
+                  ),
+                ],
+              ),
+            ),
           ),
         ],
       ),
@@ -1703,7 +1829,7 @@ class _ProfilePageState extends State<ProfilePage> {
             ElevatedButton(
               onPressed: () async {
                 Navigator.pop(ctx);
-                HapticFeedback.heavyImpact();
+                HapticFlow.play(HapticPresets.errorAlarm);
 
                 final habitsBox = Hive.box<Habit>(HiveRegistrar.habitsBoxName);
                 final reflectionsBox = Hive.box<Map>(

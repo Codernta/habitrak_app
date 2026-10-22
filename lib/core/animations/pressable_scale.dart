@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:haptic_flow/haptic_flow.dart';
 import 'app_animations.dart';
 
 /// Subtle scale-down on press — modern micro-interaction for tappable widgets.
@@ -10,6 +11,7 @@ class PressableScale extends StatefulWidget {
     this.onPressed,
     this.scale = 0.97,
     this.enabled = true,
+    this.enableHaptic = true,
     this.borderRadius,
   });
 
@@ -18,6 +20,7 @@ class PressableScale extends StatefulWidget {
   final VoidCallback? onPressed;
   final double scale;
   final bool enabled;
+  final bool enableHaptic;
   final BorderRadius? borderRadius;
 
   VoidCallback? get effectiveCallback => onTap ?? onPressed;
@@ -51,7 +54,12 @@ class _PressableScaleState extends State<PressableScale>
   }
 
   void _onTapDown(TapDownDetails _) {
-    if (widget.enabled) _controller.forward();
+    if (widget.enabled) {
+      _controller.forward();
+      if (widget.enableHaptic) {
+        HapticFlow.selection();
+      }
+    }
   }
 
   void _onTapUp(TapUpDetails _) {

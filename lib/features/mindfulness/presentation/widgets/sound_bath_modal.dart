@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:haptic_flow/haptic_flow.dart';
 import '../../../music/models/soulful_track.dart';
 import '../../../music/services/soulful_music_service.dart';
 
@@ -57,7 +57,7 @@ class _SoundBathModalState extends State<SoundBathModal> {
   }
 
   void _togglePlay(SoulfulTrack track) {
-    HapticFeedback.mediumImpact();
+    HapticFlow.medium();
     if (_activeTrack?.id == track.id && _playerState == PlayerState.playing) {
       _musicService.pause();
     } else {
@@ -66,7 +66,7 @@ class _SoundBathModalState extends State<SoundBathModal> {
   }
 
   void _setSleepTimer(int minutes) {
-    HapticFeedback.selectionClick();
+    HapticFlow.selection();
     _sleepTimer?.cancel();
     setState(() {
       _sleepTimerMinutes = minutes;
@@ -75,7 +75,7 @@ class _SoundBathModalState extends State<SoundBathModal> {
     _sleepTimer = Timer(Duration(minutes: minutes), () {
       if (mounted) {
         _musicService.pause();
-        HapticFeedback.heavyImpact();
+        HapticFlow.play(HapticPresets.sparkle);
         setState(() {
           _sleepTimerMinutes = null;
         });

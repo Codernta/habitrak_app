@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:haptic_flow/haptic_flow.dart';
 import 'package:habitrak/core/animations/pressable_scale.dart';
 import '../../data/repositories/soulfulness_repository.dart';
 
@@ -125,7 +125,7 @@ class _BreathworkModalState extends State<BreathworkModal>
   }
 
   void _startSession() {
-    HapticFeedback.heavyImpact();
+    HapticFlow.play(HapticPresets.countdown);
     setState(() {
       _isActive = true;
       _isCompleted = false;
@@ -146,21 +146,21 @@ class _BreathworkModalState extends State<BreathworkModal>
         durationSec = _selectedPattern.inhaleSeconds;
         _animController.duration = Duration(seconds: durationSec);
         _animController.forward(from: 0.0);
-        HapticFeedback.mediumImpact();
+        HapticFlow.play(HapticPresets.rechargePulse);
         break;
       case BreathPhase.holdIn:
         durationSec = _selectedPattern.holdInSeconds;
-        HapticFeedback.lightImpact();
+        HapticFlow.play(HapticPresets.heartbeat);
         break;
       case BreathPhase.exhale:
         durationSec = _selectedPattern.exhaleSeconds;
         _animController.duration = Duration(seconds: durationSec);
         _animController.reverse(from: 1.0);
-        HapticFeedback.mediumImpact();
+        HapticFlow.medium();
         break;
       case BreathPhase.holdOut:
         durationSec = _selectedPattern.holdOutSeconds;
-        HapticFeedback.lightImpact();
+        HapticFlow.light();
         break;
     }
 
@@ -227,7 +227,7 @@ class _BreathworkModalState extends State<BreathworkModal>
   void _finishSession() {
     _countdownTimer?.cancel();
     _playCompletionBell();
-    HapticFeedback.heavyImpact();
+    HapticFlow.play(HapticPresets.successSnap);
 
     // Record session into Hive repository
     context.read<SoulfulnessRepository>().recordBreathworkSession(
@@ -243,7 +243,7 @@ class _BreathworkModalState extends State<BreathworkModal>
   }
 
   void _stopSession() {
-    HapticFeedback.selectionClick();
+    HapticFlow.selection();
     _countdownTimer?.cancel();
     _animController.stop();
     setState(() {
@@ -383,7 +383,7 @@ class _BreathworkModalState extends State<BreathworkModal>
                             : const Color(0xfff0efe9),
                         onSelected: (val) {
                           if (val) {
-                            HapticFeedback.selectionClick();
+                            HapticFlow.selection();
                             setState(() {
                               _selectedPattern = p;
                               _secondsRemainingInPhase = p.inhaleSeconds;

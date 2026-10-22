@@ -440,6 +440,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.3.2"
+  haptic_flow:
+    dependency: "direct main"
+    description:
+      name: haptic_flow
+      sha256: "951456dea54c4d5b1e6f1630eb00b4c7a00d0a83351e90864349ae0d6816731a"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.1.2"
   hive:
     dependency: "direct main"
     description:

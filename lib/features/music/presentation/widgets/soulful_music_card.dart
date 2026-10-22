@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:ui' as ui;
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:haptic_flow/haptic_flow.dart';
 import 'package:habitrak/core/animations/pressable_scale.dart';
 import 'package:habitrak/core/services/connectivity_service.dart';
 import 'package:habitrak/core/theme/app_theme.dart';
@@ -96,12 +96,12 @@ class _SoulfulMusicCardState extends State<SoulfulMusicCard> {
   }
 
   void _onTogglePlayPause() {
-    HapticFeedback.mediumImpact();
+    HapticFlow.medium();
     _musicService.togglePlayPause(_activeTrack);
   }
 
   void _onNextTrack() {
-    HapticFeedback.lightImpact();
+    HapticFlow.light();
     final next = _musicService.getNextTrack(_activeTrack);
     setState(() {
       _activeTrack = next;
@@ -112,7 +112,7 @@ class _SoulfulMusicCardState extends State<SoulfulMusicCard> {
   }
 
   void _onOpenSearch() {
-    HapticFeedback.lightImpact();
+    HapticFlow.light();
     MusicSearchSheet.show(
       context,
       onTrackSelected: (selectedTrack) {
@@ -399,9 +399,15 @@ class _SoulfulMusicCardState extends State<SoulfulMusicCard> {
                       .withValues(alpha: 0.1),
                   thumbColor: primaryColor,
                 ),
-                child: Slider(
-                  value: currentSeconds,
+                child: HapticSlider(
+                  value: currentSeconds.clamp(
+                    0.0,
+                    maxSeconds > 0 ? maxSeconds : 1.0,
+                  ),
+                  min: 0.0,
                   max: maxSeconds > 0 ? maxSeconds : 1.0,
+                  detentInterval: 15.0,
+                  enableEdgeFeedback: true,
                   onChanged: (val) {
                     _musicService.seek(Duration(seconds: val.round()));
                   },
@@ -458,7 +464,7 @@ class _SoulfulMusicCardState extends State<SoulfulMusicCard> {
                     ),
                     tooltip: 'Repeat Track',
                     onPressed: () {
-                      HapticFeedback.selectionClick();
+                      HapticFlow.selection();
                       setState(() => _isLooping = !_isLooping);
                       _musicService.player.setReleaseMode(
                         _isLooping ? ReleaseMode.loop : ReleaseMode.release,

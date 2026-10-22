@@ -1,7 +1,7 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:haptic_flow/haptic_flow.dart';
 import 'package:habitrak/core/animations/app_animations.dart';
 import 'package:habitrak/core/animations/app_page_route.dart';
 import 'package:habitrak/core/animations/pressable_scale.dart';
@@ -89,7 +89,7 @@ class _DashboardPageState extends State<DashboardPage>
   }
 
   void _showCelebrationOverlay() {
-    HapticFeedback.vibrate();
+    HapticFlow.play(HapticPresets.sparkle);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final primaryColor = isDark
         ? const Color(0xffb0ceb2)
@@ -225,7 +225,7 @@ class _DashboardPageState extends State<DashboardPage>
             icon: const Icon(Icons.notifications_active_outlined),
             tooltip: 'Test Streak Alert',
             onPressed: () async {
-              HapticFeedback.lightImpact();
+              HapticFlow.light();
               await NotificationService().showTestStreakNotification(streak: 7);
               if (context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -243,7 +243,7 @@ class _DashboardPageState extends State<DashboardPage>
           IconButton(
             icon: const Icon(Icons.settings_outlined),
             onPressed: () {
-              HapticFeedback.mediumImpact();
+              HapticFlow.medium();
               // Trigger a reset of habits to default as a settings shortcut
               context.read<HabitBloc>().add(ResetHabitsEvent());
               ScaffoldMessenger.of(context).showSnackBar(
@@ -281,6 +281,10 @@ class _DashboardPageState extends State<DashboardPage>
           }
           if (state is HabitLoaded) {
             return SingleChildScrollView(
+              physics: const HapticScrollPhysics(
+                detentDistance: 140.0,
+                triggerAtEdges: true,
+              ),
               padding: const EdgeInsets.only(left: 16, right: 16, bottom: 120),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -339,7 +343,7 @@ class _DashboardPageState extends State<DashboardPage>
           },
           child: FloatingActionButton(
             onPressed: () {
-              HapticFeedback.lightImpact();
+              HapticFlow.light();
               Navigator.of(
                 context,
               ).push(AppPageRoute(page: const YogaExercisesPage()));
@@ -471,7 +475,7 @@ class _DashboardPageState extends State<DashboardPage>
           child: GestureDetector(
             behavior: HitTestBehavior.opaque,
             onTap: () {
-              HapticFeedback.selectionClick();
+              HapticFlow.selection();
               context.read<HabitBloc>().add(ChangeActiveDateEvent(date));
             },
             child: Container(
@@ -594,7 +598,7 @@ class _DashboardPageState extends State<DashboardPage>
                 ),
                 GestureDetector(
                   onTap: () {
-                    HapticFeedback.lightImpact();
+                    HapticFlow.light();
                     context.read<HabitBloc>().add(ChangeActiveDateEvent(today));
                   },
                   child: Container(
@@ -636,7 +640,7 @@ class _DashboardPageState extends State<DashboardPage>
         // Add Daily Intention Dashed Button
         PressableScale(
           onTap: () {
-            HapticFeedback.lightImpact();
+            HapticFlow.light();
             Navigator.push(context, AppSlideRoute(page: const LibraryPage()));
           },
           borderRadius: BorderRadius.circular(16),
@@ -782,16 +786,16 @@ class _DashboardPageState extends State<DashboardPage>
                 trackHeight: 6,
                 thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8),
               ),
-              child: Slider(
+              child: HapticSlider(
                 value: habit.currentProgress,
                 min: 0.0,
                 max: habit.targetProgress,
+                detentInterval: habit.targetProgress > 1.0 ? 1.0 : 0.2,
+                enableEdgeFeedback: true,
                 onChanged: (val) {
                   if (val == habit.targetProgress &&
                       habit.currentProgress < habit.targetProgress) {
-                    HapticFeedback.mediumImpact();
-                  } else if ((val * 10).round() % 2 == 0) {
-                    HapticFeedback.selectionClick();
+                    HapticFlow.play(HapticPresets.successSnap);
                   }
                   context.read<HabitBloc>().add(
                     UpdateHabitProgressEvent(habit.id, val),
@@ -897,7 +901,7 @@ class _DashboardPageState extends State<DashboardPage>
       onTap: () {
         final title = habit.title.toLowerCase();
         if (habit.id == '3' || title.contains('walk')) {
-          HapticFeedback.lightImpact();
+          HapticFlow.light();
           Navigator.of(
             context,
           ).push(AppPageRoute(page: const WalkTrackerPage()));
@@ -905,15 +909,15 @@ class _DashboardPageState extends State<DashboardPage>
             title.contains('stretch') ||
             title.contains('meditat') ||
             title.contains('breath')) {
-          HapticFeedback.lightImpact();
+          HapticFlow.light();
           Navigator.of(
             context,
           ).push(AppPageRoute(page: const YogaExercisesPage()));
         } else {
           if (habit.isCompleted) {
-            HapticFeedback.lightImpact();
+            HapticFlow.light();
           } else {
-            HapticFeedback.mediumImpact();
+            HapticFlow.play(HapticPresets.successSnap);
           }
           context.read<HabitBloc>().add(ToggleHabitEvent(habit.id));
         }
@@ -997,9 +1001,9 @@ class _DashboardPageState extends State<DashboardPage>
               behavior: HitTestBehavior.opaque,
               onTap: () {
                 if (habit.isCompleted) {
-                  HapticFeedback.lightImpact();
+                  HapticFlow.light();
                 } else {
-                  HapticFeedback.mediumImpact();
+                  HapticFlow.play(HapticPresets.successSnap);
                 }
                 context.read<HabitBloc>().add(ToggleHabitEvent(habit.id));
               },
@@ -1186,7 +1190,7 @@ class _DashboardPageState extends State<DashboardPage>
                   primaryColor: primaryColor,
                   isDark: isDark,
                   onTap: () {
-                    HapticFeedback.selectionClick();
+                    HapticFlow.selection();
                     showAnimatedModalSheet(
                       context: context,
                       builder: (_) => const BreathworkModal(),
@@ -1202,7 +1206,7 @@ class _DashboardPageState extends State<DashboardPage>
                   primaryColor: primaryColor,
                   isDark: isDark,
                   onTap: () {
-                    HapticFeedback.selectionClick();
+                    HapticFlow.selection();
                     showAnimatedModalSheet(
                       context: context,
                       builder: (_) =>
@@ -1219,7 +1223,7 @@ class _DashboardPageState extends State<DashboardPage>
                   primaryColor: primaryColor,
                   isDark: isDark,
                   onTap: () {
-                    HapticFeedback.selectionClick();
+                    HapticFlow.selection();
                     showAnimatedModalSheet(
                       context: context,
                       builder: (_) => const ThoughtReleaseModal(),
