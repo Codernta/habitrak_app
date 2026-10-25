@@ -1,3 +1,4 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:haptic_flow/haptic_flow.dart';
@@ -5,6 +6,12 @@ import 'core/theme/app_theme.dart';
 import 'core/theme/theme_cubit.dart';
 import 'core/storage/hive_registrar.dart';
 import 'core/storage/settings_repository.dart';
+import 'core/services/notification_service.dart';
+import 'core/services/connectivity_service.dart';
+import 'core/widgets/river_flow_background.dart';
+import 'core/widgets/offline_global_indicator.dart';
+import 'features/auth/data/repositories/auth_repository.dart';
+import 'features/auth/presentation/cubit/auth_cubit.dart';
 import 'features/habit/data/repositories/hive_habit_repository.dart';
 import 'features/habit/presentation/bloc/habit_bloc.dart';
 import 'features/mindfulness/data/repositories/reflections_repository.dart';
@@ -12,16 +19,17 @@ import 'features/mindfulness/data/repositories/intentional_goals_repository.dart
 import 'features/mindfulness/data/repositories/soulfulness_repository.dart';
 import 'features/activity/data/repositories/activity_repository.dart';
 import 'features/profile/data/repositories/profile_repository.dart';
-import 'features/splash/presentation/pages/splash_page.dart';
-
-import 'core/services/notification_service.dart';
-import 'core/services/connectivity_service.dart';
-import 'core/widgets/river_flow_background.dart';
-import 'core/widgets/offline_global_indicator.dart';
 import 'features/music/services/soulful_music_service.dart';
+import 'features/splash/presentation/pages/splash_page.dart';
+import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize Firebase with the configured project options
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
 
   // Initialize Hive
   await HiveRegistrar.init();
@@ -42,6 +50,7 @@ void main() async {
   final profileRepository = ProfileRepository();
   final connectivityService = ConnectivityService()..initialize();
   final musicService = SoulfulMusicService();
+  final authRepository = AuthRepository();
 
   await reflectionsRepository.ensureInitialized();
   await goalsRepository.ensureInitialized();
@@ -52,31 +61,25 @@ void main() async {
       providers: [
         RepositoryProvider<HiveHabitRepository>.value(value: habitRepository),
         RepositoryProvider<SettingsRepository>.value(value: settingsRepository),
-        RepositoryProvider<ReflectionsRepository>.value(
-          value: reflectionsRepository,
-        ),
-        RepositoryProvider<IntentionalGoalsRepository>.value(
-          value: goalsRepository,
-        ),
-        RepositoryProvider<SoulfulnessRepository>.value(
-          value: soulfulnessRepository,
-        ),
+        RepositoryProvider<ReflectionsRepository>.value(value: reflectionsRepository),
+        RepositoryProvider<IntentionalGoalsRepository>.value(value: goalsRepository),
+        RepositoryProvider<SoulfulnessRepository>.value(value: soulfulnessRepository),
         RepositoryProvider<ActivityRepository>.value(value: activityRepository),
         RepositoryProvider<ProfileRepository>.value(value: profileRepository),
-        RepositoryProvider<ConnectivityService>.value(
-          value: connectivityService,
-        ),
+        RepositoryProvider<ConnectivityService>.value(value: connectivityService),
         RepositoryProvider<SoulfulMusicService>.value(value: musicService),
+        RepositoryProvider<AuthRepository>.value(value: authRepository),
       ],
       child: MultiBlocProvider(
         providers: [
           BlocProvider<ThemeCubit>(
-            create: (context) =>
-                ThemeCubit(settingsRepository: settingsRepository),
+            create: (context) => ThemeCubit(settingsRepository: settingsRepository),
+          ),
+          BlocProvider<AuthCubit>(
+            create: (context) => AuthCubit(authRepository: authRepository),
           ),
           BlocProvider<HabitBloc>(
-            create: (context) =>
-                HabitBloc(repository: habitRepository)..add(LoadHabitsEvent()),
+            create: (context) => HabitBloc(repository: habitRepository)..add(LoadHabitsEvent()),
           ),
         ],
         child: const HabitrakApp(),
@@ -86,7 +89,8 @@ void main() async {
 }
 
 class HabitrakApp extends StatelessWidget {
-  const HabitrakApp({super.key});
+  final ThemeMode? initialThemeMode;
+  const HabitrakApp({super.key, this.initialThemeMode});
 
   @override
   Widget build(BuildContext context) {

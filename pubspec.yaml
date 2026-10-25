@@ -19,7 +19,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 version: 1.0.0+1
 
 environment:
-  sdk: ^3.12.2
+  sdk: ^3.8.1
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
@@ -48,6 +48,10 @@ dependencies:
   audioplayers: ^6.8.1
   http: ^1.6.0
   haptic_flow: ^0.1.2
+  firebase_core: ^5.0.0
+  firebase_auth: ^7.0.0
+  cloud_firestore: ^7.0.0
+  google_sign_in: ^7.2.0
 
 dev_dependencies:
   flutter_test:
@@ -110,4 +114,3 @@ flutter_launcher_icons:
   ios: true
   image_path: "assets/images/logo.png"
   remove_alpha_ios: true
-

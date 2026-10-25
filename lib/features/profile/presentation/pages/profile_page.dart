@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hive/hive.dart';
 import 'package:haptic_flow/haptic_flow.dart';
 import 'package:habitrak/core/animations/app_animations.dart';
+import 'package:habitrak/core/animations/app_page_route.dart';
 import 'package:habitrak/core/animations/staggered_entrance.dart';
 import 'package:habitrak/core/theme/theme_cubit.dart';
 import 'package:habitrak/core/storage/settings_repository.dart';
@@ -18,6 +19,8 @@ import 'package:habitrak/features/habit/presentation/bloc/habit_bloc.dart';
 import 'package:habitrak/features/mindfulness/data/repositories/reflections_repository.dart';
 import 'package:habitrak/features/mindfulness/data/repositories/intentional_goals_repository.dart';
 import 'package:habitrak/features/activity/data/repositories/activity_repository.dart';
+import 'package:habitrak/features/auth/presentation/cubit/auth_cubit.dart';
+import 'package:habitrak/features/auth/presentation/pages/login_page.dart';
 import '../../data/repositories/profile_repository.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -1439,6 +1442,88 @@ class _ProfilePageState extends State<ProfilePage> {
                     Icons.arrow_forward_ios_rounded,
                     size: 14,
                     color: primaryColor,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Divider(
+            height: 1,
+            color: isDark
+                ? const Color(0xff424842).withValues(alpha: 0.25)
+                : const Color(0xffdbdad7).withValues(alpha: 0.6),
+          ),
+          const SizedBox(height: 10),
+          InkWell(
+            borderRadius: BorderRadius.circular(12),
+            onTap: () async {
+              final confirm = await showDialog<bool>(
+                context: context,
+                builder: (ctx) => AlertDialog(
+                  backgroundColor: cardBg,
+                  title: const Text(
+                    'Sign Out',
+                    style: TextStyle(
+                      fontFamily: 'Hanken Grotesk',
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  content: Text(
+                    'Are you sure you want to sign out?',
+                    style: TextStyle(
+                      fontFamily: 'Hanken Grotesk',
+                      color: isDark ? const Color(0xffc2c8c0) : const Color(0xff615e56),
+                    ),
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(ctx, false),
+                      child: Text(
+                        'Cancel',
+                        style: TextStyle(
+                          color: isDark ? const Color(0xffc2c8c0) : const Color(0xff615e56),
+                        ),
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () => Navigator.pop(ctx, true),
+                      child: const Text(
+                        'Sign Out',
+                        style: TextStyle(
+                          color: Colors.redAccent,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+
+              if (confirm == true && mounted) {
+                await context.read<AuthCubit>().logout();
+                if (mounted) {
+                  Navigator.of(context).pushAndRemoveUntil(
+                    AppPageRoute(page: const LoginPage()),
+                    (route) => false,
+                  );
+                }
+              }
+            },
+            child: const Padding(
+              padding: EdgeInsets.symmetric(vertical: 8),
+              child: Row(
+                children: [
+                  Icon(Icons.logout_rounded, color: Colors.redAccent, size: 20),
+                  SizedBox(width: 12),
+                  Text(
+                    'Sign Out',
+                    style: TextStyle(
+                      fontFamily: 'Hanken Grotesk',
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.redAccent,
+                    ),
                   ),
                 ],
               ),

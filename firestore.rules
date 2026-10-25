@@ -1,0 +1,36 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // User profile and account collection
+    match /users/{userId} {
+      // Users can only read and write their own account data
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+      
+      // Habits subcollection
+      match /habits/{habitId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+        
+        // Completion logs / history
+        match /logs/{logId} {
+          allow read, write: if request.auth != null && request.auth.uid == userId;
+        }
+      }
+      
+      // Reflections and mindfulness entries
+      match /reflections/{reflectionId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+      
+      // Activities (walk tracker, yoga exercises)
+      match /activities/{activityId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+      
+      // Badges and milestones
+      match /badges/{badgeId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+    }
+  }
+}

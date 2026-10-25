@@ -1,8 +1,12 @@
+import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:habitrak/core/animations/app_animations.dart';
 import 'package:habitrak/core/animations/app_page_route.dart';
 import 'package:habitrak/core/animations/staggered_entrance.dart';
+import 'package:habitrak/features/auth/data/repositories/auth_repository.dart';
+import 'package:habitrak/features/auth/presentation/pages/login_page.dart';
 import 'app_shell.dart';
 
 class SplashPage extends StatefulWidget {
@@ -18,6 +22,7 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
   late Animation<double> _fadeAnimation;
   late Animation<double> _scaleAnimation;
   late Animation<double> _ringRotation;
+  Timer? _navigationTimer;
 
   @override
   void initState() {
@@ -52,17 +57,24 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
 
     _entranceController.forward();
 
-    Future.delayed(const Duration(milliseconds: 2600), () {
+    _navigationTimer = Timer(const Duration(milliseconds: 2600), () {
       if (mounted) {
-        Navigator.of(
-          context,
-        ).pushReplacement(AppPageRoute(page: const AppShell()));
+        dynamic currentUser;
+        try {
+          currentUser = context.read<AuthRepository>().currentUser;
+        } catch (_) {}
+        final targetPage = currentUser != null ? const AppShell() : const LoginPage();
+
+        Navigator.of(context).pushReplacement(
+          AppPageRoute(page: targetPage),
+        );
       }
     });
   }
 
   @override
   void dispose() {
+    _navigationTimer?.cancel();
     _entranceController.dispose();
     _pulseController.dispose();
     super.dispose();
@@ -122,9 +134,7 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
                               borderRadius: BorderRadius.circular(24),
                               boxShadow: [
                                 BoxShadow(
-                                  color: primary.withValues(
-                                    alpha: isDark ? 0.2 : 0.15,
-                                  ),
+                                  color: primary.withValues(alpha: isDark ? 0.2 : 0.15),
                                   blurRadius: 24 * pulse,
                                   spreadRadius: 2,
                                 ),
@@ -147,13 +157,12 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
                       delay: const Duration(milliseconds: 400),
                       child: Text(
                         'habitrak',
-                        style: Theme.of(context).textTheme.displayLarge
-                            ?.copyWith(
-                              fontSize: 36,
-                              fontWeight: FontWeight.w700,
-                              color: primary,
-                              letterSpacing: -0.5,
-                            ),
+                        style: Theme.of(context).textTheme.displayLarge?.copyWith(
+                          fontSize: 36,
+                          fontWeight: FontWeight.w700,
+                          color: primary,
+                          letterSpacing: -0.5,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 8),
