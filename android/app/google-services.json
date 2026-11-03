@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "883726620987",
+    "project_id": "habitrak-d4e48",
+    "storage_bucket": "habitrak-d4e48.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:883726620987:android:88263387f8b6cc7a017f1e",
+        "android_client_info": {
+          "package_name": "com.app.habitrak"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAX1B3uoO8NZ_aXBVaWLbft5GUzeJGBcwI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

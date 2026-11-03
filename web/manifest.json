@@ -1,6 +1,6 @@
 {
-    "name": "habitrak_app",
-    "short_name": "habitrak_app",
+    "name": "habitrak",
+    "short_name": "habitrak",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
