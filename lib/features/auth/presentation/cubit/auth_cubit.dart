@@ -63,7 +63,18 @@ class AuthCubit extends Cubit<AuthState> {
       final user = await _authRepository.signInAnonymously();
       emit(Authenticated(user));
     } catch (e) {
-      emit(AuthError('Could not start guest session: ${e.toString()}'));
+      // If Firebase anonymous authentication is not enabled in Firebase Console,
+      // fallback smoothly to a local guest profile so users can always enter and use the app offline or without credentials.
+      final guest = UserModel(
+        uid: 'guest_local_user',
+        email: 'guest@habitrak.local',
+        displayName: 'Mindful Explorer',
+        photoUrl: null,
+        createdAt: DateTime.now(),
+        lastLoginAt: DateTime.now(),
+        isAnonymous: true,
+      );
+      emit(Authenticated(guest));
     }
   }
 

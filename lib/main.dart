@@ -20,6 +20,7 @@ import 'features/mindfulness/data/repositories/soulfulness_repository.dart';
 import 'features/activity/data/repositories/activity_repository.dart';
 import 'features/profile/data/repositories/profile_repository.dart';
 import 'features/music/services/soulful_music_service.dart';
+import 'features/health_news/data/repositories/health_news_repository.dart';
 import 'features/splash/presentation/pages/splash_page.dart';
 import 'firebase_options.dart';
 
@@ -51,6 +52,7 @@ void main() async {
   final connectivityService = ConnectivityService()..initialize();
   final musicService = SoulfulMusicService();
   final authRepository = AuthRepository();
+  final healthNewsRepository = HealthNewsRepository();
 
   await reflectionsRepository.ensureInitialized();
   await goalsRepository.ensureInitialized();
@@ -69,6 +71,7 @@ void main() async {
         RepositoryProvider<ConnectivityService>.value(value: connectivityService),
         RepositoryProvider<SoulfulMusicService>.value(value: musicService),
         RepositoryProvider<AuthRepository>.value(value: authRepository),
+        RepositoryProvider<HealthNewsRepository>.value(value: healthNewsRepository),
       ],
       child: MultiBlocProvider(
         providers: [

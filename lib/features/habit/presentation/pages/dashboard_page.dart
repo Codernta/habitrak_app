@@ -14,6 +14,7 @@ import '../../../activity/presentation/pages/walk_tracker_page.dart';
 import '../../../activity/presentation/pages/yoga_exercises_page.dart';
 import '../../../../core/services/notification_service.dart';
 import '../../../music/presentation/widgets/soulful_music_card.dart';
+import '../../../health_news/presentation/widgets/health_news_section.dart';
 import '../../../mindfulness/data/repositories/soulfulness_repository.dart';
 import '../../../mindfulness/presentation/widgets/breathwork_modal.dart';
 import '../../../mindfulness/presentation/widgets/meditation_timer_modal.dart';
@@ -314,7 +315,12 @@ class _DashboardPageState extends State<DashboardPage>
                     child: _buildHabitList(state.habits, state.activeDate),
                   ),
                   const SizedBox(height: 28),
-                  StaggeredEntrance(index: 5, child: _buildQuoteBanner(isDark)),
+                  const StaggeredEntrance(
+                    index: 5,
+                    child: HealthNewsSection(),
+                  ),
+                  const SizedBox(height: 28),
+                  StaggeredEntrance(index: 6, child: _buildQuoteBanner(isDark)),
                   const SizedBox(height: 40),
                 ],
               ),
