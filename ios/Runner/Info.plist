@@ -79,5 +79,14 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSHealthShareUsageDescription</key>
+	<string>Habitrak reads your steps, heart rate, sleep sessions, active energy, and workouts from Apple Health to automatically track your habits and deliver personalized wellness intelligence.</string>
+	<key>NSHealthUpdateUsageDescription</key>
+	<string>Habitrak writes completed mindful walks and meditation sessions to Apple Health.</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>fetch</string>
+		<string>processing</string>
+	</array>
 </dict>
 </plist>

@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:habitrak/core/animations/app_page_route.dart';
 import 'package:habitrak/core/animations/pressable_scale.dart';
 import 'package:habitrak/core/animations/staggered_entrance.dart';
+import 'package:habitrak/core/theme/app_theme.dart';
 import 'package:habitrak/features/splash/presentation/pages/app_shell.dart';
 import '../cubit/auth_cubit.dart';
 import '../cubit/auth_state.dart';
@@ -37,11 +38,11 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primary = isDark ? const Color(0xffb0ceb2) : const Color(0xff8ba88e);
-    final cardBg = isDark ? const Color(0xff1e201e) : const Color(0xffffffff);
+    final primary = isDark ? AppColors.limeAccent : AppColors.obsidianBlack;
+    final cardBg = isDark ? AppColors.charcoalCard : Colors.white;
     final borderColor = isDark
-        ? const Color(0xff424842).withValues(alpha: 0.35)
-        : const Color(0xffdbdad7).withValues(alpha: 0.8);
+        ? AppColors.charcoalBorder
+        : const Color(0xFFE8E9EC);
     final textColor = isDark ? const Color(0xffe2e3df) : const Color(0xff2f312f);
     final subtextColor = isDark ? const Color(0xffc2c8c0) : const Color(0xff615e56);
 

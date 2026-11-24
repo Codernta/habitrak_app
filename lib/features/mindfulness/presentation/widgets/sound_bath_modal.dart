@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:haptic_flow/haptic_flow.dart';
+import 'package:habitrak/core/theme/app_theme.dart';
 import '../../../music/models/soulful_track.dart';
 import '../../../music/services/soulful_music_service.dart';
 
@@ -92,15 +93,13 @@ class _SoundBathModalState extends State<SoundBathModal> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final primaryColor = isDark
-        ? const Color(0xffb0ceb2)
-        : const Color(0xff8ba88e);
-    final cardBg = isDark ? const Color(0xff1e201e) : const Color(0xffffffff);
+        ? AppColors.limeAccent
+        : AppColors.obsidianBlack;
+    final cardBg = isDark ? AppColors.charcoalCard : Colors.white;
     final tracks = SoulfulMusicService.curatedTracks;
 
     return Container(
-      constraints: BoxConstraints(
-        maxHeight: MediaQuery.of(context).size.height * 0.88,
-      ),
+      height: MediaQuery.of(context).size.height * 0.85,
       decoration: BoxDecoration(
         color: cardBg,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
@@ -132,24 +131,29 @@ class _SoundBathModalState extends State<SoundBathModal> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.graphic_eq_rounded,
-                        color: primaryColor,
-                        size: 26,
-                      ),
-                      const SizedBox(width: 10),
-                      Text(
-                        'Ambient Sound Bath',
-                        style: TextStyle(
-                          fontFamily: 'Hanken Grotesk',
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: isDark ? Colors.white : Colors.black,
+                  Expanded(
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.graphic_eq_rounded,
+                          color: primaryColor,
+                          size: 26,
                         ),
-                      ),
-                    ],
+                        const SizedBox(width: 10),
+                        Flexible(
+                          child: Text(
+                            'Ambient Sound Bath',
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontFamily: 'Hanken Grotesk',
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: isDark ? Colors.white : Colors.black,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                   IconButton(
                     onPressed: () => Navigator.pop(context),

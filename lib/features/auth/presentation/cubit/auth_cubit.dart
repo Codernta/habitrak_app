@@ -24,6 +24,13 @@ class AuthCubit extends Cubit<AuthState> {
         } else {
           emit(Authenticated(UserModel.fromFirebaseUser(firebaseUser)));
         }
+      } else if (_authRepository.isGuest) {
+        final profile = await _authRepository.getCurrentUserProfile();
+        emit(Authenticated(profile ?? const UserModel(
+          uid: 'guest_user',
+          displayName: 'Guest Habitraker',
+          isAnonymous: true,
+        )));
       } else {
         emit(const Unauthenticated());
       }
@@ -36,6 +43,13 @@ class AuthCubit extends Cubit<AuthState> {
       emit(const AuthLoading(message: 'Restoring session...'));
       final profile = await _authRepository.getCurrentUserProfile();
       emit(Authenticated(profile ?? UserModel.fromFirebaseUser(user)));
+    } else if (_authRepository.isGuest) {
+      final profile = await _authRepository.getCurrentUserProfile();
+      emit(Authenticated(profile ?? const UserModel(
+        uid: 'guest_user',
+        displayName: 'Guest Habitraker',
+        isAnonymous: true,
+      )));
     } else {
       emit(const Unauthenticated());
     }
@@ -65,6 +79,7 @@ class AuthCubit extends Cubit<AuthState> {
     } catch (e) {
       // If Firebase anonymous authentication is not enabled in Firebase Console,
       // fallback smoothly to a local guest profile so users can always enter and use the app offline or without credentials.
+      await _authRepository.setGuest(true);
       final guest = UserModel(
         uid: 'guest_local_user',
         email: 'guest@habitrak.local',

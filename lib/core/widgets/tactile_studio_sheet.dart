@@ -1,6 +1,7 @@
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:haptic_flow/haptic_flow.dart';
+import '../theme/app_theme.dart';
 import 'package:habitrak/core/animations/pressable_scale.dart';
 
 /// Interactive Tactile Sensation Studio
@@ -38,7 +39,7 @@ class _TactileStudioSheetState extends State<TactileStudioSheet> {
       'desc': 'Affirmative double-stage confirmation',
       'icon': Icons.check_circle_outline_rounded,
       'preset': HapticPresets.successSnap,
-      'color': const Color(0xff8ba88e),
+      'color': AppColors.limeAccent,
     },
     {
       'name': 'Mechanical Dial',
@@ -158,7 +159,7 @@ class _TactileStudioSheetState extends State<TactileStudioSheet> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final primaryColor =
-        isDark ? const Color(0xffb0ceb2) : const Color(0xff8ba88e);
+        isDark ? AppColors.limeAccent : AppColors.obsidianBlack;
     final cardBg =
         isDark ? const Color(0xff1e201e) : const Color(0xffffffff);
     final sectionBg =
@@ -169,6 +170,9 @@ class _TactileStudioSheetState extends State<TactileStudioSheet> {
       child: Container(
         constraints: BoxConstraints(
           maxHeight: MediaQuery.of(context).size.height * 0.90,
+        ),
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom,
         ),
         decoration: BoxDecoration(
           color: cardBg,
@@ -225,6 +229,8 @@ class _TactileStudioSheetState extends State<TactileStudioSheet> {
                         children: [
                           Text(
                             'Tactile Sensation Studio',
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
                             style: TextStyle(
                               fontFamily: 'Hanken Grotesk',
                               fontSize: 19,
@@ -234,11 +240,13 @@ class _TactileStudioSheetState extends State<TactileStudioSheet> {
                           ),
                           Text(
                             'Powered by haptic_flow choreography engine',
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
                             style: TextStyle(
                               fontFamily: 'Hanken Grotesk',
                               fontSize: 12,
                               color: isDark
-                                  ? const Color(0xffb0ceb2)
+                                  ? AppColors.limeAccent
                                   : const Color(0xff615e56),
                             ),
                           ),
@@ -477,7 +485,7 @@ class _TactileStudioSheetState extends State<TactileStudioSheet> {
                                   fontFamily: 'Hanken Grotesk',
                                   fontSize: 11,
                                   color: isDark
-                                      ? const Color(0xffb0ceb2)
+                                      ? AppColors.limeAccent
                                       : const Color(0xff615e56),
                                 ),
                               ),
@@ -558,6 +566,8 @@ class _TactileStudioSheetState extends State<TactileStudioSheet> {
                                     children: [
                                       Text(
                                         name,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
                                         style: TextStyle(
                                           fontFamily: 'Hanken Grotesk',
                                           fontWeight: FontWeight.bold,
@@ -693,13 +703,17 @@ class _TactileStudioSheetState extends State<TactileStudioSheet> {
       children: [
         Icon(icon, size: 18, color: primaryColor),
         const SizedBox(width: 8),
-        Text(
-          title,
-          style: TextStyle(
-            fontFamily: 'Hanken Grotesk',
-            fontSize: 14,
-            fontWeight: FontWeight.bold,
-            color: isDark ? Colors.white : Colors.black,
+        Expanded(
+          child: Text(
+            title,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontFamily: 'Hanken Grotesk',
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+              color: isDark ? Colors.white : Colors.black,
+            ),
           ),
         ),
       ],

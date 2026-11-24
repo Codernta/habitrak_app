@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:ui' as ui;
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:haptic_flow/haptic_flow.dart';
@@ -129,8 +128,8 @@ class _SoulfulMusicCardState extends State<SoulfulMusicCard> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final primaryColor = isDark
-        ? AppColors.darkPrimary
-        : AppColors.lightPrimary;
+        ? AppColors.limeAccent
+        : AppColors.lavenderDark;
     final isPlaying = _playerState == PlayerState.playing;
 
     final maxSeconds = _duration.inSeconds > 0
@@ -143,36 +142,25 @@ class _SoulfulMusicCardState extends State<SoulfulMusicCard> {
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(24),
-      child: BackdropFilter(
-        filter: ui.ImageFilter.blur(sigmaX: 16, sigmaY: 16),
-        child: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                (isDark ? const Color(0xff1f2620) : const Color(0xfff4f9f4))
-                    .withValues(alpha: 0.85),
-                (isDark ? const Color(0xff181d18) : const Color(0xffeef5ee))
-                    .withValues(alpha: 0.70),
-              ],
-            ),
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(
-              color: isDark
-                  ? Colors.white.withValues(alpha: 0.12)
-                  : primaryColor.withValues(alpha: 0.25),
-              width: 1,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: primaryColor.withValues(alpha: isDark ? 0.05 : 0.08),
-                blurRadius: 20,
-                offset: const Offset(0, 8),
-              ),
-            ],
+      child: Container(
+        decoration: BoxDecoration(
+          color: isDark ? AppColors.charcoalCard : Colors.white,
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(
+            color: isDark
+                ? AppColors.charcoalBorder
+                : const Color(0xFFE8E9EC),
+            width: 1,
           ),
-          padding: const EdgeInsets.all(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
+              blurRadius: 18,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        padding: const EdgeInsets.all(20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -515,7 +503,6 @@ class _SoulfulMusicCardState extends State<SoulfulMusicCard> {
             ],
           ),
         ),
-      ),
-    );
+      );
   }
 }

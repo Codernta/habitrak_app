@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:haptic_flow/haptic_flow.dart';
 import 'package:habitrak/core/animations/pressable_scale.dart';
+import 'package:habitrak/core/theme/app_theme.dart';
 import '../../data/repositories/soulfulness_repository.dart';
 
 enum BreathPhase { inhale, holdIn, exhale, holdOut }
@@ -282,9 +283,9 @@ class _BreathworkModalState extends State<BreathworkModal>
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final primaryColor = isDark
-        ? const Color(0xffb0ceb2)
-        : const Color(0xff8ba88e);
-    final cardBg = isDark ? const Color(0xff1e201e) : const Color(0xffffffff);
+        ? AppColors.limeAccent
+        : AppColors.limeAccentDark;
+    final cardBg = isDark ? AppColors.charcoalCard : Colors.white;
 
     return Container(
       constraints: BoxConstraints(
@@ -319,20 +320,25 @@ class _BreathworkModalState extends State<BreathworkModal>
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Row(
-                    children: [
-                      Icon(Icons.air_rounded, color: primaryColor, size: 26),
-                      const SizedBox(width: 10),
-                      Text(
-                        'Pranayama Pacer',
-                        style: TextStyle(
-                          fontFamily: 'Hanken Grotesk',
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: isDark ? Colors.white : Colors.black,
+                  Expanded(
+                    child: Row(
+                      children: [
+                        Icon(Icons.air_rounded, color: primaryColor, size: 26),
+                        const SizedBox(width: 10),
+                        Flexible(
+                          child: Text(
+                            'Pranayama Pacer',
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontFamily: 'Hanken Grotesk',
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: isDark ? Colors.white : Colors.black,
+                            ),
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                   IconButton(
                     onPressed: () => Navigator.pop(context),

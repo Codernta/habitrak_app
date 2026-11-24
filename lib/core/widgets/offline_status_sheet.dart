@@ -4,6 +4,7 @@ import 'package:haptic_flow/haptic_flow.dart';
 import 'package:habitrak/core/services/connectivity_service.dart';
 import 'package:habitrak/core/theme/app_theme.dart';
 import 'package:habitrak/core/widgets/offline_lottie_widget.dart';
+import 'package:habitrak/main.dart';
 
 /// Modal bottom sheet showcasing Habitrak's offline state with Lottie animation
 /// and serene color aesthetics.
@@ -11,8 +12,11 @@ class OfflineStatusSheet extends StatefulWidget {
   const OfflineStatusSheet({super.key});
 
   static Future<void> show(BuildContext context) {
+    final nav = Navigator.maybeOf(context);
+    final targetContext = nav != null ? context : appNavigatorKey.currentContext;
+    if (targetContext == null) return Future.value();
     return showModalBottomSheet(
-      context: context,
+      context: targetContext,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
       builder: (context) => const OfflineStatusSheet(),
@@ -69,6 +73,9 @@ class _OfflineStatusSheetState extends State<OfflineStatusSheet> {
       child: BackdropFilter(
         filter: ui.ImageFilter.blur(sigmaX: 20, sigmaY: 20),
         child: Container(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(context).size.height * 0.90,
+          ),
           decoration: BoxDecoration(
             color: isDark
                 ? AppColors.darkSurface.withValues(alpha: 0.92)
@@ -80,21 +87,25 @@ class _OfflineStatusSheetState extends State<OfflineStatusSheet> {
                   : Colors.black.withValues(alpha: 0.08),
             ),
           ),
-          padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Sheet drag handle
-              Container(
-                width: 44,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: isDark
-                      ? Colors.white.withValues(alpha: 0.2)
-                      : Colors.black.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
+          child: SafeArea(
+            top: false,
+            child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Sheet drag handle
+                  Container(
+                    width: 44,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? Colors.white.withValues(alpha: 0.2)
+                          : Colors.black.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
               const SizedBox(height: 16),
 
               // Theme-aligned Lottie animation
@@ -164,101 +175,130 @@ class _OfflineStatusSheetState extends State<OfflineStatusSheet> {
               const SizedBox(height: 24),
 
               // Retry & Dismiss Buttons
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        side: BorderSide(
-                          color: isDark
-                              ? AppColors.darkOutlineVariant
-                              : AppColors.lightOutlineVariant,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
-                        ),
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  final isTight = constraints.maxWidth < 280;
+                  final dismissBtn = OutlinedButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      side: BorderSide(
+                        color: isDark
+                            ? AppColors.darkOutlineVariant
+                            : AppColors.lightOutlineVariant,
                       ),
-                      child: Text(
-                        'Keep Practicing',
-                        style: TextStyle(
-                          fontFamily: 'Hanken Grotesk',
-                          fontWeight: FontWeight.w600,
-                          color: isDark
-                              ? AppColors.darkOnSurface
-                              : AppColors.lightOnSurface,
-                        ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: _isChecking ? null : _handleRetry,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: primaryColor,
-                        foregroundColor: isDark
-                            ? AppColors.darkOnPrimary
-                            : Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
-                        ),
+                    child: Text(
+                      'Keep Practicing',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontFamily: 'Hanken Grotesk',
+                        fontWeight: FontWeight.w600,
+                        color: isDark
+                            ? AppColors.darkOnSurface
+                            : AppColors.lightOnSurface,
                       ),
-                      child: _isChecking
-                          ? const SizedBox(
-                              width: 18,
-                              height: 18,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                valueColor: AlwaysStoppedAnimation<Color>(
-                                  Colors.white,
-                                ),
+                    ),
+                  );
+
+                  final retryBtn = ElevatedButton(
+                    onPressed: _isChecking ? null : _handleRetry,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: primaryColor,
+                      foregroundColor: isDark
+                          ? AppColors.darkOnPrimary
+                          : Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                    ),
+                    child: _isChecking
+                        ? const SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                Colors.white,
                               ),
-                            )
-                          : const Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(Icons.refresh_rounded, size: 18),
-                                SizedBox(width: 6),
-                                Text(
+                            ),
+                          )
+                        : const Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.refresh_rounded, size: 18),
+                              SizedBox(width: 6),
+                              Flexible(
+                                child: Text(
                                   'Check Internet',
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
                                   style: TextStyle(
                                     fontFamily: 'Hanken Grotesk',
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
-                              ],
-                            ),
-                    ),
-                  ),
-                ],
+                              ),
+                            ],
+                          ),
+                  );
+
+                  if (isTight) {
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        retryBtn,
+                        const SizedBox(height: 10),
+                        dismissBtn,
+                      ],
+                    );
+                  }
+
+                  return Row(
+                    children: [
+                      Expanded(child: dismissBtn),
+                      const SizedBox(width: 12),
+                      Expanded(child: retryBtn),
+                    ],
+                  );
+                },
               ),
             ],
           ),
         ),
       ),
-    );
+    ),
+  ),
+);
   }
 
   Widget _buildFeatureItem(IconData icon, String label, Color color) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, size: 20, color: color),
-        const SizedBox(height: 4),
-        Text(
-          label,
-          style: TextStyle(
-            fontFamily: 'Hanken Grotesk',
-            fontSize: 11,
-            fontWeight: FontWeight.w600,
-            color: color,
+    return Expanded(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 20, color: color),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontFamily: 'Hanken Grotesk',
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              color: color,
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

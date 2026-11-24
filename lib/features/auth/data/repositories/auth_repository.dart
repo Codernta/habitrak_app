@@ -2,12 +2,16 @@ import 'dart:developer' as developer;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import '../../../../core/storage/hive_registrar.dart';
 import '../models/user_model.dart';
 
 class AuthRepository {
   final FirebaseAuth _auth;
   final FirebaseFirestore _firestore;
   bool _googleSignInInitialized = false;
+
+  static const String _keyIsGuest = 'is_guest_user';
 
   AuthRepository({
     FirebaseAuth? auth,
@@ -18,6 +22,23 @@ class AuthRepository {
   Stream<User?> get authStateChanges => _auth.authStateChanges();
 
   User? get currentUser => _auth.currentUser;
+
+  bool get isGuest {
+    if (_auth.currentUser != null) return false;
+    try {
+      final box = Hive.box(HiveRegistrar.settingsBoxName);
+      return box.get(_keyIsGuest, defaultValue: false) as bool;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  Future<void> setGuest(bool value) async {
+    try {
+      final box = Hive.box(HiveRegistrar.settingsBoxName);
+      await box.put(_keyIsGuest, value);
+    } catch (_) {}
+  }
 
   CollectionReference<Map<String, dynamic>> get _usersCollection =>
       _firestore.collection('users');
@@ -36,7 +57,16 @@ class AuthRepository {
   /// Fetches the Firestore profile for the currently logged-in user.
   Future<UserModel?> getCurrentUserProfile() async {
     final user = _auth.currentUser;
-    if (user == null) return null;
+    if (user == null) {
+      if (isGuest) {
+        return const UserModel(
+          uid: 'guest_user',
+          displayName: 'Guest Habitraker',
+          isAnonymous: true,
+        );
+      }
+      return null;
+    }
 
     try {
       final doc = await _usersCollection.doc(user.uid).get();
@@ -76,6 +106,7 @@ class AuthRepository {
         );
       }
 
+      await setGuest(false);
       return await _createOrUpdateUserInFirestore(user);
     } catch (e) {
       developer.log('Error in signInWithGoogle: $e', name: 'AuthRepository');
@@ -96,10 +127,22 @@ class AuthRepository {
         );
       }
 
-      return await _createOrUpdateUserInFirestore(user);
+      await setGuest(true);
+      try {
+        return await _createOrUpdateUserInFirestore(user);
+      } catch (firestoreError) {
+        developer.log('Firestore profile create warning in guest mode: $firestoreError', name: 'AuthRepository');
+        return UserModel.fromFirebaseUser(user);
+      }
     } catch (e) {
       developer.log('Error in signInAnonymously: $e', name: 'AuthRepository');
-      rethrow;
+      // If Firebase anonymous auth encounters an error, fallback to local guest session
+      await setGuest(true);
+      return const UserModel(
+        uid: 'guest_user',
+        displayName: 'Guest Habitraker',
+        isAnonymous: true,
+      );
     }
   }
 
@@ -159,6 +202,7 @@ class AuthRepository {
 
   /// Sign out from both Firebase and Google
   Future<void> signOut() async {
+    await setGuest(false);
     try {
       await GoogleSignIn.instance.signOut();
     } catch (_) {

@@ -89,7 +89,10 @@ class _MusicSearchSheetState extends State<MusicSearchSheet> {
       child: BackdropFilter(
         filter: ui.ImageFilter.blur(sigmaX: 24, sigmaY: 24),
         child: Container(
-          height: MediaQuery.of(context).size.height * 0.78,
+          height: MediaQuery.of(context).size.height * 0.82,
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+          ),
           decoration: BoxDecoration(
             color: isDark
                 ? AppColors.darkSurface.withValues(alpha: 0.94)
@@ -101,79 +104,85 @@ class _MusicSearchSheetState extends State<MusicSearchSheet> {
                   : Colors.black.withValues(alpha: 0.08),
             ),
           ),
-          child: Column(
-            children: [
-              // Sheet Drag Handle
-              const SizedBox(height: 12),
-              Container(
-                width: 44,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: isDark
-                      ? Colors.white.withValues(alpha: 0.2)
-                      : Colors.black.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(2),
+          child: SafeArea(
+            top: false,
+            child: Column(
+              children: [
+                // Sheet Drag Handle
+                const SizedBox(height: 12),
+                Container(
+                  width: 44,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: isDark
+                        ? Colors.white.withValues(alpha: 0.2)
+                        : Colors.black.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 16),
+                const SizedBox(height: 16),
 
-              // Title Header
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color:
-                            (isDark
-                                    ? AppColors.darkPrimaryContainer
-                                    : AppColors.lightPrimaryContainer)
-                                .withValues(alpha: 0.5),
-                        borderRadius: BorderRadius.circular(10),
+                // Title Header
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color:
+                              (isDark
+                                      ? AppColors.darkPrimaryContainer
+                                      : AppColors.lightPrimaryContainer)
+                                  .withValues(alpha: 0.5),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Icon(
+                          Icons.music_note,
+                          color: primaryColor,
+                          size: 20,
+                        ),
                       ),
-                      child: Icon(
-                        Icons.music_note,
-                        color: primaryColor,
-                        size: 20,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Soulful Music Library',
-                            style: TextStyle(
-                              fontFamily: 'Hanken Grotesk',
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: isDark
-                                  ? AppColors.darkOnSurface
-                                  : AppColors.lightOnSurface,
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Soulful Music Library',
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                              style: TextStyle(
+                                fontFamily: 'Hanken Grotesk',
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: isDark
+                                    ? AppColors.darkOnSurface
+                                    : AppColors.lightOnSurface,
+                              ),
                             ),
-                          ),
-                          Text(
-                            '1–5 min royalty-free audio for yoga & meditation',
-                            style: TextStyle(
-                              fontFamily: 'Hanken Grotesk',
-                              fontSize: 12,
-                              color: isDark
-                                  ? AppColors.darkOnSurfaceVariant
-                                  : AppColors.lightOnSurfaceVariant,
+                            Text(
+                              '1–5 min royalty-free audio for yoga & meditation',
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                              style: TextStyle(
+                                fontFamily: 'Hanken Grotesk',
+                                fontSize: 12,
+                                color: isDark
+                                    ? AppColors.darkOnSurfaceVariant
+                                    : AppColors.lightOnSurfaceVariant,
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.close_rounded),
-                      onPressed: () => Navigator.of(context).pop(),
-                    ),
-                  ],
+                      IconButton(
+                        icon: const Icon(Icons.close_rounded),
+                        onPressed: () => Navigator.of(context).pop(),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
               const SizedBox(height: 14),
 
               // Search Input Box
@@ -369,6 +378,8 @@ class _MusicSearchSheetState extends State<MusicSearchSheet> {
                                       const SizedBox(height: 2),
                                       Text(
                                         '${track.artist} • ${track.category}',
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
                                         style: TextStyle(
                                           fontFamily: 'Hanken Grotesk',
                                           fontSize: 11,
@@ -426,14 +437,17 @@ class _MusicSearchSheetState extends State<MusicSearchSheet> {
                       color: primaryColor,
                     ),
                     const SizedBox(width: 6),
-                    Text(
-                      '100% Free & Royalty-Free (No licensing or paid fees)',
-                      style: TextStyle(
-                        fontFamily: 'Hanken Grotesk',
-                        fontSize: 11,
-                        color: isDark
-                            ? AppColors.darkOutline
-                            : AppColors.lightOutline,
+                    Flexible(
+                      child: Text(
+                        '100% Free & Royalty-Free (No licensing or paid fees)',
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontFamily: 'Hanken Grotesk',
+                          fontSize: 11,
+                          color: isDark
+                              ? AppColors.darkOutline
+                              : AppColors.lightOutline,
+                        ),
                       ),
                     ),
                   ],
@@ -443,6 +457,7 @@ class _MusicSearchSheetState extends State<MusicSearchSheet> {
           ),
         ),
       ),
-    );
+    ),
+  );
   }
 }

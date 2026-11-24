@@ -1,9 +1,13 @@
 import 'dart:async';
-import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:haptic_flow/haptic_flow.dart';
 import 'package:habitrak/core/animations/app_animations.dart';
+import 'package:habitrak/core/animations/app_page_route.dart';
+import 'package:habitrak/core/theme/app_theme.dart';
+import 'package:habitrak/features/auth/presentation/cubit/auth_cubit.dart';
+import 'package:habitrak/features/auth/presentation/cubit/auth_state.dart';
+import 'package:habitrak/features/auth/presentation/pages/login_page.dart';
 import 'package:habitrak/features/habit/presentation/bloc/habit_bloc.dart';
 import 'package:habitrak/features/habit/presentation/pages/dashboard_page.dart';
 import 'package:habitrak/features/habit/presentation/pages/library_page.dart';
@@ -84,11 +88,19 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     final slideDirection = _currentIndex > _previousIndex ? 1.0 : -1.0;
 
     return Scaffold(
-      body: AnimatedSwitcher(
+      body: BlocListener<AuthCubit, AuthState>(
+        listener: (context, state) {
+          if (state is Unauthenticated) {
+            Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
+              AppPageRoute(page: const LoginPage()),
+              (route) => false,
+            );
+          }
+        },
+        child: AnimatedSwitcher(
         duration: AppAnimations.normal,
         switchInCurve: AppAnimations.spring,
         switchOutCurve: Curves.easeInCubic,
@@ -121,129 +133,119 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
           child: _pages[_currentIndex],
         ),
       ),
+    ),
       extendBody: true,
-      bottomNavigationBar: ClipRect(
-        child: BackdropFilter(
-          filter: ui.ImageFilter.blur(sigmaX: 30, sigmaY: 30),
-          child: Container(
-            decoration: BoxDecoration(
-              color: isDark
-                  ? const Color(0xff121212).withValues(alpha: 0.65)
-                  : Colors.white.withValues(alpha: 0.65),
-              border: Border(
-                top: BorderSide(
-                  color: isDark
-                      ? Colors.white.withValues(alpha: 0.15)
-                      : Colors.black.withValues(alpha: 0.1),
-                  width: 0.5,
-                ),
+      bottomNavigationBar: SafeArea(
+        child: Container(
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+          decoration: BoxDecoration(
+            color: const Color(0xFF16181A),
+            borderRadius: BorderRadius.circular(36),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.25),
+                blurRadius: 20,
+                offset: const Offset(0, 8),
               ),
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  isDark
-                      ? Colors.white.withValues(alpha: 0.1)
-                      : Colors.black.withValues(alpha: 0.05),
-                  isDark
-                      ? Colors.white.withValues(alpha: 0.0)
-                      : Colors.black.withValues(alpha: 0.0),
-                ],
-                stops: const [0.0, 0.4],
-              ),
+            ],
+            border: Border.all(
+              color: const Color(0xFF2A2D32),
+              width: 1,
             ),
-            child: SafeArea(
-              top: false,
-              child: Padding(
-                padding: const EdgeInsets.only(top: 8, bottom: 4),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    _buildGlassNavItem(
-                      0,
-                      Icons.home_filled,
-                      Icons.home_outlined,
-                      'Home',
-                    ),
-                    _buildGlassNavItem(
-                      1,
-                      Icons.library_books,
-                      Icons.library_books_outlined,
-                      'Library',
-                    ),
-                    _buildGlassNavItem(
-                      2,
-                      Icons.grid_view_rounded,
-                      Icons.grid_view_outlined,
-                      'Mindful',
-                    ),
-                    _buildGlassNavItem(
-                      3,
-                      Icons.person,
-                      Icons.person_outline,
-                      'Profile',
-                    ),
-                  ],
-                ),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _buildNeoNavItem(
+                index: 0,
+                icon: Icons.grid_view_rounded,
+                label: 'Dashboard',
+                badgeText: '3',
               ),
-            ),
+              _buildNeoNavItem(
+                index: 1,
+                icon: Icons.format_list_bulleted_rounded,
+                label: 'Habits',
+              ),
+              _buildNeoNavItem(
+                index: 2,
+                icon: Icons.spa_rounded,
+                label: 'Mindful',
+                badgeText: '1',
+              ),
+              _buildNeoNavItem(
+                index: 3,
+                icon: Icons.person_rounded,
+                label: 'Profile',
+              ),
+            ],
           ),
         ),
       ),
     );
   }
 
-  Widget _buildGlassNavItem(
-    int index,
-    IconData filledIcon,
-    IconData outlineIcon,
-    String label,
-  ) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+  Widget _buildNeoNavItem({
+    required int index,
+    required IconData icon,
+    required String label,
+    String? badgeText,
+  }) {
     final isSelected = _currentIndex == index;
-
-    final activeColor = isDark ? Colors.white : Colors.black;
-    final inactiveColor = isDark ? Colors.white54 : Colors.black54;
 
     return GestureDetector(
       onTap: () => _onTabSelected(index),
       behavior: HitTestBehavior.opaque,
-      child: SizedBox(
-        width: 76,
-        child: Column(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeOutCubic,
+        padding: isSelected
+            ? const EdgeInsets.symmetric(horizontal: 14, vertical: 9)
+            : const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+        decoration: BoxDecoration(
+          color: isSelected ? Colors.white : Colors.transparent,
+          borderRadius: BorderRadius.circular(24),
+        ),
+        child: Row(
           mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            AnimatedSwitcher(
-              duration: const Duration(milliseconds: 250),
-              transitionBuilder: (child, animation) {
-                return ScaleTransition(
-                  scale: Tween<double>(begin: 0.8, end: 1.0).animate(
-                    CurvedAnimation(
-                      parent: animation,
-                      curve: Curves.easeOutBack,
-                    ),
+            Icon(
+              icon,
+              color: isSelected ? const Color(0xFF16181A) : Colors.white60,
+              size: 20,
+            ),
+            if (isSelected) ...[
+              const SizedBox(width: 8),
+              Text(
+                label,
+                style: const TextStyle(
+                  fontFamily: 'Hanken Grotesk',
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF16181A),
+                ),
+              ),
+            ],
+            if (badgeText != null && isSelected) ...[
+              const SizedBox(width: 6),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: index == 2 ? AppColors.pistaGreen : AppColors.limeAccent,
+                  shape: BoxShape.circle,
+                ),
+                child: Text(
+                  badgeText,
+                  style: const TextStyle(
+                    fontFamily: 'Hanken Grotesk',
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF16181A),
                   ),
-                  child: FadeTransition(opacity: animation, child: child),
-                );
-              },
-              child: Icon(
-                isSelected ? filledIcon : outlineIcon,
-                key: ValueKey<bool>(isSelected),
-                color: isSelected ? activeColor : inactiveColor,
-                size: 26,
+                ),
               ),
-            ),
-            const SizedBox(height: 2),
-            Text(
-              label,
-              style: TextStyle(
-                fontFamily: 'Hanken Grotesk',
-                fontSize: 12,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                color: isSelected ? activeColor : inactiveColor,
-              ),
-            ),
+            ],
           ],
         ),
       ),

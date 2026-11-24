@@ -11,6 +11,10 @@ class HiveRegistrar {
   static const String habitHistoryBoxName = 'habit_history';
   static const String profileBoxName = 'user_profile';
   static const String soulfulnessBoxName = 'soulfulness';
+  static const String healthSyncStateBoxName = 'health_sync_state';
+  static const String dailySummariesBoxName = 'daily_health_summaries';
+  static const String habitRulesBoxName = 'habit_automation_rules';
+  static const String aiInsightsBoxName = 'ai_insights_cache';
 
   static Future<void> init() async {
     await Hive.initFlutter();
@@ -33,6 +37,10 @@ class HiveRegistrar {
     await _openSafeBox<Map>(habitHistoryBoxName, cipher: cipher);
     await _openSafeBox<dynamic>(profileBoxName, cipher: cipher);
     await _openSafeBox<dynamic>(soulfulnessBoxName, cipher: cipher);
+    await _openSafeBox<dynamic>(healthSyncStateBoxName, cipher: cipher);
+    await _openSafeBox<dynamic>(dailySummariesBoxName, cipher: cipher);
+    await _openSafeBox<dynamic>(habitRulesBoxName, cipher: cipher);
+    await _openSafeBox<dynamic>(aiInsightsBoxName, cipher: cipher);
   }
 
   static Future<Box<T>> _openSafeBox<T>(

@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:haptic_flow/haptic_flow.dart';
 import 'package:habitrak/core/animations/app_animations.dart';
 import 'package:habitrak/core/animations/pressable_scale.dart';
+import 'package:habitrak/core/theme/app_theme.dart';
 import '../../data/repositories/soulfulness_repository.dart';
 
 class ThoughtReleaseModal extends StatefulWidget {
@@ -104,9 +105,9 @@ class _ThoughtReleaseModalState extends State<ThoughtReleaseModal>
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final primaryColor = isDark
-        ? const Color(0xffb0ceb2)
-        : const Color(0xff8ba88e);
-    final cardBg = isDark ? const Color(0xff1e201e) : const Color(0xffffffff);
+        ? AppColors.limeAccent
+        : AppColors.obsidianBlack;
+    final cardBg = isDark ? AppColors.charcoalCard : Colors.white;
 
     return Container(
       constraints: BoxConstraints(
@@ -123,7 +124,12 @@ class _ThoughtReleaseModalState extends State<ThoughtReleaseModal>
             parent: BouncingScrollPhysics(),
             triggerAtEdges: true,
           ),
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          padding: EdgeInsets.only(
+            left: 24,
+            right: 24,
+            top: 16,
+            bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+          ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -144,20 +150,25 @@ class _ThoughtReleaseModalState extends State<ThoughtReleaseModal>
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Row(
-                    children: [
-                      Icon(Icons.waves_rounded, color: primaryColor, size: 26),
-                      const SizedBox(width: 10),
-                      Text(
-                        'Release to the River',
-                        style: TextStyle(
-                          fontFamily: 'Hanken Grotesk',
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: isDark ? Colors.white : Colors.black,
+                  Expanded(
+                    child: Row(
+                      children: [
+                        Icon(Icons.waves_rounded, color: primaryColor, size: 26),
+                        const SizedBox(width: 10),
+                        Flexible(
+                          child: Text(
+                            'Release to the River',
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontFamily: 'Hanken Grotesk',
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: isDark ? Colors.white : Colors.black,
+                            ),
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                   IconButton(
                     onPressed: () => Navigator.pop(context),

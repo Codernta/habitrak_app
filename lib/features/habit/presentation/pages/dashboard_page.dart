@@ -13,12 +13,23 @@ import 'library_page.dart';
 import '../../../activity/presentation/pages/walk_tracker_page.dart';
 import '../../../activity/presentation/pages/yoga_exercises_page.dart';
 import '../../../../core/services/notification_service.dart';
+import '../../../../core/theme/app_theme.dart';
 import '../../../music/presentation/widgets/soulful_music_card.dart';
 import '../../../health_news/presentation/widgets/health_news_section.dart';
 import '../../../mindfulness/data/repositories/soulfulness_repository.dart';
 import '../../../mindfulness/presentation/widgets/breathwork_modal.dart';
 import '../../../mindfulness/presentation/widgets/meditation_timer_modal.dart';
 import '../../../mindfulness/presentation/widgets/thought_release_modal.dart';
+import '../widgets/bento/bento_header.dart';
+import '../widgets/bento/bento_energy_card.dart';
+import '../widgets/bento/bento_metrics_cards.dart';
+import '../widgets/bento/bento_wellness_card.dart';
+import '../widgets/bento/bento_sleep_card.dart';
+import '../widgets/bento/bento_ai_promo_card.dart';
+import '../../../health/domain/models/daily_health_summary.dart';
+import '../../../health/presentation/bloc/wearable_sync_bloc.dart';
+import '../../../health/presentation/bloc/wearable_sync_state.dart';
+import '../../../health/presentation/widgets/wearables_hub_modal.dart';
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
@@ -31,7 +42,6 @@ class _DashboardPageState extends State<DashboardPage>
     with TickerProviderStateMixin {
   late AnimationController _progressController;
   late AnimationController _ambientController;
-  late Animation<double> _progressAnimation;
   double _lastPercentage = 0.0;
 
   @override
@@ -49,21 +59,7 @@ class _DashboardPageState extends State<DashboardPage>
     final habitState = context.read<HabitBloc>().state;
     if (habitState is HabitLoaded) {
       _lastPercentage = habitState.completionPercentage;
-      _progressAnimation =
-          Tween<double>(begin: 0.0, end: _lastPercentage / 100.0).animate(
-            CurvedAnimation(
-              parent: _progressController,
-              curve: Curves.easeOutCubic,
-            ),
-          );
       _progressController.forward();
-    } else {
-      _progressAnimation = Tween<double>(begin: 0.0, end: 0.0).animate(
-        CurvedAnimation(
-          parent: _progressController,
-          curve: Curves.easeOutCubic,
-        ),
-      );
     }
   }
 
@@ -75,16 +71,6 @@ class _DashboardPageState extends State<DashboardPage>
   }
 
   void _animateProgress(double targetPercentage) {
-    _progressAnimation =
-        Tween<double>(
-          begin: _lastPercentage / 100.0,
-          end: targetPercentage / 100.0,
-        ).animate(
-          CurvedAnimation(
-            parent: _progressController,
-            curve: Curves.easeOutCubic,
-          ),
-        );
     _lastPercentage = targetPercentage;
     _progressController.forward(from: 0.0);
   }
@@ -93,8 +79,8 @@ class _DashboardPageState extends State<DashboardPage>
     HapticFlow.play(HapticPresets.sparkle);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final primaryColor = isDark
-        ? const Color(0xffb0ceb2)
-        : const Color(0xff8ba88e);
+        ? AppColors.limeAccent
+        : AppColors.obsidianBlack;
 
     showDialog(
       context: context,
@@ -186,154 +172,242 @@ class _DashboardPageState extends State<DashboardPage>
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryColor = isDark
-        ? const Color(0xffb0ceb2)
-        : const Color(0xff8ba88e);
-
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        title: Row(
-          children: [
-            Container(
-              width: 32,
-              height: 32,
-              decoration: BoxDecoration(borderRadius: BorderRadius.circular(8)),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: Image.asset('assets/images/logo.png', fit: BoxFit.cover),
-              ),
-            ),
-            const SizedBox(width: 10),
-            Text(
-              'Habitrak',
-              style: TextStyle(
-                fontFamily: 'Hanken Grotesk',
-                fontSize: 24,
-                fontWeight: FontWeight.w700,
-                color: isDark
-                    ? const Color(0xffb0ceb2)
-                    : const Color(0xff8ba88e),
-                letterSpacing: -0.5,
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications_active_outlined),
-            tooltip: 'Test Streak Alert',
-            onPressed: () async {
-              HapticFlow.light();
-              await NotificationService().showTestStreakNotification(streak: 7);
-              if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text(
-                      '🔔 Cool Streak Alert sent with Habitrak logo!',
-                    ),
-                    backgroundColor: Color(0xFF38573E),
-                    duration: Duration(seconds: 2),
-                  ),
-                );
+      body: SafeArea(
+        bottom: false,
+        child: BlocConsumer<HabitBloc, HabitState>(
+          listener: (context, state) {
+            if (state is HabitLoaded) {
+              final targetPercentage = state.completionPercentage;
+              final wasAlreadyLoaded = _lastPercentage > 0.0;
+              final prevPercentage = _lastPercentage;
+              _animateProgress(targetPercentage);
+              if (targetPercentage >= 100.0 &&
+                  prevPercentage < 100.0 &&
+                  wasAlreadyLoaded) {
+                _showCelebrationOverlay();
               }
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.settings_outlined),
-            onPressed: () {
-              HapticFlow.medium();
-              // Trigger a reset of habits to default as a settings shortcut
-              context.read<HabitBloc>().add(ResetHabitsEvent());
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Habits reset to Stitch defaults!'),
-                  duration: Duration(seconds: 2),
+            }
+          },
+          builder: (context, state) {
+            if (state is HabitInitial) {
+              context.read<HabitBloc>().add(LoadHabitsEvent());
+              return const Center(child: CircularProgressIndicator());
+            }
+            if (state is HabitLoading) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            if (state is HabitLoaded) {
+              return SingleChildScrollView(
+                physics: const HapticScrollPhysics(
+                  detentDistance: 140.0,
+                  triggerAtEdges: true,
+                ),
+                padding: const EdgeInsets.only(left: 16, right: 16, bottom: 120, top: 12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // 1. Bento Header: Avatar, Name, Health Overview, Search & Today Selector
+                    BentoHeader(
+                      onNotificationTap: () async {
+                        HapticFlow.light();
+                        await NotificationService().showTestStreakNotification(streak: 7);
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('🔔 Notification alert triggered!'),
+                              backgroundColor: AppColors.obsidianBlack,
+                              duration: Duration(seconds: 2),
+                            ),
+                          );
+                        }
+                      },
+                    ),
+                    const SizedBox(height: 18),
+
+                    // 2. Bento Grid with Live Wearable Health Data & Tap-to-Inspect
+                    BlocBuilder<WearableSyncBloc, WearableSyncState>(
+                      builder: (context, wearableState) {
+                        DailyHealthSummary? summary;
+                        if (wearableState is WearableSyncSuccess) {
+                          summary = wearableState.currentSummary;
+                        }
+
+                        final totalCalories = (summary?.totalCalories != null && summary!.totalCalories > 0)
+                            ? summary.totalCalories
+                            : 4300.0;
+                        final activeCalories = (summary?.activeCalories != null && summary!.activeCalories > 0)
+                            ? summary.activeCalories
+                            : 2600.0;
+                        final hr = summary?.avgHeartRate?.round() ?? 62;
+                        final restingHr = summary?.restingHeartRate?.round() ?? 78;
+                        final distKm = (summary?.distanceKm != null && summary!.distanceKm > 0)
+                            ? summary.distanceKm
+                            : 5.8;
+                        final activeMins = summary?.exerciseMinutes != null && summary!.exerciseMinutes > 0
+                            ? summary.exerciseMinutes
+                            : 75;
+                        final sleepEff = summary?.sleepEfficiencyPercentage ?? 85;
+                        final sleepDurStr = (summary?.sleepDurationMinutes != null && summary!.sleepDurationMinutes > 0)
+                            ? '${summary.sleepDurationMinutes ~/ 60}h ${summary.sleepDurationMinutes % 60}m'
+                            : '7h 15m';
+
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            GestureDetector(
+                              onTap: () {
+                                HapticFlow.light();
+                                WearablesHubModal.show(context);
+                              },
+                              child: StaggeredEntrance(
+                                index: 1,
+                                child: BentoEnergyCard(
+                                  totalCalories: totalCalories,
+                                  runningCalories: activeCalories,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 14),
+                            GestureDetector(
+                              onTap: () {
+                                HapticFlow.light();
+                                WearablesHubModal.show(context);
+                              },
+                              child: StaggeredEntrance(
+                                index: 2,
+                                child: BentoMetricsCards(
+                                  heartRate: hr,
+                                  avgHeartRate: restingHr,
+                                  distanceKm: distKm,
+                                  activeMinutes: activeMins,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 14),
+                            GestureDetector(
+                              onTap: () {
+                                HapticFlow.light();
+                                WearablesHubModal.show(context);
+                              },
+                              child: const StaggeredEntrance(index: 3, child: BentoWellnessCard()),
+                            ),
+                            const SizedBox(height: 14),
+                            GestureDetector(
+                              onTap: () {
+                                HapticFlow.light();
+                                WearablesHubModal.show(context);
+                              },
+                              child: StaggeredEntrance(
+                                index: 4,
+                                child: BentoSleepCard(
+                                  sleepEfficiency: sleepEff,
+                                  sleepDuration: sleepDurStr,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 14),
+                            StaggeredEntrance(
+                              index: 5,
+                              child: BentoAiPromoCard(
+                                onActionTap: () {
+                                  HapticFlow.medium();
+                                  WearablesHubModal.show(context);
+                                },
+                              ),
+                            ),
+                          ],
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 28),
+
+                    // 7. Habits & Routines Section
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Daily Habits & Streaks',
+                              style: TextStyle(
+                                fontFamily: 'Hanken Grotesk',
+                                fontSize: 20,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: -0.3,
+                                color: isDark ? Colors.white : AppColors.obsidianBlack,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              '${state.habits.where((h) => h.isCompleted).length} of ${state.habits.length} habits completed today',
+                              style: TextStyle(
+                                fontFamily: 'Hanken Grotesk',
+                                fontSize: 12,
+                                color: isDark ? const Color(0xFFA0A5AD) : const Color(0xFF7A7E85),
+                              ),
+                            ),
+                          ],
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: isDark ? AppColors.charcoalCard : Colors.white,
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(
+                              color: isDark ? AppColors.charcoalBorder : const Color(0xFFE5E7EB),
+                              width: 0.8,
+                            ),
+                          ),
+                          child: Text(
+                            '${state.completionPercentage.round()}% Done',
+                            style: TextStyle(
+                              fontFamily: 'Hanken Grotesk',
+                              fontSize: 12,
+                              fontWeight: FontWeight.w800,
+                              color: isDark ? AppColors.limeAccent : AppColors.obsidianBlack,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 14),
+                    StaggeredEntrance(
+                      index: 6,
+                      child: _buildDateSlider(state.activeDate),
+                    ),
+                    const SizedBox(height: 16),
+                    StaggeredEntrance(
+                      index: 7,
+                      child: _buildHabitList(state.habits, state.activeDate),
+                    ),
+                    const SizedBox(height: 20),
+
+                    // 8. Soulful Micro-Pause Card
+                    StaggeredEntrance(
+                      index: 8,
+                      child: _buildSoulfulPauseCard(isDark, AppColors.limeAccentDark),
+                    ),
+                    const SizedBox(height: 20),
+                    const StaggeredEntrance(index: 9, child: SoulfulMusicCard()),
+                    const SizedBox(height: 24),
+                    const StaggeredEntrance(index: 10, child: HealthNewsSection()),
+                    const SizedBox(height: 40),
+                  ],
                 ),
               );
-            },
-          ),
-          const SizedBox(width: 8),
-        ],
-      ),
-      body: BlocConsumer<HabitBloc, HabitState>(
-        listener: (context, state) {
-          if (state is HabitLoaded) {
-            final targetPercentage = state.completionPercentage;
-            final wasAlreadyLoaded = _lastPercentage > 0.0;
-            final prevPercentage = _lastPercentage;
-            _animateProgress(targetPercentage);
-            if (targetPercentage >= 100.0 &&
-                prevPercentage < 100.0 &&
-                wasAlreadyLoaded) {
-              _showCelebrationOverlay();
             }
-          }
-        },
-        builder: (context, state) {
-          if (state is HabitInitial) {
-            context.read<HabitBloc>().add(LoadHabitsEvent());
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (state is HabitLoading) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (state is HabitLoaded) {
-            return SingleChildScrollView(
-              physics: const HapticScrollPhysics(
-                detentDistance: 140.0,
-                triggerAtEdges: true,
-              ),
-              padding: const EdgeInsets.only(left: 16, right: 16, bottom: 120),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  const SizedBox(height: 10),
-                  StaggeredEntrance(
-                    index: 0,
-                    child: Center(
-                      child: _buildProgressRing(state.completionPercentage),
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  StaggeredEntrance(
-                    index: 1,
-                    child: _buildDateSlider(state.activeDate),
-                  ),
-                  const SizedBox(height: 24),
-                  const StaggeredEntrance(index: 2, child: SoulfulMusicCard()),
-                  const SizedBox(height: 20),
-                  StaggeredEntrance(
-                    index: 3,
-                    child: _buildSoulfulPauseCard(isDark, primaryColor),
-                  ),
-                  const SizedBox(height: 28),
-                  StaggeredEntrance(
-                    index: 4,
-                    child: _buildHabitList(state.habits, state.activeDate),
-                  ),
-                  const SizedBox(height: 28),
-                  const StaggeredEntrance(
-                    index: 5,
-                    child: HealthNewsSection(),
-                  ),
-                  const SizedBox(height: 28),
-                  StaggeredEntrance(index: 6, child: _buildQuoteBanner(isDark)),
-                  const SizedBox(height: 40),
-                ],
-              ),
-            );
-          }
           if (state is HabitError) {
             return Center(child: Text(state.message));
           }
           return const SizedBox();
         },
       ),
+      ),
       floatingActionButton: Padding(
-        padding: const EdgeInsets.only(bottom: 80),
+        padding: const EdgeInsets.only(bottom: 112),
         child: TweenAnimationBuilder<double>(
           tween: Tween(begin: 0, end: 1),
           duration: const Duration(milliseconds: 800),
@@ -347,106 +421,24 @@ class _DashboardPageState extends State<DashboardPage>
               ),
             );
           },
-          child: FloatingActionButton(
+          child: FloatingActionButton.small(
             onPressed: () {
               HapticFlow.light();
               Navigator.of(
                 context,
               ).push(AppPageRoute(page: const YogaExercisesPage()));
             },
-            backgroundColor: isDark
-                ? const Color(0xff334d38)
-                : const Color(0xffcceace),
-            foregroundColor: isDark
-                ? const Color(0xffe2e3df)
-                : const Color(0xff1c3622),
-            elevation: 6,
+            backgroundColor: const Color(0xFF16181A),
+            foregroundColor: AppColors.limeAccent,
+            elevation: 4,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(14),
+              side: const BorderSide(color: Color(0xFF2E3236), width: 0.8),
             ),
-            child: const Icon(Icons.self_improvement, size: 28),
+            child: const Icon(Icons.add_rounded, size: 22),
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildProgressRing(double percentage) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryColor = isDark
-        ? const Color(0xffb0ceb2)
-        : const Color(0xff8ba88e);
-    final trackColor = primaryColor.withValues(alpha: 0.2);
-
-    return AnimatedBuilder(
-      animation: Listenable.merge([_progressController, _ambientController]),
-      builder: (context, child) {
-        final scale = 0.98 + (_ambientController.value * 0.04);
-        return Transform.scale(
-          scale: scale,
-          child: Container(
-            width: 190,
-            height: 190,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.transparent,
-              boxShadow: [
-                BoxShadow(
-                  color: primaryColor.withValues(alpha: isDark ? 0.03 : 0.06),
-                  blurRadius: 25 * scale,
-                  spreadRadius: 2 * scale,
-                ),
-              ],
-            ),
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                CustomPaint(
-                  size: const Size(190, 190),
-                  painter: CircularProgressPainter(
-                    progress: _progressAnimation.value,
-                    primaryColor: primaryColor,
-                    trackColor: trackColor,
-                    strokeWidth: 18,
-                  ),
-                ),
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    AnimatedScale(
-                      scale: percentage == 100.0 ? 1.1 : 1.0,
-                      duration: const Duration(milliseconds: 500),
-                      curve: Curves.elasticOut,
-                      child: Text(
-                        '${(percentage).round()}%',
-                        style: TextStyle(
-                          fontFamily: 'Hanken Grotesk',
-                          fontSize: 44,
-                          fontWeight: FontWeight.w600,
-                          color: primaryColor,
-                          letterSpacing: -1,
-                        ),
-                      ),
-                    ),
-                    Text(
-                      'DAILY FOCUS',
-                      style: TextStyle(
-                        fontFamily: 'Hanken Grotesk',
-                        fontSize: 10,
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: 1.5,
-                        color: isDark
-                            ? const Color(0xffc2c8c0).withValues(alpha: 0.5)
-                            : const Color(0xff615e56).withValues(alpha: 0.6),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        );
-      },
     );
   }
 
@@ -489,19 +481,24 @@ class _DashboardPageState extends State<DashboardPage>
               padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
               decoration: BoxDecoration(
                 color: isActive
-                    ? (isDark
-                          ? const Color(0xff3f4941).withValues(alpha: 0.3)
-                          : const Color(0xffcee7f0).withValues(alpha: 0.3))
-                    : Colors.transparent,
+                    ? (isDark ? AppColors.charcoalCard : Colors.white)
+                    : (isDark ? const Color(0xFF1A1D20) : const Color(0xFFEBEDF0)),
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
                   color: isActive
-                      ? (isDark
-                            ? const Color(0xffb0ceb2).withValues(alpha: 0.2)
-                            : const Color(0xff8ba88e).withValues(alpha: 0.2))
-                      : Colors.transparent,
-                  width: 1,
+                      ? AppColors.limeAccentDark
+                      : (isDark ? const Color(0xFF282B30) : const Color(0xFFE2E4E8)),
+                  width: isActive ? 1.5 : 0.8,
                 ),
+                boxShadow: isActive
+                    ? [
+                        BoxShadow(
+                          color: AppColors.limeAccent.withValues(alpha: 0.2),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ]
+                    : null,
               ),
               child: Column(
                 children: [
@@ -510,16 +507,12 @@ class _DashboardPageState extends State<DashboardPage>
                     style: TextStyle(
                       fontFamily: 'Hanken Grotesk',
                       fontSize: 12,
-                      fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
+                      fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
                       color: isActive
-                          ? (isDark
-                                ? const Color(0xffb0ceb2)
-                                : const Color(0xff8ba88e))
+                          ? (isDark ? AppColors.limeAccent : AppColors.obsidianBlack)
                           : (isDark
-                                ? const Color(0xffc2c8c0).withValues(alpha: 0.4)
-                                : const Color(
-                                    0xff615e56,
-                                  ).withValues(alpha: 0.4)),
+                                ? const Color(0xFFA0A5AD).withValues(alpha: 0.6)
+                                : const Color(0xFF7A7E85).withValues(alpha: 0.8)),
                     ),
                   ),
                   const SizedBox(height: 6),
@@ -528,16 +521,12 @@ class _DashboardPageState extends State<DashboardPage>
                     style: TextStyle(
                       fontFamily: 'Hanken Grotesk',
                       fontSize: 18,
-                      fontWeight: isActive ? FontWeight.bold : FontWeight.w500,
+                      fontWeight: isActive ? FontWeight.w800 : FontWeight.w500,
                       color: isActive
-                          ? (isDark
-                                ? const Color(0xffb0ceb2)
-                                : const Color(0xff8ba88e))
+                          ? (isDark ? Colors.white : AppColors.obsidianBlack)
                           : (isDark
-                                ? const Color(0xffc2c8c0).withValues(alpha: 0.7)
-                                : const Color(
-                                    0xff615e56,
-                                  ).withValues(alpha: 0.7)),
+                                ? const Color(0xFFA0A5AD)
+                                : const Color(0xFF7A7E85)),
                     ),
                   ),
                 ],
@@ -566,12 +555,12 @@ class _DashboardPageState extends State<DashboardPage>
             margin: const EdgeInsets.only(bottom: 16),
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             decoration: BoxDecoration(
-              color: isDark ? const Color(0xff252925) : const Color(0xffe8ede8),
+              color: isDark ? const Color(0xFF1E2024) : const Color(0xFFF3F4F6),
               borderRadius: BorderRadius.circular(14),
               border: Border.all(
                 color:
-                    (isDark ? const Color(0xffb0ceb2) : const Color(0xff8ba88e))
-                        .withValues(alpha: 0.3),
+                    (isDark ? AppColors.limeAccent : AppColors.obsidianBlack)
+                        .withValues(alpha: 0.2),
               ),
             ),
             child: Row(
@@ -585,8 +574,8 @@ class _DashboardPageState extends State<DashboardPage>
                           : Icons.event_available_rounded,
                       size: 18,
                       color: isDark
-                          ? const Color(0xffb0ceb2)
-                          : const Color(0xff38573e),
+                          ? AppColors.limeAccent
+                          : AppColors.obsidianBlack,
                     ),
                     const SizedBox(width: 8),
                     Text(
@@ -597,7 +586,7 @@ class _DashboardPageState extends State<DashboardPage>
                         fontFamily: 'Hanken Grotesk',
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
-                        color: isDark ? Colors.white : const Color(0xff2f312f),
+                        color: isDark ? Colors.white : AppColors.obsidianBlack,
                       ),
                     ),
                   ],
@@ -615,8 +604,8 @@ class _DashboardPageState extends State<DashboardPage>
                     decoration: BoxDecoration(
                       color:
                           (isDark
-                                  ? const Color(0xffb0ceb2)
-                                  : const Color(0xff38573e))
+                                  ? AppColors.limeAccent
+                                  : AppColors.obsidianBlack)
                               .withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(8),
                     ),
@@ -627,8 +616,8 @@ class _DashboardPageState extends State<DashboardPage>
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
                         color: isDark
-                            ? const Color(0xffb0ceb2)
-                            : const Color(0xff38573e),
+                            ? AppColors.limeAccent
+                            : AppColors.obsidianBlack,
                       ),
                     ),
                   ),
@@ -709,7 +698,7 @@ class _DashboardPageState extends State<DashboardPage>
       final waterBorder = isWaterCompleted
           ? (isDark
                 ? const Color(0xffb2cad3).withValues(alpha: 0.2)
-                : const Color(0xff8ba88e).withValues(alpha: 0.2))
+                : AppColors.obsidianBlack.withValues(alpha: 0.1))
           : (isDark
                 ? const Color(0xff424842).withValues(alpha: 0.1)
                 : const Color(0xffdbdad7).withValues(alpha: 0.4));
@@ -777,8 +766,8 @@ class _DashboardPageState extends State<DashboardPage>
                           ? const Color(0xffb2cad3)
                           : const Color(0xff5a93ab))
                     : (isDark
-                          ? const Color(0xffb0ceb2)
-                          : const Color(0xff8ba88e)),
+                          ? AppColors.limeAccent
+                          : AppColors.obsidianBlack),
                 inactiveTrackColor: isDark
                     ? const Color(0xff1a1c1a)
                     : const Color(0xfff2f1ee),
@@ -787,8 +776,8 @@ class _DashboardPageState extends State<DashboardPage>
                           ? const Color(0xffb2cad3)
                           : const Color(0xff5a93ab))
                     : (isDark
-                          ? const Color(0xffb0ceb2)
-                          : const Color(0xff8ba88e)),
+                          ? AppColors.limeAccent
+                          : AppColors.obsidianBlack),
                 trackHeight: 6,
                 thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8),
               ),
@@ -890,18 +879,16 @@ class _DashboardPageState extends State<DashboardPage>
 
     // Standard items with active checking/toggling
     final completedColor = isDark
-        ? const Color(0xff223a26)
-        : const Color(0xffedf7ee);
+        ? const Color(0xFF202717)
+        : const Color(0xFFF7FCEB);
     final normalColor = isDark
-        ? const Color(0xff1e201e)
-        : const Color(0xffffffff);
+        ? AppColors.charcoalCard
+        : Colors.white;
     final borderColor = habit.isCompleted
-        ? (isDark
-              ? const Color(0xffb0ceb2).withValues(alpha: 0.2)
-              : const Color(0xff8ba88e).withValues(alpha: 0.2))
+        ? AppColors.limeAccentDark.withValues(alpha: 0.6)
         : (isDark
-              ? const Color(0xff424842).withValues(alpha: 0.1)
-              : const Color(0xffdbdad7).withValues(alpha: 0.4));
+              ? AppColors.charcoalBorder
+              : const Color(0xFFE8E9EC));
 
     return PressableScale(
       onTap: () {
@@ -986,8 +973,8 @@ class _DashboardPageState extends State<DashboardPage>
                       fontWeight: FontWeight.w500,
                       color: habit.isCompleted
                           ? (isDark
-                                ? const Color(0xffb0ceb2)
-                                : const Color(0xff8ba88e))
+                                ? AppColors.limeAccent
+                                : const Color(0xFF10B981))
                           : (isDark
                                 ? const Color(0xffc2c8c0).withValues(alpha: 0.6)
                                 : const Color(
@@ -1022,95 +1009,32 @@ class _DashboardPageState extends State<DashboardPage>
                     return ScaleTransition(scale: animation, child: child);
                   },
                   child: habit.isCompleted
-                      ? Icon(
-                          Icons.check_circle_rounded,
-                          key: ValueKey('completed_${habit.id}'),
-                          color: isDark
-                              ? const Color(0xffb0ceb2)
-                              : const Color(0xff8ba88e),
-                          size: 32,
+                      ? Container(
+                          width: 30,
+                          height: 30,
+                          decoration: const BoxDecoration(
+                            color: AppColors.limeAccent,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.check_rounded,
+                            key: ValueKey('completed_check'),
+                            color: AppColors.obsidianBlack,
+                            size: 20,
+                          ),
                         )
-                      : Icon(
-                          Icons.radio_button_unchecked,
-                          key: ValueKey('uncompleted_${habit.id}'),
-                          color: isDark
-                              ? const Color(0xff424842)
-                              : const Color(0xffa4a097),
-                          size: 32,
+                      : Container(
+                          width: 30,
+                          height: 30,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: isDark ? const Color(0xFF42464D) : const Color(0xFFCED1D7),
+                              width: 1.8,
+                            ),
+                          ),
                         ),
                 ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildQuoteBanner(bool isDark) {
-    final primaryColor = isDark
-        ? const Color(0xffb0ceb2)
-        : const Color(0xff8ba88e);
-
-    return TweenAnimationBuilder<double>(
-      tween: Tween(begin: 0, end: 1),
-      duration: const Duration(milliseconds: 1200),
-      curve: Curves.easeInOut,
-      builder: (context, breathe, child) {
-        return Transform.scale(scale: 1 + (breathe * 0.01), child: child);
-      },
-      child: Container(
-        height: 220,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
-          color: isDark ? const Color(0xff1a1c1a) : const Color(0xffefeeeb),
-          image: const DecorationImage(
-            image: NetworkImage(
-              'https://images.unsplash.com/photo-1511497584788-876760111969?q=80&w=1000&auto=format&fit=crop',
-            ),
-            fit: BoxFit.cover,
-            colorFilter: ColorFilter.mode(Colors.black45, BlendMode.darken),
-          ),
-        ),
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.end,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              '"Nature does not hurry, yet everything is accomplished."',
-              style: TextStyle(
-                fontFamily: 'Hanken Grotesk',
-                fontSize: 20,
-                fontWeight: FontWeight.w400,
-                fontStyle: FontStyle.italic,
-                color: const Color(0xfffaf9f6),
-                height: 1.4,
-                shadows: [
-                  Shadow(
-                    color: Colors.black.withValues(alpha: 0.6),
-                    offset: const Offset(1, 1),
-                    blurRadius: 4,
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 10),
-            Text(
-              '— LAO TZU',
-              style: TextStyle(
-                fontFamily: 'Hanken Grotesk',
-                fontSize: 11,
-                fontWeight: FontWeight.w600,
-                letterSpacing: 2,
-                color: primaryColor,
-                shadows: [
-                  Shadow(
-                    color: Colors.black.withValues(alpha: 0.6),
-                    offset: const Offset(1, 1),
-                    blurRadius: 4,
-                  ),
-                ],
               ),
             ),
           ],

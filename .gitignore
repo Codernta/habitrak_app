@@ -32,6 +32,9 @@ migrate_working_dir/
 .pub-cache/
 .pub/
 /build/
+build
+*.bak
+.gradle/
 /android/build/
 /android/.gradle/
 

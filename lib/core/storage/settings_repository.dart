@@ -21,7 +21,7 @@ class SettingsRepository {
   }
 
   ThemeMode getThemeMode() {
-    final isDark = _box.get(_keyThemeMode, defaultValue: true) as bool;
+    final isDark = _box.get(_keyThemeMode, defaultValue: false) as bool;
     return isDark ? ThemeMode.dark : ThemeMode.light;
   }
 

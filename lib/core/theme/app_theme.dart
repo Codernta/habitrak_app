@@ -3,37 +3,57 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:habitrak/core/animations/app_page_route.dart';
 
 class AppColors {
+  // Brand Neo-Health Palette (Matching reference design)
+  static const Color limeAccent = Color(0xFFD2EB70); // Vibrant Electric Lime / Chartreuse
+  static const Color limeAccentLight = Color(0xFFEAF5B8);
+  static const Color limeAccentDark = Color(0xFFBCE33A);
+  
+  static const Color lavenderAccent = Color(0xFFB6B8F8); // Soft Periwinkle / Lavender Purple
+  static const Color lavenderLight = Color(0xFFE8E9FD);
+  static const Color lavenderDark = Color(0xFF9093EE);
+
+  // Pista / Pistachio Green Palette (Synced with homescreen green)
+  static const Color pistaGreen = Color(0xFFD2EB70); // Homescreen green
+  static const Color pistaGreenLight = Color(0xFFEAF5B8);
+  static const Color pistaGreenDark = Color(0xFFBCE33A);
+
+  static const Color obsidianBlack = Color(0xFF16181A); // Deep Matte Charcoal / Black Surface
+  static const Color charcoalSurface = Color(0xFF1E2124);
+  static const Color charcoalCard = Color(0xFF282B2F);
+  static const Color charcoalBorder = Color(0xFF33373D);
+
   // Dark Theme Colors
-  static const Color darkBackground = Color(0xff121412);
-  static const Color darkSurface = Color(0xff1e201e);
-  static const Color darkSurfaceLow = Color(0xff1a1c1a);
-  static const Color darkSurfaceHigh = Color(0xff292a28);
-  static const Color darkPrimary = Color(0xffb0ceb2);
-  static const Color darkPrimaryContainer = Color(0xff334d38);
-  static const Color darkOnPrimary = Color(0xff1c3622);
-  static const Color darkSecondary = Color(0xffbfc9bf);
-  static const Color darkSecondaryContainer = Color(0xff3f4941);
-  static const Color darkOnSurface = Color(0xffe2e3df);
-  static const Color darkOnSurfaceVariant = Color(0xffc2c8c0);
-  static const Color darkOutline = Color(0xff8c928b);
-  static const Color darkOutlineVariant = Color(0xff424842);
-  static const Color darkTertiary = Color(0xffedb9c3);
-  static const Color darkTertiaryContainer = Color(0xffc4949d);
+  static const Color darkBackground = Color(0xFF121416);
+  static const Color darkSurface = Color(0xFF1A1C1E);
+  static const Color darkSurfaceLow = Color(0xFF16181A);
+  static const Color darkSurfaceHigh = Color(0xFF25282C);
+  static const Color darkPrimary = Color(0xFFD2EB70); // Lime accent as primary punch
+  static const Color darkPrimaryContainer = Color(0xFF2A3614);
+  static const Color darkOnPrimary = Color(0xFF16181A);
+  static const Color darkSecondary = Color(0xFFB6B8F8); // Lavender accent
+  static const Color darkSecondaryContainer = Color(0xFF28294A);
+  static const Color darkOnSurface = Color(0xFFF3F4F6);
+  static const Color darkOnSurfaceVariant = Color(0xFF9DA2AA);
+  static const Color darkOutline = Color(0xFF3E4249);
+  static const Color darkOutlineVariant = Color(0xFF2B2E33);
+  static const Color darkTertiary = Color(0xFFF095A6);
+  static const Color darkTertiaryContainer = Color(0xFF4C2730);
 
   // Light Theme Colors
-  static const Color lightBackground = Color(0xfffaf9f6);
-  static const Color lightSurface = Color(0xffffffff);
-  static const Color lightSurfaceLow = Color(0xfff2f1ee);
-  static const Color lightSurfaceHigh = Color(0xffefeeeb);
-  static const Color lightPrimary = Color(0xff8ba88e);
-  static const Color lightPrimaryContainer = Color(0xffcceace);
-  static const Color lightOnPrimary = Color(0xffffffff);
-  static const Color lightSecondary = Color(0xff516870);
-  static const Color lightSecondaryContainer = Color(0xffcee7f0);
-  static const Color lightOnSurface = Color(0xff2f312f);
-  static const Color lightOnSurfaceVariant = Color(0xff615e56);
-  static const Color lightOutline = Color(0xffa4a097);
-  static const Color lightOutlineVariant = Color(0xffdbdad7);
+  static const Color lightBackground = Color(0xFFF3F4F6); // Soft clean grey/off-white canvas
+  static const Color lightSurface = Color(0xFFFFFFFF); // Crisp clean white cards
+  static const Color lightSurfaceLow = Color(0xFFF8F9FA);
+  static const Color lightSurfaceHigh = Color(0xFFEBECEF);
+  static const Color lightPrimary = Color(0xFF16181A); // Deep black primary for text/headers
+  static const Color lightPrimaryAccent = Color(0xFFD2EB70); // Lime accent pop
+  static const Color lightPrimaryContainer = Color(0xFFEBF6BF);
+  static const Color lightOnPrimary = Color(0xFFFFFFFF);
+  static const Color lightSecondary = Color(0xFF7A7DE8);
+  static const Color lightSecondaryContainer = Color(0xFFE8E9FD);
+  static const Color lightOnSurface = Color(0xFF16181A);
+  static const Color lightOnSurfaceVariant = Color(0xFF72767E);
+  static const Color lightOutline = Color(0xFFE2E4E8);
+  static const Color lightOutlineVariant = Color(0xFFECEEF2);
 }
 
 class AppTheme {
@@ -67,33 +87,34 @@ class AppTheme {
         ThemeData.dark().textTheme.copyWith(
           displayLarge: GoogleFonts.hankenGrotesk(
             fontSize: 48,
-            fontWeight: FontWeight.w600,
-            letterSpacing: -0.02,
-            color: AppColors.darkPrimary,
+            fontWeight: FontWeight.w700,
+            letterSpacing: -0.03,
+            color: AppColors.darkOnSurface,
           ),
           headlineLarge: GoogleFonts.hankenGrotesk(
             fontSize: 32,
-            fontWeight: FontWeight.w500,
-            letterSpacing: -0.01,
+            fontWeight: FontWeight.w700,
+            letterSpacing: -0.02,
             color: AppColors.darkOnSurface,
           ),
           headlineMedium: GoogleFonts.hankenGrotesk(
-            fontSize: 28,
-            fontWeight: FontWeight.w500,
+            fontSize: 26,
+            fontWeight: FontWeight.w700,
+            letterSpacing: -0.01,
             color: AppColors.darkPrimary,
           ),
           titleMedium: GoogleFonts.hankenGrotesk(
-            fontSize: 20,
-            fontWeight: FontWeight.w500,
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
             color: AppColors.darkOnSurface,
           ),
           bodyLarge: GoogleFonts.hankenGrotesk(
-            fontSize: 18,
+            fontSize: 16,
             fontWeight: FontWeight.w400,
             color: AppColors.darkOnSurface,
           ),
           bodyMedium: GoogleFonts.hankenGrotesk(
-            fontSize: 16,
+            fontSize: 14,
             fontWeight: FontWeight.w400,
             color: AppColors.darkOnSurfaceVariant,
           ),
@@ -136,33 +157,34 @@ class AppTheme {
         ThemeData.light().textTheme.copyWith(
           displayLarge: GoogleFonts.hankenGrotesk(
             fontSize: 48,
-            fontWeight: FontWeight.w600,
-            letterSpacing: -0.02,
-            color: AppColors.lightPrimary,
+            fontWeight: FontWeight.w700,
+            letterSpacing: -0.03,
+            color: AppColors.lightOnSurface,
           ),
           headlineLarge: GoogleFonts.hankenGrotesk(
             fontSize: 32,
-            fontWeight: FontWeight.w500,
-            letterSpacing: -0.01,
+            fontWeight: FontWeight.w700,
+            letterSpacing: -0.02,
             color: AppColors.lightOnSurface,
           ),
           headlineMedium: GoogleFonts.hankenGrotesk(
-            fontSize: 28,
-            fontWeight: FontWeight.w500,
-            color: AppColors.lightPrimary,
+            fontSize: 26,
+            fontWeight: FontWeight.w700,
+            letterSpacing: -0.01,
+            color: AppColors.lightOnSurface,
           ),
           titleMedium: GoogleFonts.hankenGrotesk(
-            fontSize: 20,
-            fontWeight: FontWeight.w500,
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
             color: AppColors.lightOnSurface,
           ),
           bodyLarge: GoogleFonts.hankenGrotesk(
-            fontSize: 18,
+            fontSize: 16,
             fontWeight: FontWeight.w400,
             color: AppColors.lightOnSurface,
           ),
           bodyMedium: GoogleFonts.hankenGrotesk(
-            fontSize: 16,
+            fontSize: 14,
             fontWeight: FontWeight.w400,
             color: AppColors.lightOnSurfaceVariant,
           ),

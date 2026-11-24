@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:haptic_flow/haptic_flow.dart';
 import 'package:habitrak/core/animations/app_animations.dart';
 import 'package:habitrak/core/animations/staggered_entrance.dart';
+import 'package:habitrak/core/theme/app_theme.dart';
 import 'package:habitrak/features/habit/domain/entities/habit.dart';
 import 'package:habitrak/features/habit/presentation/bloc/habit_bloc.dart';
 import '../../data/repositories/activity_repository.dart';
@@ -178,8 +179,9 @@ class _WalkTrackerPageState extends State<WalkTrackerPage>
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final primaryColor = isDark
-        ? const Color(0xffb0ceb2)
-        : const Color(0xff8ba88e);
+        ? AppColors.limeAccent
+        : AppColors.obsidianBlack;
+    final textPrimary = isDark ? Colors.white : AppColors.obsidianBlack;
 
     final minutes = _elapsedSeconds ~/ 60;
     final seconds = _elapsedSeconds % 60;
@@ -190,18 +192,20 @@ class _WalkTrackerPageState extends State<WalkTrackerPage>
     final paceStr = '12\'45"';
 
     return Scaffold(
+      backgroundColor: isDark ? const Color(0xFF0F1012) : const Color(0xFFF9FAFB),
       appBar: AppBar(
         title: Text(
           'Walk Tracker',
           style: TextStyle(
             fontFamily: 'Hanken Grotesk',
-            fontSize: 22,
-            fontWeight: FontWeight.bold,
-            color: primaryColor,
+            fontSize: 20,
+            fontWeight: FontWeight.w700,
+            color: textPrimary,
           ),
         ),
         backgroundColor: Colors.transparent,
         elevation: 0,
+        iconTheme: IconThemeData(color: textPrimary),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -418,8 +422,8 @@ class _WalkTrackerPageState extends State<WalkTrackerPage>
 
   Widget _buildModeSelector(bool isDark) {
     final activeColor = isDark
-        ? const Color(0xffb0ceb2)
-        : const Color(0xff8ba88e);
+        ? AppColors.limeAccent
+        : AppColors.obsidianBlack;
     final inactiveTextColor = isDark
         ? const Color(0xffc2c8c0).withValues(alpha: 0.6)
         : const Color(0xff615e56).withValues(alpha: 0.6);
@@ -578,11 +582,14 @@ class _WalkTrackerPageState extends State<WalkTrackerPage>
 
   Widget _buildMindfulModeCard(bool isDark) {
     final primaryColor = isDark
-        ? const Color(0xffb0ceb2)
-        : const Color(0xff8ba88e);
+        ? AppColors.limeAccent
+        : AppColors.obsidianBlack;
     final cardColor = isDark
-        ? const Color(0xff1e201e)
-        : const Color(0xffffffff);
+        ? AppColors.charcoalCard
+        : Colors.white;
+    final borderCol = isDark
+        ? AppColors.charcoalBorder
+        : const Color(0xFFE8E9EC);
 
     final prompt = _mindfulPrompts[_currentMindfulPromptIndex];
 
@@ -593,10 +600,8 @@ class _WalkTrackerPageState extends State<WalkTrackerPage>
         color: cardColor,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: isDark
-              ? const Color(0xff424842).withValues(alpha: 0.1)
-              : const Color(0xffdbdad7).withValues(alpha: 0.4),
-          width: 1,
+          color: borderCol,
+          width: 0.9,
         ),
       ),
       child: Column(
@@ -726,11 +731,14 @@ class _WalkTrackerPageState extends State<WalkTrackerPage>
 
   Widget _buildMusicModeCard(bool isDark) {
     final primaryColor = isDark
-        ? const Color(0xffb0ceb2)
-        : const Color(0xff8ba88e);
+        ? AppColors.limeAccent
+        : AppColors.obsidianBlack;
     final cardColor = isDark
-        ? const Color(0xff1e201e)
-        : const Color(0xffffffff);
+        ? AppColors.charcoalCard
+        : Colors.white;
+    final borderCol = isDark
+        ? AppColors.charcoalBorder
+        : const Color(0xFFE8E9EC);
     final track = _tracks[_currentTrackIndex];
 
     return Container(
@@ -740,10 +748,8 @@ class _WalkTrackerPageState extends State<WalkTrackerPage>
         color: cardColor,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: isDark
-              ? const Color(0xff424842).withValues(alpha: 0.1)
-              : const Color(0xffdbdad7).withValues(alpha: 0.4),
-          width: 1,
+          color: borderCol,
+          width: 0.9,
         ),
       ),
       child: Column(
@@ -978,11 +984,14 @@ class _WalkTrackerPageState extends State<WalkTrackerPage>
 
   Widget _buildSocialModeCard(bool isDark) {
     final primaryColor = isDark
-        ? const Color(0xffb0ceb2)
-        : const Color(0xff8ba88e);
+        ? AppColors.limeAccent
+        : AppColors.obsidianBlack;
     final cardColor = isDark
-        ? const Color(0xff1e201e)
-        : const Color(0xffffffff);
+        ? AppColors.charcoalCard
+        : Colors.white;
+    final borderCol = isDark
+        ? AppColors.charcoalBorder
+        : const Color(0xFFE8E9EC);
 
     return Container(
       key: const ValueKey('social'),
@@ -991,10 +1000,8 @@ class _WalkTrackerPageState extends State<WalkTrackerPage>
         color: cardColor,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: isDark
-              ? const Color(0xff424842).withValues(alpha: 0.1)
-              : const Color(0xffdbdad7).withValues(alpha: 0.4),
-          width: 1,
+          color: borderCol,
+          width: 0.9,
         ),
       ),
       child: Column(
@@ -1051,9 +1058,9 @@ class _WalkTrackerPageState extends State<WalkTrackerPage>
               children: [
                 Row(
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.chat_bubble_outline,
-                      color: Color(0xff8ba88e),
+                      color: primaryColor,
                       size: 20,
                     ),
                     const SizedBox(width: 8),
@@ -1119,17 +1126,17 @@ class _WalkTrackerPageState extends State<WalkTrackerPage>
                       HapticFlow.light();
                       _nextPrompt();
                     },
-                    icon: const Icon(
+                    icon: Icon(
                       Icons.refresh,
                       size: 16,
-                      color: Color(0xff8ba88e),
+                      color: primaryColor,
                     ),
-                    label: const Text(
+                    label: Text(
                       'Next Prompt',
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
-                        color: Color(0xff8ba88e),
+                        color: primaryColor,
                       ),
                     ),
                   ),

@@ -97,21 +97,21 @@ class RiverFlowPainter extends CustomPainter {
     final Color particleColor;
 
     if (isDark) {
-      streamColor1Start = const Color(0xff182219).withValues(alpha: 0.55);
-      streamColor1End = const Color(0xff131c14).withValues(alpha: 0.35);
-      streamColor2Start = const Color(0xff1b261d).withValues(alpha: 0.45);
-      streamColor2End = const Color(0xff141e15).withValues(alpha: 0.25);
-      contourColor1 = AppColors.darkPrimary.withValues(alpha: 0.08);
-      contourColor2 = AppColors.darkSecondary.withValues(alpha: 0.06);
-      particleColor = AppColors.darkPrimary.withValues(alpha: 0.12);
+      streamColor1Start = const Color(0xff1a1e16).withValues(alpha: 0.55);
+      streamColor1End = const Color(0xff141712).withValues(alpha: 0.35);
+      streamColor2Start = const Color(0xff181724).withValues(alpha: 0.45);
+      streamColor2End = const Color(0xff12121c).withValues(alpha: 0.25);
+      contourColor1 = AppColors.limeAccent.withValues(alpha: 0.08);
+      contourColor2 = AppColors.lavenderAccent.withValues(alpha: 0.06);
+      particleColor = AppColors.limeAccent.withValues(alpha: 0.12);
     } else {
-      streamColor1Start = const Color(0xffe8f3ea).withValues(alpha: 0.65);
-      streamColor1End = const Color(0xfff0f7f1).withValues(alpha: 0.40);
-      streamColor2Start = const Color(0xffe2efe4).withValues(alpha: 0.50);
-      streamColor2End = const Color(0xffedf6ef).withValues(alpha: 0.30);
-      contourColor1 = AppColors.lightPrimary.withValues(alpha: 0.12);
-      contourColor2 = AppColors.lightSecondary.withValues(alpha: 0.08);
-      particleColor = AppColors.lightPrimary.withValues(alpha: 0.18);
+      streamColor1Start = const Color(0xfff7faea).withValues(alpha: 0.65);
+      streamColor1End = const Color(0xfff9f9fd).withValues(alpha: 0.40);
+      streamColor2Start = const Color(0xfff0f1fc).withValues(alpha: 0.50);
+      streamColor2End = const Color(0xfff5f7ed).withValues(alpha: 0.30);
+      contourColor1 = AppColors.limeAccentDark.withValues(alpha: 0.15);
+      contourColor2 = AppColors.lavenderAccent.withValues(alpha: 0.12);
+      particleColor = AppColors.limeAccentDark.withValues(alpha: 0.18);
     }
 
     // 2. Primary Wide River Current (flowing diagonally from top-left to bottom-right)

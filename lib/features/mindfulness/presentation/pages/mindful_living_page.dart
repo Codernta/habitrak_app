@@ -6,6 +6,7 @@ import 'package:habitrak/core/animations/app_animations.dart';
 import 'package:habitrak/core/animations/pressable_scale.dart';
 import 'package:habitrak/core/animations/staggered_entrance.dart';
 import 'package:habitrak/core/storage/settings_repository.dart';
+import 'package:habitrak/core/theme/app_theme.dart';
 import '../../data/repositories/reflections_repository.dart';
 import '../../data/repositories/intentional_goals_repository.dart';
 import '../../data/repositories/soulfulness_repository.dart';
@@ -232,8 +233,8 @@ class _MindfulLivingPageState extends State<MindfulLivingPage> {
                 }
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xff8ba88e),
-                foregroundColor: Colors.white,
+                backgroundColor: isDark ? AppColors.limeAccent : AppColors.obsidianBlack,
+                foregroundColor: isDark ? AppColors.obsidianBlack : Colors.white,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
                 ),
@@ -271,7 +272,7 @@ class _MindfulLivingPageState extends State<MindfulLivingPage> {
                 Icons.check,
                 key: ValueKey('check'),
                 size: 12,
-                color: Colors.white,
+                color: AppColors.obsidianBlack,
               )
             : const SizedBox(key: ValueKey('empty')),
       ),
@@ -335,9 +336,9 @@ class _MindfulLivingPageState extends State<MindfulLivingPage> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final primaryColor = isDark
-        ? const Color(0xffb0ceb2)
-        : const Color(0xff8ba88e);
-    final cardBg = isDark ? const Color(0xff1e201e) : const Color(0xffffffff);
+        ? AppColors.limeAccent
+        : AppColors.limeAccentDark;
+    final cardBg = isDark ? AppColors.charcoalCard : Colors.white;
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -348,7 +349,7 @@ class _MindfulLivingPageState extends State<MindfulLivingPage> {
             fontFamily: 'Hanken Grotesk',
             fontSize: 22,
             fontWeight: FontWeight.bold,
-            color: primaryColor,
+            color: isDark ? AppColors.limeAccent : AppColors.obsidianBlack,
           ),
         ),
         backgroundColor: Colors.transparent,
@@ -714,7 +715,7 @@ class _MindfulLivingPageState extends State<MindfulLivingPage> {
             'Released',
             '$todayThoughts',
             Icons.waves_rounded,
-            primaryColor,
+            AppColors.lavenderAccent,
             isDark,
           ),
           _buildStatDivider(isDark),
@@ -722,7 +723,7 @@ class _MindfulLivingPageState extends State<MindfulLivingPage> {
             'Streak',
             '$_mindfulStreak d',
             Icons.local_fire_department_rounded,
-            primaryColor,
+            isDark ? AppColors.limeAccent : const Color(0xFF8A9A20),
             isDark,
           ),
         ],
@@ -904,8 +905,8 @@ class _MindfulLivingPageState extends State<MindfulLivingPage> {
           ElevatedButton(
             onPressed: _saveReflection,
             style: ElevatedButton.styleFrom(
-              backgroundColor: primaryColor,
-              foregroundColor: isDark ? const Color(0xff1c3622) : Colors.white,
+              backgroundColor: AppColors.limeAccent,
+              foregroundColor: AppColors.obsidianBlack,
               padding: const EdgeInsets.symmetric(vertical: 14),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),

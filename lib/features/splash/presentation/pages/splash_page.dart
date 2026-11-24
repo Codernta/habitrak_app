@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:habitrak/core/animations/app_animations.dart';
 import 'package:habitrak/core/animations/app_page_route.dart';
 import 'package:habitrak/core/animations/staggered_entrance.dart';
+import 'package:habitrak/core/theme/app_theme.dart';
 import 'package:habitrak/features/auth/data/repositories/auth_repository.dart';
 import 'package:habitrak/features/auth/presentation/pages/login_page.dart';
 import 'app_shell.dart';
@@ -60,10 +61,14 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
     _navigationTimer = Timer(const Duration(milliseconds: 2600), () {
       if (mounted) {
         dynamic currentUser;
+        bool isGuest = false;
         try {
-          currentUser = context.read<AuthRepository>().currentUser;
+          final authRepo = context.read<AuthRepository>();
+          currentUser = authRepo.currentUser;
+          isGuest = authRepo.isGuest;
         } catch (_) {}
-        final targetPage = currentUser != null ? const AppShell() : const LoginPage();
+        final targetPage =
+            (currentUser != null || isGuest) ? const AppShell() : const LoginPage();
 
         Navigator.of(context).pushReplacement(
           AppPageRoute(page: targetPage),
@@ -83,7 +88,7 @@ class _SplashPageState extends State<SplashPage> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primary = isDark ? const Color(0xffb0ceb2) : const Color(0xff8ba88e);
+    final primary = isDark ? Colors.white : AppColors.obsidianBlack;
 
     return Scaffold(
       backgroundColor: Colors.transparent,

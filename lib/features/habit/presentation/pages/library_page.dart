@@ -4,6 +4,7 @@ import 'package:haptic_flow/haptic_flow.dart';
 import 'package:habitrak/core/animations/animated_modal_sheet.dart';
 import 'package:habitrak/core/animations/pressable_scale.dart';
 import 'package:habitrak/core/animations/staggered_entrance.dart';
+import 'package:habitrak/core/theme/app_theme.dart';
 import '../bloc/habit_bloc.dart';
 import 'package:habitrak/features/habit/domain/entities/habit.dart';
 
@@ -110,7 +111,9 @@ class _LibraryPageState extends State<LibraryPage> {
                         ),
                         decoration: InputDecoration(
                           labelText: 'Habit Title',
-                          labelStyle: const TextStyle(color: Color(0xff8ba88e)),
+                          labelStyle: TextStyle(
+                            color: isDark ? AppColors.limeAccent : AppColors.obsidianBlack,
+                          ),
                           enabledBorder: OutlineInputBorder(
                             borderSide: BorderSide(
                               color: isDark
@@ -120,8 +123,8 @@ class _LibraryPageState extends State<LibraryPage> {
                             borderRadius: BorderRadius.circular(12),
                           ),
                           focusedBorder: OutlineInputBorder(
-                            borderSide: const BorderSide(
-                              color: Color(0xff8ba88e),
+                            borderSide: BorderSide(
+                              color: isDark ? AppColors.limeAccent : AppColors.obsidianBlack,
                             ),
                             borderRadius: BorderRadius.circular(12),
                           ),
@@ -147,20 +150,18 @@ class _LibraryPageState extends State<LibraryPage> {
                         ),
                       ),
                       const SizedBox(height: 8),
-                      Row(
-                        children: HabitCategory.values.map((cat) {
-                          final isSelected = _selectedCategory == cat;
-                          return Expanded(
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 4.0,
-                              ),
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        physics: const BouncingScrollPhysics(),
+                        child: Row(
+                          children: HabitCategory.values.map((cat) {
+                            final isSelected = _selectedCategory == cat;
+                            return Padding(
+                              padding: const EdgeInsets.only(right: 8.0),
                               child: ChoiceChip(
                                 label: Text(cat.displayName),
                                 selected: isSelected,
-                                selectedColor: const Color(
-                                  0xff8ba88e,
-                                ).withValues(alpha: 0.3),
+                                selectedColor: (isDark ? AppColors.limeAccent : AppColors.obsidianBlack).withValues(alpha: 0.15),
                                 onSelected: (selected) {
                                   if (selected) {
                                     HapticFlow.selection();
@@ -170,9 +171,9 @@ class _LibraryPageState extends State<LibraryPage> {
                                   }
                                 },
                               ),
-                            ),
-                          );
-                        }).toList(),
+                            );
+                          }).toList(),
+                        ),
                       ),
                       const SizedBox(height: 16),
                       Row(
@@ -186,8 +187,8 @@ class _LibraryPageState extends State<LibraryPage> {
                               ),
                               decoration: InputDecoration(
                                 labelText: 'Daily Goal Target',
-                                labelStyle: const TextStyle(
-                                  color: Color(0xff8ba88e),
+                                labelStyle: TextStyle(
+                                  color: isDark ? AppColors.limeAccent : AppColors.obsidianBlack,
                                 ),
                                 enabledBorder: OutlineInputBorder(
                                   borderSide: BorderSide(
@@ -198,8 +199,8 @@ class _LibraryPageState extends State<LibraryPage> {
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 focusedBorder: OutlineInputBorder(
-                                  borderSide: const BorderSide(
-                                    color: Color(0xff8ba88e),
+                                  borderSide: BorderSide(
+                                    color: isDark ? AppColors.limeAccent : AppColors.obsidianBlack,
                                   ),
                                   borderRadius: BorderRadius.circular(12),
                                 ),
@@ -215,8 +216,8 @@ class _LibraryPageState extends State<LibraryPage> {
                               ),
                               decoration: InputDecoration(
                                 labelText: 'Unit (e.g. L, mins)',
-                                labelStyle: const TextStyle(
-                                  color: Color(0xff8ba88e),
+                                labelStyle: TextStyle(
+                                  color: isDark ? AppColors.limeAccent : AppColors.obsidianBlack,
                                 ),
                                 enabledBorder: OutlineInputBorder(
                                   borderSide: BorderSide(
@@ -227,8 +228,8 @@ class _LibraryPageState extends State<LibraryPage> {
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 focusedBorder: OutlineInputBorder(
-                                  borderSide: const BorderSide(
-                                    color: Color(0xff8ba88e),
+                                  borderSide: BorderSide(
+                                    color: isDark ? AppColors.limeAccent : AppColors.obsidianBlack,
                                   ),
                                   borderRadius: BorderRadius.circular(12),
                                 ),
@@ -267,8 +268,8 @@ class _LibraryPageState extends State<LibraryPage> {
                           }
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xff8ba88e),
-                          foregroundColor: Colors.white,
+                          backgroundColor: isDark ? AppColors.limeAccent : AppColors.obsidianBlack,
+                          foregroundColor: isDark ? const Color(0xFF1E201E) : Colors.white,
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -407,7 +408,7 @@ class _LibraryPageState extends State<LibraryPage> {
             fontFamily: 'Hanken Grotesk',
             fontSize: 24,
             fontWeight: FontWeight.bold,
-            color: isDark ? const Color(0xffb0ceb2) : const Color(0xff8ba88e),
+            color: isDark ? Colors.white : AppColors.obsidianBlack,
           ),
         ),
         backgroundColor: Colors.transparent,
@@ -432,12 +433,12 @@ class _LibraryPageState extends State<LibraryPage> {
                   hintText: 'Search habits...',
                   hintStyle: TextStyle(
                     color: isDark
-                        ? const Color(0xffc2c8c0).withValues(alpha: 0.5)
-                        : const Color(0xff615e56).withValues(alpha: 0.5),
+                        ? const Color(0xFFA0A5AD)
+                        : const Color(0xFF7A7E85),
                   ),
                   prefixIcon: const Icon(
-                    Icons.search,
-                    color: Color(0xff8ba88e),
+                    Icons.search_rounded,
+                    color: AppColors.limeAccentDark,
                   ),
                   suffixIcon: _searchQuery.isNotEmpty
                       ? IconButton(
@@ -447,15 +448,20 @@ class _LibraryPageState extends State<LibraryPage> {
                       : null,
                   filled: true,
                   fillColor: isDark
-                      ? const Color(0xff1a1c1a)
-                      : const Color(0xfff2f1ee),
+                      ? AppColors.charcoalCard
+                      : Colors.white,
                   enabledBorder: OutlineInputBorder(
-                    borderSide: BorderSide.none,
+                    borderSide: BorderSide(
+                      color: isDark
+                          ? AppColors.charcoalBorder
+                          : const Color(0xFFE8E9EC),
+                      width: 1,
+                    ),
                     borderRadius: BorderRadius.circular(16),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderSide: const BorderSide(
-                      color: Color(0xff8ba88e),
+                      color: AppColors.limeAccentDark,
                       width: 1.5,
                     ),
                     borderRadius: BorderRadius.circular(16),
@@ -477,16 +483,16 @@ class _LibraryPageState extends State<LibraryPage> {
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: isDark
-                          ? [const Color(0xff334d38), const Color(0xff1e201e)]
-                          : [const Color(0xffcceace), const Color(0xfffaf9f6)],
+                          ? [const Color(0xFF1E2124), const Color(0xFF16181A)]
+                          : [const Color(0xFFF9FAFB), Colors.white],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
                       color: isDark
-                          ? const Color(0xffb0ceb2).withValues(alpha: 0.1)
-                          : const Color(0xff8ba88e).withValues(alpha: 0.2),
+                          ? AppColors.charcoalBorder
+                          : const Color(0xFFE8E9EC),
                       width: 1,
                     ),
                   ),
@@ -495,13 +501,17 @@ class _LibraryPageState extends State<LibraryPage> {
                       Container(
                         width: 50,
                         height: 50,
-                        decoration: const BoxDecoration(
-                          color: Color(0xff8ba88e),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF16181A),
                           shape: BoxShape.circle,
+                          border: Border.all(
+                            color: AppColors.limeAccent.withValues(alpha: 0.3),
+                            width: 1.5,
+                          ),
                         ),
                         child: const Icon(
-                          Icons.add,
-                          color: Colors.white,
+                          Icons.add_rounded,
+                          color: AppColors.limeAccent,
                           size: 28,
                         ),
                       ),
@@ -517,8 +527,8 @@ class _LibraryPageState extends State<LibraryPage> {
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
                                 color: isDark
-                                    ? const Color(0xffe2e3df)
-                                    : const Color(0xff2f312f),
+                                    ? Colors.white
+                                    : AppColors.obsidianBlack,
                               ),
                             ),
                             const SizedBox(height: 4),
@@ -528,22 +538,18 @@ class _LibraryPageState extends State<LibraryPage> {
                                 fontFamily: 'Hanken Grotesk',
                                 fontSize: 13,
                                 color: isDark
-                                    ? const Color(
-                                        0xffc2c8c0,
-                                      ).withValues(alpha: 0.7)
-                                    : const Color(
-                                        0xff615e56,
-                                      ).withValues(alpha: 0.8),
+                                    ? const Color(0xFFA0A5AD)
+                                    : const Color(0xFF7A7E85),
                               ),
                             ),
                           ],
                         ),
                       ),
                       Icon(
-                        Icons.chevron_right,
+                        Icons.chevron_right_rounded,
                         color: isDark
-                            ? const Color(0xffc2c8c0)
-                            : const Color(0xff615e56),
+                            ? const Color(0xFFA0A5AD)
+                            : const Color(0xFF7A7E85),
                       ),
                     ],
                   ),
@@ -573,9 +579,11 @@ class _LibraryPageState extends State<LibraryPage> {
                         HapticFlow.light();
                         setState(() => _filterCategory = null);
                       },
-                      child: const Text(
+                      child: Text(
                         'Clear Filter',
-                        style: TextStyle(color: Color(0xff8ba88e)),
+                        style: TextStyle(
+                          color: isDark ? AppColors.limeAccent : AppColors.obsidianBlack,
+                        ),
                       ),
                     ),
                 ],
@@ -596,14 +604,14 @@ class _LibraryPageState extends State<LibraryPage> {
                           'category': HabitCategory.mindfulness,
                           'subtitle': 'Curated habits for mental clarity',
                           'icon': Icons.self_improvement,
-                          'color': const Color(0xffb2cad3),
+                          'color': AppColors.lavenderAccent,
                         },
                         {
                           'title': 'Health',
                           'category': HabitCategory.health,
                           'subtitle': 'Habits for active physical vitality',
                           'icon': Icons.favorite_rounded,
-                          'color': const Color(0xffb0ceb2),
+                          'color': AppColors.limeAccent,
                         },
                         {
                           'title': 'Growth',
@@ -672,12 +680,12 @@ class _LibraryPageState extends State<LibraryPage> {
                       _filterCategory != null || _searchQuery.isNotEmpty
                           ? 'RESET'
                           : 'VIEW ALL',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontFamily: 'Hanken Grotesk',
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
                         letterSpacing: 1.0,
-                        color: Color(0xff8ba88e),
+                        color: isDark ? AppColors.limeAccent : AppColors.obsidianBlack,
                       ),
                     ),
                   ),
@@ -711,15 +719,22 @@ class _LibraryPageState extends State<LibraryPage> {
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
                       color: isDark
-                          ? const Color(0xff1e201e)
-                          : const Color(0xffffffff),
-                      borderRadius: BorderRadius.circular(16),
+                          ? AppColors.charcoalCard
+                          : Colors.white,
+                      borderRadius: BorderRadius.circular(18),
                       border: Border.all(
                         color: isDark
-                            ? const Color(0xff424842).withValues(alpha: 0.1)
-                            : const Color(0xffdbdad7).withValues(alpha: 0.4),
-                        width: 1,
+                            ? AppColors.charcoalBorder
+                            : const Color(0xFFE8E9EC),
+                        width: 0.9,
                       ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.03),
+                          blurRadius: 12,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
                     ),
                     child: Row(
                       children: [
@@ -728,13 +743,15 @@ class _LibraryPageState extends State<LibraryPage> {
                           height: 44,
                           decoration: BoxDecoration(
                             color: isDark
-                                ? const Color(0xff292a28)
-                                : const Color(0xffefeeeb),
+                                ? const Color(0xFF24272B)
+                                : const Color(0xFFF3F4F6),
                             shape: BoxShape.circle,
                           ),
                           child: Icon(
                             preset['icon'] as IconData,
-                            color: const Color(0xff8ba88e),
+                            color: isDark
+                                ? AppColors.limeAccent
+                                : AppColors.obsidianBlack,
                             size: 22,
                           ),
                         ),
@@ -750,8 +767,8 @@ class _LibraryPageState extends State<LibraryPage> {
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
                                   color: isDark
-                                      ? const Color(0xffe2e3df)
-                                      : const Color(0xff2f312f),
+                                      ? Colors.white
+                                      : AppColors.obsidianBlack,
                                 ),
                               ),
                               const SizedBox(height: 4),
@@ -761,12 +778,8 @@ class _LibraryPageState extends State<LibraryPage> {
                                   fontFamily: 'Hanken Grotesk',
                                   fontSize: 12,
                                   color: isDark
-                                      ? const Color(
-                                          0xffc2c8c0,
-                                        ).withValues(alpha: 0.6)
-                                      : const Color(
-                                          0xff615e56,
-                                        ).withValues(alpha: 0.6),
+                                      ? const Color(0xFFA0A5AD)
+                                      : const Color(0xFF7A7E85),
                                 ),
                               ),
                             ],
@@ -786,15 +799,15 @@ class _LibraryPageState extends State<LibraryPage> {
                             );
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: isDark
-                                ? const Color(0xff334d38)
-                                : const Color(0xffcceace),
-                            foregroundColor: isDark
-                                ? const Color(0xffe2e3df)
-                                : const Color(0xff1c3622),
+                            backgroundColor: const Color(0xFF16181A),
+                            foregroundColor: AppColors.limeAccent,
                             elevation: 0,
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
+                              borderRadius: BorderRadius.circular(12),
+                              side: const BorderSide(
+                                color: Color(0xFF2E3236),
+                                width: 0.8,
+                              ),
                             ),
                             padding: const EdgeInsets.symmetric(
                               horizontal: 14,
@@ -804,8 +817,10 @@ class _LibraryPageState extends State<LibraryPage> {
                           child: const Text(
                             'ADD',
                             style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
+                              fontFamily: 'Hanken Grotesk',
+                              fontSize: 11,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 0.5,
                             ),
                           ),
                         ),
@@ -840,7 +855,7 @@ class _LibraryPageState extends State<LibraryPage> {
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: isSelected
-              ? const Color(0xff8ba88e)
+              ? (isDark ? AppColors.limeAccent : AppColors.obsidianBlack)
               : (isDark
                     ? const Color(0xff424842).withValues(alpha: 0.1)
                     : const Color(0xffdbdad7).withValues(alpha: 0.4)),

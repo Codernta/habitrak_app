@@ -14,6 +14,15 @@ import 'features/auth/data/repositories/auth_repository.dart';
 import 'features/auth/presentation/cubit/auth_cubit.dart';
 import 'features/habit/data/repositories/hive_habit_repository.dart';
 import 'features/habit/presentation/bloc/habit_bloc.dart';
+import 'features/health/presentation/bloc/wearable_sync_bloc.dart';
+import 'features/health/presentation/bloc/wearable_sync_event.dart';
+import 'features/health/services/firebase_health_sync_service.dart';
+import 'features/health/services/habit_automation_engine.dart';
+import 'features/health/services/health_ai_service.dart';
+import 'features/health/services/health_data_repository.dart';
+import 'features/health/services/health_permission_service.dart';
+import 'features/health/services/health_sync_local_storage.dart';
+import 'core/services/background_sync_service.dart';
 import 'features/mindfulness/data/repositories/reflections_repository.dart';
 import 'features/mindfulness/data/repositories/intentional_goals_repository.dart';
 import 'features/mindfulness/data/repositories/soulfulness_repository.dart';
@@ -23,6 +32,8 @@ import 'features/music/services/soulful_music_service.dart';
 import 'features/health_news/data/repositories/health_news_repository.dart';
 import 'features/splash/presentation/pages/splash_page.dart';
 import 'firebase_options.dart';
+
+final GlobalKey<NavigatorState> appNavigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -54,6 +65,23 @@ void main() async {
   final authRepository = AuthRepository();
   final healthNewsRepository = HealthNewsRepository();
 
+  // Initialize Wearable Health & AI Services
+  final healthLocalStorage = HealthSyncLocalStorage();
+  await healthLocalStorage.init();
+  final healthPermissionService = HealthPermissionService();
+  final healthDataRepository = HealthDataRepository(localStorage: healthLocalStorage);
+  final firebaseHealthSyncService = FirebaseHealthSyncService(localStorage: healthLocalStorage);
+  final habitAutomationEngine = HabitAutomationEngine(
+    habitRepository: habitRepository,
+    localStorage: healthLocalStorage,
+  );
+  final healthAiService = HybridHealthAIService(
+    offlineService: OfflineRuleBasedAIService(localStorage: healthLocalStorage),
+  );
+
+  // Initialize Android background sync
+  await BackgroundSyncService.initialize();
+
   await reflectionsRepository.ensureInitialized();
   await goalsRepository.ensureInitialized();
   await soulfulnessRepository.ensureInitialized();
@@ -72,6 +100,9 @@ void main() async {
         RepositoryProvider<SoulfulMusicService>.value(value: musicService),
         RepositoryProvider<AuthRepository>.value(value: authRepository),
         RepositoryProvider<HealthNewsRepository>.value(value: healthNewsRepository),
+        RepositoryProvider<HealthPermissionService>.value(value: healthPermissionService),
+        RepositoryProvider<HealthSyncLocalStorage>.value(value: healthLocalStorage),
+        RepositoryProvider<HealthDataRepository>.value(value: healthDataRepository),
       ],
       child: MultiBlocProvider(
         providers: [
@@ -83,6 +114,16 @@ void main() async {
           ),
           BlocProvider<HabitBloc>(
             create: (context) => HabitBloc(repository: habitRepository)..add(LoadHabitsEvent()),
+          ),
+          BlocProvider<WearableSyncBloc>(
+            create: (context) => WearableSyncBloc(
+              permissionService: healthPermissionService,
+              healthRepository: healthDataRepository,
+              localStorage: healthLocalStorage,
+              cloudSyncService: firebaseHealthSyncService,
+              habitAutomationEngine: habitAutomationEngine,
+              aiService: healthAiService,
+            )..add(InitializeWearablesEvent()),
           ),
         ],
         child: const HabitrakApp(),
@@ -100,6 +141,7 @@ class HabitrakApp extends StatelessWidget {
     return BlocBuilder<ThemeCubit, ThemeMode>(
       builder: (context, themeMode) {
         return MaterialApp(
+          navigatorKey: appNavigatorKey,
           title: 'Habitrak',
           debugShowCheckedModeBanner: false,
           theme: AppTheme.lightTheme,

@@ -7,6 +7,7 @@ import 'package:haptic_flow/haptic_flow.dart';
 import 'package:habitrak/core/animations/app_animations.dart';
 import 'package:habitrak/core/animations/app_page_route.dart';
 import 'package:habitrak/core/animations/staggered_entrance.dart';
+import 'package:habitrak/core/theme/app_theme.dart';
 import 'package:habitrak/core/theme/theme_cubit.dart';
 import 'package:habitrak/core/storage/settings_repository.dart';
 import 'package:habitrak/core/storage/hive_registrar.dart';
@@ -22,6 +23,8 @@ import 'package:habitrak/features/activity/data/repositories/activity_repository
 import 'package:habitrak/features/auth/presentation/cubit/auth_cubit.dart';
 import 'package:habitrak/features/auth/presentation/pages/login_page.dart';
 import '../../data/repositories/profile_repository.dart';
+import 'package:habitrak/features/profile/services/progress_report_pdf_service.dart';
+import 'pdf_report_preview_page.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -115,8 +118,8 @@ class _ProfilePageState extends State<ProfilePage> {
                 Navigator.pop(context);
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xff8ba88e),
-                foregroundColor: Colors.white,
+                backgroundColor: isDark ? AppColors.limeAccent : AppColors.obsidianBlack,
+                foregroundColor: isDark ? const Color(0xFF1E201E) : Colors.white,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
                 ),
@@ -134,9 +137,9 @@ class _ProfilePageState extends State<ProfilePage> {
     final themeCubit = context.watch<ThemeCubit>();
     final isDark = themeCubit.state == ThemeMode.dark;
     final primaryColor = isDark
-        ? const Color(0xffb0ceb2)
-        : const Color(0xff8ba88e);
-    final cardBg = isDark ? const Color(0xff1e201e) : const Color(0xffffffff);
+        ? AppColors.limeAccent
+        : AppColors.limeAccentDark;
+    final cardBg = isDark ? AppColors.charcoalCard : Colors.white;
 
     return Scaffold(
       appBar: AppBar(
@@ -146,7 +149,7 @@ class _ProfilePageState extends State<ProfilePage> {
             fontFamily: 'Hanken Grotesk',
             fontSize: 24,
             fontWeight: FontWeight.bold,
-            color: primaryColor,
+            color: isDark ? AppColors.limeAccent : AppColors.obsidianBlack,
           ),
         ),
         backgroundColor: Colors.transparent,
@@ -216,16 +219,31 @@ class _ProfilePageState extends State<ProfilePage> {
         ),
         child: Row(
           children: [
-            CircleAvatar(
-              radius: 36,
-              backgroundColor: primaryColor.withValues(alpha: 0.2),
-              child: Text(
-                initials,
-                style: TextStyle(
-                  fontFamily: 'Hanken Grotesk',
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: primaryColor,
+            Container(
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: AppColors.limeAccent,
+                  width: 2.5,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.limeAccent.withValues(alpha: 0.35),
+                    blurRadius: 8,
+                  ),
+                ],
+              ),
+              child: CircleAvatar(
+                radius: 36,
+                backgroundColor: AppColors.limeAccent.withValues(alpha: isDark ? 0.25 : 0.4),
+                child: Text(
+                  initials,
+                  style: TextStyle(
+                    fontFamily: 'Hanken Grotesk',
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: isDark ? AppColors.limeAccent : AppColors.obsidianBlack,
+                  ),
                 ),
               ),
             ),
@@ -269,8 +287,8 @@ class _ProfilePageState extends State<ProfilePage> {
                       ),
                       const SizedBox(width: 8),
                       _buildProfileBadge(
-                        Icons.timer_outlined,
-                        '${_totalMindfulMinutes}m total',
+                        Icons.spa_rounded,
+                        '${_totalMindfulMinutes}m mindful',
                         primaryColor,
                         isDark,
                       ),
@@ -417,7 +435,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                     ? const Color(0xff1a1c1a)
                                     : const Color(0xfff2f1ee))
                               : primaryColor.withValues(
-                                  alpha: intensity.clamp(0.2, 1.0),
+                                  alpha: (intensity + 0.15).clamp(0.25, 1.0),
                                 ),
                           borderRadius: BorderRadius.circular(6),
                         ),
@@ -547,7 +565,7 @@ class _ProfilePageState extends State<ProfilePage> {
                               if (isUnlocked) ...[
                                 const SizedBox(width: 6),
                                 Icon(
-                                  Icons.check_circle,
+                                  Icons.check_circle_rounded,
                                   size: 14,
                                   color: primaryColor,
                                 ),
@@ -905,9 +923,9 @@ class _ProfilePageState extends State<ProfilePage> {
   void _showShareDialog(BuildContext context, Map<String, dynamic> badge) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final primaryColor = isDark
-        ? const Color(0xffb0ceb2)
-        : const Color(0xff8ba88e);
-    final cardBg = isDark ? const Color(0xff1e201e) : const Color(0xffffffff);
+        ? AppColors.limeAccent
+        : AppColors.lavenderDark;
+    final cardBg = isDark ? AppColors.charcoalCard : Colors.white;
 
     showDialog(
       context: context,
@@ -1274,8 +1292,8 @@ class _ProfilePageState extends State<ProfilePage> {
                         fontSize: 13,
                         fontWeight: FontWeight.bold,
                         color: isDark
-                            ? const Color(0xffb0ceb2)
-                            : const Color(0xFF38573E),
+                            ? AppColors.limeAccent
+                            : AppColors.obsidianBlack,
                       ),
                     ),
                   ],
@@ -1431,7 +1449,7 @@ class _ProfilePageState extends State<ProfilePage> {
                             fontFamily: 'Hanken Grotesk',
                             fontSize: 11,
                             color: isDark
-                                ? const Color(0xffb0ceb2)
+                                ? AppColors.limeAccent
                                 : const Color(0xff615e56),
                           ),
                         ),
@@ -1720,9 +1738,6 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Future<void> _showExportDataDialog(BuildContext context) async {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryColor = isDark
-        ? const Color(0xffb0ceb2)
-        : const Color(0xff8ba88e);
     final cardBg = isDark ? const Color(0xff1e201e) : Colors.white;
 
     final habitRepo = context.read<HiveHabitRepository>();
@@ -1751,119 +1766,534 @@ class _ProfilePageState extends State<ProfilePage> {
 
     if (!context.mounted) return;
 
-    showDialog(
+    final pdfService = ProgressReportPdfService();
+
+    showModalBottomSheet(
       context: context,
-      builder: (ctx) {
-        return AlertDialog(
-          backgroundColor: cardBg,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          title: Row(
-            children: [
-              Icon(Icons.shield_rounded, color: primaryColor, size: 22),
-              const SizedBox(width: 8),
-              Text(
-                'Secure Data Export',
-                style: TextStyle(
-                  fontFamily: 'Hanken Grotesk',
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18,
-                  color: isDark ? Colors.white : Colors.black,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (bottomSheetCtx) {
+        bool isDownloading = false;
+        bool isPreparingPreview = false;
+        bool isSharing = false;
+
+        return StatefulBuilder(
+          builder: (modalCtx, setModalState) {
+            return Container(
+              padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
+              decoration: BoxDecoration(
+                color: cardBg,
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(24),
                 ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.2),
+                    blurRadius: 20,
+                    offset: const Offset(0, -4),
+                  ),
+                ],
               ),
-            ],
-          ),
-          content: SizedBox(
-            width: double.maxFinite,
-            child: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      margin: const EdgeInsets.only(bottom: 16),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.withValues(alpha: 0.3),
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: (isDark
+                                  ? AppColors.limeAccent
+                                  : AppColors.lavenderLight)
+                              .withValues(alpha: 0.3),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Icon(
+                          Icons.picture_as_pdf_rounded,
+                          color: isDark
+                              ? AppColors.limeAccent
+                              : AppColors.obsidianBlack,
+                          size: 24,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Export Progress Report',
+                              style: TextStyle(
+                                fontFamily: 'Hanken Grotesk',
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18,
+                                color: isDark ? Colors.white : Colors.black,
+                              ),
+                            ),
+                            Text(
+                              'Official PDF document with habit tables & metrics',
+                              style: TextStyle(
+                                fontFamily: 'Hanken Grotesk',
+                                fontSize: 12,
+                                color: isDark ? Colors.white60 : Colors.black54,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
                   Container(
-                    padding: const EdgeInsets.all(12),
+                    padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
-                      color: primaryColor.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(10),
+                      color: isDark
+                          ? AppColors.charcoalSurface
+                          : const Color(0xffF4F7F5),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: (isDark ? Colors.white : Colors.black)
+                            .withValues(alpha: 0.08),
+                      ),
                     ),
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          '🔐 Standard: AES-256 + SHA-256 Verified',
-                          style: TextStyle(
-                            fontFamily: 'Hanken Grotesk',
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                            color: primaryColor,
-                          ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'HABITRAK PROGRESS PDF',
+                              style: TextStyle(
+                                fontFamily: 'Hanken Grotesk',
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                color: isDark
+                                    ? AppColors.limeAccent
+                                    : AppColors.obsidianBlack,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 7, vertical: 2.5),
+                              decoration: BoxDecoration(
+                                color: AppColors.limeAccent,
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: const Text(
+                                'A4 Table Format',
+                                style: TextStyle(
+                                  fontFamily: 'Hanken Grotesk',
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.obsidianBlack,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Integrity Checksum: ${sha256Checksum.length > 20 ? "${sha256Checksum.substring(0, 20)}..." : sha256Checksum}',
-                          style: TextStyle(
-                            fontFamily: 'Hanken Grotesk',
-                            fontSize: 11,
-                            color: isDark ? Colors.white70 : Colors.black87,
-                          ),
+                        const SizedBox(height: 10),
+                        Row(
+                          children: [
+                            _buildExportMetricChip(
+                              label: 'User',
+                              value: _userName,
+                              isDark: isDark,
+                            ),
+                            const SizedBox(width: 8),
+                            _buildExportMetricChip(
+                              label: 'Habits',
+                              value: '${habits.length} Active',
+                              isDark: isDark,
+                            ),
+                            const SizedBox(width: 8),
+                            _buildExportMetricChip(
+                              label: 'Streak',
+                              value: '$_streakDays Days',
+                              isDark: isDark,
+                            ),
+                            const SizedBox(width: 8),
+                            _buildExportMetricChip(
+                              label: 'Mindful',
+                              value: '${_totalMindfulMinutes}m',
+                              isDark: isDark,
+                              valueColor: AppColors.pistaGreen,
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.verified_user_outlined,
+                              size: 13,
+                              color: isDark ? Colors.white54 : Colors.black45,
+                            ),
+                            const SizedBox(width: 5),
+                            Expanded(
+                              child: Text(
+                                'SHA-256: ${sha256Checksum.length > 24 ? "${sha256Checksum.substring(0, 24)}..." : sha256Checksum}',
+                                style: TextStyle(
+                                  fontFamily: 'Hanken Grotesk',
+                                  fontSize: 10,
+                                  color:
+                                      isDark ? Colors.white54 : Colors.black45,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
                   ),
-                  const SizedBox(height: 12),
-                  Container(
-                    height: 180,
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: isDark
-                          ? const Color(0xff121412)
-                          : const Color(0xfff5f5f5),
-                      borderRadius: BorderRadius.circular(10),
+                  const SizedBox(height: 18),
+                  ElevatedButton.icon(
+                    onPressed: isDownloading
+                        ? null
+                        : () async {
+                            setModalState(() => isDownloading = true);
+                            try {
+                              final pdfBytes =
+                                  await pdfService.generateProgressReportPdf(
+                                userName: _userName,
+                                streakDays: _streakDays,
+                                totalMindfulMinutes: _totalMindfulMinutes,
+                                habits: habits,
+                                habitHistory: historyList,
+                                reflections: reflectionsRepo.getReflections(),
+                                goals: goalsRepo.getGoals(),
+                                activities: activityRepo.getActivityLogs(),
+                                integritySha256: sha256Checksum,
+                              );
+
+                              final file = await pdfService.savePdfToDevice(
+                                pdfBytes: pdfBytes,
+                              );
+
+                              if (!bottomSheetCtx.mounted) return;
+                              Navigator.pop(bottomSheetCtx);
+
+                              final fileName = file.path.split('/').last;
+                              if (!context.mounted) return;
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  duration: const Duration(seconds: 6),
+                                  backgroundColor: AppColors.obsidianBlack,
+                                  content: Row(
+                                    children: [
+                                      const Icon(Icons.check_circle_rounded,
+                                          color: AppColors.limeAccent, size: 20),
+                                      const SizedBox(width: 8),
+                                      Expanded(
+                                        child: Text(
+                                          'Downloaded $fileName to Downloads folder!',
+                                          style: const TextStyle(
+                                            fontFamily: 'Hanken Grotesk',
+                                            fontWeight: FontWeight.w600,
+                                            fontSize: 13,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  action: SnackBarAction(
+                                    label: 'Open / Print',
+                                    textColor: AppColors.limeAccent,
+                                    onPressed: () {
+                                      pdfService.printOrPreviewPdf(
+                                        pdfBytes: pdfBytes,
+                                        fileName: fileName,
+                                      );
+                                    },
+                                  ),
+                                ),
+                              );
+                            } catch (e) {
+                              if (modalCtx.mounted) {
+                                setModalState(() => isDownloading = false);
+                              }
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('Failed to download PDF: $e'),
+                                    backgroundColor: Colors.redAccent,
+                                  ),
+                                );
+                              }
+                            }
+                          },
+                    icon: isDownloading
+                        ? const SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: AppColors.obsidianBlack,
+                            ),
+                          )
+                        : const Icon(Icons.download_rounded, size: 20),
+                    label: Text(
+                      isDownloading
+                          ? 'Generating PDF...'
+                          : 'Download PDF Report',
+                      style: const TextStyle(
+                        fontFamily: 'Hanken Grotesk',
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15,
+                      ),
                     ),
-                    child: SingleChildScrollView(
-                      child: SelectableText(
-                        exportJson,
-                        style: TextStyle(
-                          fontFamily: 'monospace',
-                          fontSize: 11,
-                          color: isDark ? Colors.white70 : Colors.black87,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.limeAccent,
+                      foregroundColor: AppColors.obsidianBlack,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      elevation: 0,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: isPreparingPreview
+                              ? null
+                              : () async {
+                                  setModalState(
+                                      () => isPreparingPreview = true);
+                                  try {
+                                    final pdfBytes = await pdfService
+                                        .generateProgressReportPdf(
+                                      userName: _userName,
+                                      streakDays: _streakDays,
+                                      totalMindfulMinutes:
+                                          _totalMindfulMinutes,
+                                      habits: habits,
+                                      habitHistory: historyList,
+                                      reflections:
+                                          reflectionsRepo.getReflections(),
+                                      goals: goalsRepo.getGoals(),
+                                      activities:
+                                          activityRepo.getActivityLogs(),
+                                      integritySha256: sha256Checksum,
+                                    );
+
+                                    if (!bottomSheetCtx.mounted) return;
+                                    Navigator.pop(bottomSheetCtx);
+
+                                    if (!context.mounted) return;
+                                    Navigator.push(
+                                      context,
+                                      AppPageRoute(
+                                        page: PdfReportPreviewPage(
+                                          pdfBytes: pdfBytes,
+                                        ),
+                                      ),
+                                    );
+                                  } catch (e) {
+                                    if (modalCtx.mounted) {
+                                      setModalState(
+                                          () => isPreparingPreview = false);
+                                    }
+                                  }
+                                },
+                          icon: isPreparingPreview
+                              ? const SizedBox(
+                                  width: 14,
+                                  height: 14,
+                                  child:
+                                      CircularProgressIndicator(strokeWidth: 2),
+                                )
+                              : const Icon(Icons.remove_red_eye_outlined,
+                                  size: 16),
+                          label: const Text(
+                            'Preview PDF',
+                            style: TextStyle(
+                              fontFamily: 'Hanken Grotesk',
+                              fontWeight: FontWeight.w600,
+                              fontSize: 12.5,
+                            ),
+                          ),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor:
+                                isDark ? Colors.white : AppColors.obsidianBlack,
+                            side: BorderSide(
+                              color: isDark
+                                  ? AppColors.charcoalBorder
+                                  : AppColors.lightOutline,
+                            ),
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
                         ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: isSharing
+                              ? null
+                              : () async {
+                                  setModalState(() => isSharing = true);
+                                  try {
+                                    final pdfBytes = await pdfService
+                                        .generateProgressReportPdf(
+                                      userName: _userName,
+                                      streakDays: _streakDays,
+                                      totalMindfulMinutes:
+                                          _totalMindfulMinutes,
+                                      habits: habits,
+                                      habitHistory: historyList,
+                                      reflections:
+                                          reflectionsRepo.getReflections(),
+                                      goals: goalsRepo.getGoals(),
+                                      activities:
+                                          activityRepo.getActivityLogs(),
+                                      integritySha256: sha256Checksum,
+                                    );
+
+                                    await pdfService.sharePdf(
+                                        pdfBytes: pdfBytes);
+                                    if (modalCtx.mounted) {
+                                      setModalState(() => isSharing = false);
+                                    }
+                                  } catch (e) {
+                                    if (modalCtx.mounted) {
+                                      setModalState(() => isSharing = false);
+                                    }
+                                  }
+                                },
+                          icon: isSharing
+                              ? const SizedBox(
+                                  width: 14,
+                                  height: 14,
+                                  child:
+                                      CircularProgressIndicator(strokeWidth: 2),
+                                )
+                              : const Icon(Icons.share_outlined, size: 16),
+                          label: const Text(
+                            'Share PDF',
+                            style: TextStyle(
+                              fontFamily: 'Hanken Grotesk',
+                              fontWeight: FontWeight.w600,
+                              fontSize: 12.5,
+                            ),
+                          ),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor:
+                                isDark ? Colors.white : AppColors.obsidianBlack,
+                            side: BorderSide(
+                              color: isDark
+                                  ? AppColors.charcoalBorder
+                                  : AppColors.lightOutline,
+                            ),
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Center(
+                    child: TextButton.icon(
+                      onPressed: () {
+                        Clipboard.setData(ClipboardData(text: exportJson));
+                        Navigator.pop(bottomSheetCtx);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                              '✅ Sanitized JSON export copied to clipboard!',
+                            ),
+                            backgroundColor: Color(0xFF38573E),
+                          ),
+                        );
+                      },
+                      icon: const Icon(Icons.code, size: 15),
+                      label: const Text(
+                        'Copy Raw JSON Backup',
+                        style: TextStyle(
+                          fontFamily: 'Hanken Grotesk',
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      style: TextButton.styleFrom(
+                        foregroundColor:
+                            isDark ? Colors.white60 : Colors.black54,
                       ),
                     ),
                   ),
                 ],
               ),
-            ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildExportMetricChip({
+    required String label,
+    required String value,
+    required bool isDark,
+    Color? valueColor,
+  }) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xff1d201e) : Colors.white,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color:
+                (isDark ? Colors.white : Colors.black).withValues(alpha: 0.06),
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: const Text('Close'),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              label.toUpperCase(),
+              style: TextStyle(
+                fontFamily: 'Hanken Grotesk',
+                fontSize: 9,
+                fontWeight: FontWeight.w600,
+                color: isDark ? Colors.white38 : Colors.black38,
+              ),
             ),
-            ElevatedButton.icon(
-              onPressed: () {
-                Clipboard.setData(ClipboardData(text: exportJson));
-                Navigator.pop(ctx);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text(
-                      '✅ Sanitized JSON export copied to clipboard!',
-                    ),
-                    backgroundColor: Color(0xFF38573E),
-                  ),
-                );
-              },
-              icon: const Icon(Icons.copy, size: 16),
-              label: const Text('Copy JSON'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: primaryColor,
-                foregroundColor: isDark ? Colors.black : Colors.white,
+            const SizedBox(height: 2),
+            Text(
+              value,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontFamily: 'Hanken Grotesk',
+                fontSize: 11,
+                fontWeight: FontWeight.bold,
+                color: valueColor ?? (isDark ? Colors.white : Colors.black87),
               ),
             ),
           ],
-        );
-      },
+        ),
+      ),
     );
   }
 

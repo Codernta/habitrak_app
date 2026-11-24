@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import '../../../../core/security/secure_data_manager.dart';
 import '../../../../core/storage/hive_registrar.dart';
+import '../../../../core/theme/app_theme.dart';
 
 class ProfileRepository {
   final Box<dynamic> _profileBox = Hive.box<dynamic>(
@@ -113,7 +114,7 @@ class ProfileRepository {
         'title': 'Zen Master',
         'desc': 'Complete meditation 7 days in a row',
         'icon': Icons.self_improvement,
-        'color': const Color(0xffb2cad3),
+        'color': AppColors.pistaGreen,
         'isUnlocked': isZenMasterUnlocked,
         'progress': '$meditationCount/7 days',
       },
@@ -129,7 +130,7 @@ class ProfileRepository {
         'title': 'Hydration Star',
         'desc': 'Drink 2L water daily for 1 week',
         'icon': Icons.opacity,
-        'color': const Color(0xffb0ceb2),
+        'color': const Color(0xFFCEF256),
         'isUnlocked': isHydrationStarUnlocked,
         'progress': '$waterCount/7 days',
       },
