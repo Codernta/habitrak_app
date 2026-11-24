@@ -89,6 +89,44 @@ class Habit extends Equatable {
     );
   }
 
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'title': title,
+      'category': category.name,
+      'targetProgress': targetProgress,
+      'currentProgress': currentProgress,
+      'unit': unit,
+      'isCompleted': isCompleted,
+      'streak': streak,
+      'completedAt': completedAt,
+      'scheduledTime': scheduledTime,
+    };
+  }
+
+  factory Habit.fromMap(Map<String, dynamic> map) {
+    HabitCategory cat = HabitCategory.mindfulness;
+    final catStr = map['category'] as String?;
+    if (catStr != null) {
+      cat = HabitCategory.values.firstWhere(
+        (c) => c.name == catStr,
+        orElse: () => HabitCategory.mindfulness,
+      );
+    }
+    return Habit(
+      id: map['id'] as String? ?? '',
+      title: map['title'] as String? ?? '',
+      category: cat,
+      targetProgress: (map['targetProgress'] as num?)?.toDouble() ?? 1.0,
+      currentProgress: (map['currentProgress'] as num?)?.toDouble() ?? 0.0,
+      unit: map['unit'] as String? ?? '',
+      isCompleted: map['isCompleted'] as bool? ?? false,
+      streak: (map['streak'] as num?)?.toInt() ?? 0,
+      completedAt: map['completedAt'] as String?,
+      scheduledTime: map['scheduledTime'] as String?,
+    );
+  }
+
   @override
   List<Object?> get props => [
     id,

@@ -15,6 +15,14 @@ class BentoEnergyCard extends StatelessWidget {
     this.walkingCalories = 500,
   });
 
+  String _formatKcal(double kcal) {
+    if (kcal >= 1000) {
+      return '${(kcal / 1000).toStringAsFixed(1).replaceAll('.', ',')}k';
+    } else {
+      return kcal.round().toString();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -22,6 +30,16 @@ class BentoEnergyCard extends StatelessWidget {
     final borderCol = isDark ? AppColors.charcoalBorder : const Color(0xFFE8E9EC);
     final textPrimary = isDark ? Colors.white : AppColors.obsidianBlack;
     final textMuted = isDark ? const Color(0xFFA0A5AD) : const Color(0xFF7A7E85);
+
+    final sum = runningCalories + workoutCalories + walkingCalories;
+    final effectiveSum = sum > 0 ? sum : (totalCalories > 0 ? totalCalories : 1.0);
+    final runFraction = sum > 0 ? (runningCalories / effectiveSum).clamp(0.0, 1.0) : 0.45;
+    final workFraction = sum > 0 ? (workoutCalories / effectiveSum).clamp(0.0, 1.0) : 0.30;
+    final walkFraction = sum > 0 ? (walkingCalories / effectiveSum).clamp(0.0, 1.0) : 0.25;
+
+    final runPercentStr = '${(runFraction * 100).round()}%';
+    final workPercentStr = '${(workFraction * 100).round()}%';
+    final walkPercentStr = '${(walkFraction * 100).round()}%';
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -71,7 +89,7 @@ class BentoEnergyCard extends StatelessWidget {
             textBaseline: TextBaseline.alphabetic,
             children: [
               Text(
-                '4,3k',
+                _formatKcal(totalCalories),
                 style: TextStyle(
                   fontFamily: 'Hanken Grotesk',
                   fontSize: 32,
@@ -120,7 +138,7 @@ class BentoEnergyCard extends StatelessWidget {
               child: Stack(
                 alignment: Alignment.center,
                 children: [
-                  // Lavender Circle (Running: 2.6k)
+                  // Lavender Circle (Running / Active)
                   Positioned(
                     left: 20,
                     top: 10,
@@ -139,19 +157,19 @@ class BentoEnergyCard extends StatelessWidget {
                         ],
                       ),
                       alignment: Alignment.center,
-                      child: const Column(
+                      child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text(
-                            '2,6k',
-                            style: TextStyle(
+                            _formatKcal(runningCalories),
+                            style: const TextStyle(
                               fontFamily: 'Hanken Grotesk',
                               fontSize: 20,
                               fontWeight: FontWeight.w800,
                               color: AppColors.obsidianBlack,
                             ),
                           ),
-                          Text(
+                          const Text(
                             'kcal',
                             style: TextStyle(
                               fontFamily: 'Hanken Grotesk',
@@ -165,7 +183,7 @@ class BentoEnergyCard extends StatelessWidget {
                     ),
                   ),
 
-                  // Dark Obsidian Circle (Workouts: 1.2k)
+                  // Dark Obsidian Circle (Workouts)
                   Positioned(
                     right: 25,
                     top: 15,
@@ -188,19 +206,19 @@ class BentoEnergyCard extends StatelessWidget {
                         ],
                       ),
                       alignment: Alignment.center,
-                      child: const Column(
+                      child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text(
-                            '1,2k',
-                            style: TextStyle(
+                            _formatKcal(workoutCalories),
+                            style: const TextStyle(
                               fontFamily: 'Hanken Grotesk',
                               fontSize: 18,
                               fontWeight: FontWeight.w800,
                               color: Colors.white,
                             ),
                           ),
-                          Text(
+                          const Text(
                             'kcal',
                             style: TextStyle(
                               fontFamily: 'Hanken Grotesk',
@@ -214,7 +232,7 @@ class BentoEnergyCard extends StatelessWidget {
                     ),
                   ),
 
-                  // Electric Lime Circle (Walking: 500 kcal)
+                  // Electric Lime Circle (Walking)
                   Positioned(
                     bottom: 0,
                     left: 95,
@@ -237,19 +255,19 @@ class BentoEnergyCard extends StatelessWidget {
                         ],
                       ),
                       alignment: Alignment.center,
-                      child: const Column(
+                      child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text(
-                            '500',
-                            style: TextStyle(
+                            _formatKcal(walkingCalories),
+                            style: const TextStyle(
                               fontFamily: 'Hanken Grotesk',
                               fontSize: 16,
                               fontWeight: FontWeight.w800,
                               color: AppColors.obsidianBlack,
                             ),
                           ),
-                          Text(
+                          const Text(
                             'kcal',
                             style: TextStyle(
                               fontFamily: 'Hanken Grotesk',
@@ -271,31 +289,31 @@ class BentoEnergyCard extends StatelessWidget {
 
           // Breakdown Progress Bars
           _buildActivityBar(
-            percentage: '45%',
+            percentage: runPercentStr,
             label: 'Running',
             dotColor: AppColors.lavenderAccent,
             barColor: AppColors.lavenderAccent,
-            fillFraction: 0.45,
+            fillFraction: runFraction,
             textPrimary: textPrimary,
             textMuted: textMuted,
           ),
           const SizedBox(height: 12),
           _buildActivityBar(
-            percentage: '30%',
+            percentage: workPercentStr,
             label: 'Workouts',
             dotColor: const Color(0xFF16181A),
             barColor: isDark ? Colors.white70 : const Color(0xFF16181A),
-            fillFraction: 0.30,
+            fillFraction: workFraction,
             textPrimary: textPrimary,
             textMuted: textMuted,
           ),
           const SizedBox(height: 12),
           _buildActivityBar(
-            percentage: '25%',
+            percentage: walkPercentStr,
             label: 'Walking',
             dotColor: AppColors.limeAccentDark,
             barColor: AppColors.limeAccent,
-            fillFraction: 0.25,
+            fillFraction: walkFraction,
             textPrimary: textPrimary,
             textMuted: textMuted,
           ),

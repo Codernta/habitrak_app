@@ -102,7 +102,7 @@ class BentoWellnessCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
-                  '+$scoreDelta%',
+                  scoreDelta >= 0 ? '+$scoreDelta%' : '$scoreDelta%',
                   style: const TextStyle(
                     fontFamily: 'Hanken Grotesk',
                     fontSize: 10,
@@ -145,7 +145,7 @@ class BentoWellnessCard extends StatelessWidget {
   }
 
   double _getDotIntensity(int col, int row) {
-    // Generate organic matrix density matching the reference screenshot
+    // Generate organic matrix density responsive to wellness score
     final pattern = [
       [0.2, 0.4, 0.7, 0.9, 0.8, 0.3],
       [0.3, 0.6, 0.8, 0.9, 0.7, 0.4],
@@ -158,9 +158,11 @@ class BentoWellnessCard extends StatelessWidget {
       [0.2, 0.5, 0.7, 0.9, 0.8, 0.5],
       [0.4, 0.7, 0.9, 0.8, 0.6, 0.3],
     ];
+    double base = 0.5;
     if (col < pattern.length && row < pattern[col].length) {
-      return pattern[col][row];
+      base = pattern[col][row];
     }
-    return 0.5;
+    final factor = (wellnessScore / 100.0).clamp(0.2, 1.2);
+    return (base * factor).clamp(0.08, 0.95);
   }
 }

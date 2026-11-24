@@ -173,26 +173,41 @@ class BentoSleepCard extends StatelessWidget {
 
           const SizedBox(height: 24),
 
-          // Monthly Chart: Jun, Jul, Aug, Sept (highlighted!), Oct, Nov, Dec
+          // Dynamic Monthly Chart ending on Current Month
           SizedBox(
             height: 115,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                _buildMonthBar('Jun', 45, false),
-                _buildMonthBar('Jul', 60, false),
-                _buildMonthBar('Aug', 50, false),
-                _buildHighlightMonthBar('Sept ↗', 80, 64), // Highlighted in Lime + Lavender!
-                _buildMonthBar('Oct', 40, false),
-                _buildMonthBar('Nov', 55, false),
-                _buildMonthBar('Dec', 48, false),
-              ],
+              children: _buildDynamicMonthBars(),
             ),
           ),
         ],
       ),
     );
+  }
+
+  List<Widget> _buildDynamicMonthBars() {
+    const monthNames = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+    ];
+    final now = DateTime.now();
+    final List<Widget> bars = [];
+    for (int i = 6; i >= 0; i--) {
+      final mDate = DateTime(now.year, now.month - i, 1);
+      final mLabel = monthNames[mDate.month - 1];
+      final isCurrent = i == 0;
+      if (isCurrent) {
+        final limeH = (sleepEfficiency * 0.9).clamp(24.0, 90.0);
+        final lavH = (limeH * 0.8).clamp(18.0, 75.0);
+        bars.add(_buildHighlightMonthBar('$mLabel ↗', limeH, lavH));
+      } else {
+        final h = 35.0 + ((mDate.month * 7) % 35);
+        bars.add(_buildMonthBar(mLabel, h, false));
+      }
+    }
+    return bars;
   }
 
   Widget _buildMonthBar(String month, double height, bool isSelected) {

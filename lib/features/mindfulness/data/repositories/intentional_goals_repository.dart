@@ -1,14 +1,19 @@
 import 'package:hive/hive.dart';
 import '../../../../core/security/secure_data_manager.dart';
 import '../../../../core/storage/hive_registrar.dart';
+import '../../../habit/services/firebase_habit_sync_service.dart';
 
 class IntentionalGoalsRepository {
   final Box<Map> _box = Hive.box<Map>(HiveRegistrar.mindfulnessGoalsBoxName);
+  final FirebaseHabitSyncService _cloudSync;
+
+  IntentionalGoalsRepository({FirebaseHabitSyncService? cloudSync})
+      : _cloudSync = cloudSync ?? FirebaseHabitSyncService();
 
   static const String _keyMetaSyncDate = '__meta_last_goals_date';
 
   final List<Map<String, dynamic>> _initialGoals = [
-    {'id': 'goal_1', 'title': 'Morning breathwork (5 min)', 'completed': true},
+    {'id': 'goal_1', 'title': 'Morning breathwork (5 min)', 'completed': false},
     {'id': 'goal_2', 'title': 'Read 10 pages for growth', 'completed': false},
     {'id': 'goal_3', 'title': 'Evening tech detox', 'completed': false},
   ];
@@ -66,6 +71,7 @@ class IntentionalGoalsRepository {
       final updated = Map<String, dynamic>.from(goal);
       updated['completed'] = !(updated['completed'] == true);
       await _box.put(id, updated);
+      _cloudSync.syncGoalToCloud(updated);
     }
   }
 
@@ -81,10 +87,12 @@ class IntentionalGoalsRepository {
     final id = 'goal_${DateTime.now().millisecondsSinceEpoch}';
     final newGoal = {'id': id, 'title': safeTitle, 'completed': false};
     await _box.put(id, newGoal);
+    _cloudSync.syncGoalToCloud(newGoal);
     return newGoal;
   }
 
   Future<void> deleteGoal(String id) async {
     await _box.delete(id);
+    _cloudSync.deleteGoalFromCloud(id);
   }
 }

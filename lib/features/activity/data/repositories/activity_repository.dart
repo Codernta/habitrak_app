@@ -54,7 +54,6 @@ class ActivityRepository {
         total += map['durationMinutes'] as int? ?? 0;
       }
     }
-    // Base initial default minutes so profile starts nicely
-    return total > 0 ? total + 480 : 480;
+    return total;
   }
 }

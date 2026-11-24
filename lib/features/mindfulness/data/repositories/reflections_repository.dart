@@ -1,9 +1,14 @@
 import 'package:hive/hive.dart';
 import '../../../../core/security/secure_data_manager.dart';
 import '../../../../core/storage/hive_registrar.dart';
+import '../../../habit/services/firebase_habit_sync_service.dart';
 
 class ReflectionsRepository {
   final Box<Map> _box = Hive.box<Map>(HiveRegistrar.reflectionsBoxName);
+  final FirebaseHabitSyncService _cloudSync;
+
+  ReflectionsRepository({FirebaseHabitSyncService? cloudSync})
+      : _cloudSync = cloudSync ?? FirebaseHabitSyncService();
 
   List<Map<String, dynamic>> _getInitialReflections() {
     final now = DateTime.now();
@@ -107,10 +112,12 @@ class ReflectionsRepository {
       'createdAt': now.toIso8601String(),
     };
     await _box.put(id, entry);
+    _cloudSync.syncReflectionToCloud(entry);
     return entry;
   }
 
   Future<void> deleteReflection(String id) async {
     await _box.delete(id);
+    _cloudSync.deleteReflectionFromCloud(id);
   }
 }

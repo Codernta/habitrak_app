@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import '../../../../core/security/secure_data_manager.dart';
@@ -16,22 +18,55 @@ class ProfileRepository {
   static const String _keyUserName = 'user_name';
 
   String getUserName() {
-    return _profileBox.get(_keyUserName, defaultValue: 'Jordan Smith')
-        as String;
+    final custom = _profileBox.get(_keyUserName) as String?;
+    if (custom != null && custom.isNotEmpty && custom != 'Jordan Smith') {
+      return custom;
+    }
+    final firebaseUser = FirebaseAuth.instance.currentUser;
+    if (firebaseUser != null &&
+        firebaseUser.displayName != null &&
+        firebaseUser.displayName!.isNotEmpty) {
+      return firebaseUser.displayName!;
+    }
+    return 'Mindful Explorer';
+  }
+
+  String getUserEmail() {
+    final firebaseUser = FirebaseAuth.instance.currentUser;
+    if (firebaseUser != null &&
+        firebaseUser.email != null &&
+        firebaseUser.email!.isNotEmpty) {
+      return firebaseUser.email!;
+    }
+    return 'guest@habitrak.local';
+  }
+
+  String? getUserPhotoUrl() {
+    return FirebaseAuth.instance.currentUser?.photoURL;
   }
 
   Future<void> setUserName(String name) async {
     final sanitized = SecureDataManager().sanitizeText(name, maxLength: 40);
-    await _profileBox.put(
-      _keyUserName,
-      sanitized.isNotEmpty ? sanitized : 'Jordan Smith',
-    );
+    final finalName = sanitized.isNotEmpty ? sanitized : 'Mindful Explorer';
+    await _profileBox.put(_keyUserName, finalName);
+
+    // Sync with Firebase Auth and Firestore if user is signed in
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        await user.updateDisplayName(finalName);
+        await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
+          'displayName': finalName,
+          'updatedAt': FieldValue.serverTimestamp(),
+        }, SetOptions(merge: true));
+      }
+    } catch (_) {}
   }
 
   String getAvatarInitials() {
     final name = getUserName();
     final parts = name.trim().split(' ').where((p) => p.isNotEmpty).toList();
-    if (parts.isEmpty) return 'JS';
+    if (parts.isEmpty) return 'ME';
     if (parts.length == 1) return parts[0].substring(0, 1).toUpperCase();
     return (parts[0][0] + parts[1][0]).toUpperCase();
   }
@@ -54,11 +89,11 @@ class ProfileRepository {
         break;
       }
     }
-    return streak > 0 ? streak : 12; // Base fallback for brand new installs
+    return streak;
   }
 
   int getTotalMindfulMinutes() {
-    int total = 480; // Default foundation
+    int total = 0;
     for (var v in _activityBox.values) {
       final map = Map<String, dynamic>.from(v);
       if (map['type'] == 'walk') {
@@ -68,6 +103,17 @@ class ProfileRepository {
         total += map['durationMinutes'] as int? ?? 0;
       }
     }
+    try {
+      if (Hive.isBoxOpen(HiveRegistrar.soulfulnessBoxName)) {
+        final soulBox = Hive.box<dynamic>(HiveRegistrar.soulfulnessBoxName);
+        final medMins =
+            (soulBox.get('__total_meditation_minutes', defaultValue: 0)
+                    as num?)
+                ?.toInt() ??
+            0;
+        total += medMins;
+      }
+    } catch (_) {}
     return total;
   }
 

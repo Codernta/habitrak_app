@@ -3,9 +3,14 @@ import '../../../../core/security/secure_data_manager.dart';
 import '../../../../core/storage/hive_registrar.dart';
 import '../../domain/entities/habit.dart';
 import '../../domain/repositories/habit_repository.dart';
+import '../../services/firebase_habit_sync_service.dart';
 
 class HiveHabitRepository implements HabitRepository {
   final Box<Habit> _box = Hive.box<Habit>(HiveRegistrar.habitsBoxName);
+  final FirebaseHabitSyncService _cloudSyncService;
+
+  HiveHabitRepository({FirebaseHabitSyncService? cloudSyncService})
+      : _cloudSyncService = cloudSyncService ?? FirebaseHabitSyncService();
 
   static const String _keyLastActiveDate = 'last_active_date';
 
@@ -15,21 +20,20 @@ class HiveHabitRepository implements HabitRepository {
       title: 'Morning Meditation',
       category: HabitCategory.mindfulness,
       targetProgress: 1.0,
-      currentProgress: 1.0,
-      isCompleted: true,
-      completedAt: '7:15 AM',
+      currentProgress: 0.0,
+      isCompleted: false,
       scheduledTime: '7:15 AM',
-      streak: 7,
+      streak: 0,
     ),
     const Habit(
       id: '2',
       title: 'Drink 2L Water',
       category: HabitCategory.health,
       targetProgress: 2.0,
-      currentProgress: 1.2,
+      currentProgress: 0.0,
       unit: 'L',
       isCompleted: false,
-      streak: 4,
+      streak: 0,
     ),
     const Habit(
       id: '3',
@@ -38,7 +42,8 @@ class HiveHabitRepository implements HabitRepository {
       targetProgress: 20.0,
       currentProgress: 0.0,
       unit: 'mins',
-      streak: 5,
+      isCompleted: false,
+      streak: 0,
     ),
     const Habit(
       id: '4',
@@ -48,15 +53,21 @@ class HiveHabitRepository implements HabitRepository {
       currentProgress: 0.0,
       isCompleted: false,
       scheduledTime: '9:00 PM',
-      streak: 3,
+      streak: 0,
     ),
   ];
 
   @override
   Future<List<Habit>> getHabits() async {
     if (_box.isEmpty) {
-      await _box.addAll(_defaultHabits);
-      await _seedInitialHistory();
+      // First try to restore any cloud-synced habits for this user
+      final cloudHabits = await _cloudSyncService.fetchHabitsFromCloud();
+      if (cloudHabits.isNotEmpty) {
+        await _box.addAll(cloudHabits);
+      } else {
+        await _box.addAll(_defaultHabits);
+        await _cloudSyncService.syncHabitsToCloud(_defaultHabits);
+      }
       final settingsBox = _getSettingsBox();
       await settingsBox.put(_keyLastActiveDate, _formatDateKey(DateTime.now()));
     }
@@ -230,13 +241,7 @@ class HiveHabitRepository implements HabitRepository {
     final habit = _getHabitById(habitId);
     if (habit != null) {
       final newCompleted = !habit.isCompleted;
-
-      double newProgress = newCompleted ? habit.targetProgress : 0.0;
-      if (habit.unit == 'L') {
-        newProgress = newCompleted ? habit.targetProgress : 1.2;
-      } else if (habit.unit == 'mins') {
-        newProgress = newCompleted ? habit.targetProgress : 0.0;
-      }
+      final double newProgress = newCompleted ? habit.targetProgress : 0.0;
 
       int newStreak = habit.streak;
       if (newCompleted && habit.streak == 0) {
@@ -260,6 +265,7 @@ class HiveHabitRepository implements HabitRepository {
 
       await _updateHabitInBox(updated);
       await _recordDailyCompletion();
+      _cloudSyncService.syncHabitToCloud(updated);
     }
   }
 
@@ -294,6 +300,7 @@ class HiveHabitRepository implements HabitRepository {
 
       await _updateHabitInBox(updated);
       await _recordDailyCompletion();
+      _cloudSyncService.syncHabitToCloud(updated);
     }
   }
 
@@ -318,15 +325,17 @@ class HiveHabitRepository implements HabitRepository {
 
     await _box.add(safeHabit);
     await _recordDailyCompletion();
+    _cloudSyncService.syncHabitToCloud(safeHabit);
   }
 
   @override
   Future<void> resetHabits() async {
     await _box.clear();
     await _box.addAll(_defaultHabits);
-    await _seedInitialHistory();
     final settingsBox = _getSettingsBox();
     await settingsBox.put(_keyLastActiveDate, _formatDateKey(DateTime.now()));
+    await _recordDailyCompletion();
+    await _cloudSyncService.syncHabitsToCloud(_defaultHabits);
   }
 
   Box<dynamic> _getSettingsBox() {
@@ -366,7 +375,7 @@ class HiveHabitRepository implements HabitRepository {
       final todayKey = _formatDateKey(DateTime.now());
       final allHabits = _box.values.toList();
       final completed = allHabits.where((h) => h.isCompleted).length;
-      await historyBox.put(todayKey, {
+      final record = {
         'date': todayKey,
         'completedCount': completed,
         'totalHabits': allHabits.length,
@@ -374,28 +383,21 @@ class HiveHabitRepository implements HabitRepository {
             .where((h) => h.isCompleted)
             .map((h) => h.id)
             .toList(),
-      });
-    }
-  }
+      };
+      await historyBox.put(todayKey, record);
 
-  Future<void> _seedInitialHistory() async {
-    if (Hive.isBoxOpen(HiveRegistrar.habitHistoryBoxName)) {
-      final historyBox = _getHistoryBox();
-      if (historyBox.isEmpty) {
-        final now = DateTime.now();
-        // Seed past 35 days with realistic active streak history
-        for (int i = 35; i >= 1; i--) {
-          final dt = now.subtract(Duration(days: i));
-          final key = _formatDateKey(dt);
-          final int completed = (i % 7 == 0 || i % 7 == 6) ? 3 : 4;
-          await historyBox.put(key, {
-            'date': key,
-            'completedCount': completed,
-            'totalHabits': 4,
-            'completedHabitIds': ['1', '2', '3', '4'].sublist(0, completed),
-          });
-        }
-      }
+      // Asynchronously sync daily history & stats to Firestore
+      _cloudSyncService.syncDailyCompletionHistory(todayKey, record);
+
+      // Compute total completed habits and current max streak
+      final maxStreak = allHabits.fold<int>(
+        0,
+        (max, h) => h.streak > max ? h.streak : max,
+      );
+      _cloudSyncService.syncUserStats(
+        currentStreak: maxStreak,
+        totalCompletedHabits: completed,
+      );
     }
   }
 }

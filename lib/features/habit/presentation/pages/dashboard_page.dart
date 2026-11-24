@@ -30,6 +30,11 @@ import '../../../health/domain/models/daily_health_summary.dart';
 import '../../../health/presentation/bloc/wearable_sync_bloc.dart';
 import '../../../health/presentation/bloc/wearable_sync_state.dart';
 import '../../../health/presentation/widgets/wearables_hub_modal.dart';
+import '../../../auth/presentation/cubit/auth_cubit.dart';
+import '../../../auth/presentation/cubit/auth_state.dart';
+import '../../../profile/data/repositories/profile_repository.dart';
+import '../../../profile/presentation/pages/profile_page.dart';
+import '../../../activity/data/repositories/activity_repository.dart';
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
@@ -208,19 +213,55 @@ class _DashboardPageState extends State<DashboardPage>
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     // 1. Bento Header: Avatar, Name, Health Overview, Search & Today Selector
-                    BentoHeader(
-                      onNotificationTap: () async {
-                        HapticFlow.light();
-                        await NotificationService().showTestStreakNotification(streak: 7);
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('🔔 Notification alert triggered!'),
-                              backgroundColor: AppColors.obsidianBlack,
-                              duration: Duration(seconds: 2),
-                            ),
-                          );
+                    Builder(
+                      builder: (context) {
+                        final profileRepo = context.watch<ProfileRepository>();
+                        final authState = context.watch<AuthCubit>().state;
+                        String userName = profileRepo.getUserName();
+                        String userEmail = profileRepo.getUserEmail();
+                        String? userPhotoUrl = profileRepo.getUserPhotoUrl();
+
+                        if (authState is Authenticated) {
+                          if (authState.user.displayName.isNotEmpty) {
+                            userName = authState.user.displayName;
+                          }
+                          if (authState.user.email.isNotEmpty) {
+                            userEmail = authState.user.email;
+                          }
+                          if (authState.user.photoUrl != null) {
+                            userPhotoUrl = authState.user.photoUrl;
+                          }
                         }
+
+                        return BentoHeader(
+                          userName: userName,
+                          userEmail: userEmail,
+                          userPhotoUrl: userPhotoUrl,
+                          onProfileTap: () {
+                            HapticFlow.selection();
+                            Navigator.push(
+                              context,
+                              AppPageRoute(page: const ProfilePage()),
+                            ).then((_) {
+                              if (context.mounted) {
+                                setState(() {});
+                              }
+                            });
+                          },
+                          onNotificationTap: () async {
+                            HapticFlow.light();
+                            await NotificationService().showTestStreakNotification(streak: 7);
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('🔔 Notification alert triggered!'),
+                                  backgroundColor: AppColors.obsidianBlack,
+                                  duration: Duration(seconds: 2),
+                                ),
+                              );
+                            }
+                          },
+                        );
                       },
                     ),
                     const SizedBox(height: 18),
@@ -233,24 +274,46 @@ class _DashboardPageState extends State<DashboardPage>
                           summary = wearableState.currentSummary;
                         }
 
+                        final activityRepo = context.read<ActivityRepository>();
+                        final logs = activityRepo.getActivityLogs();
+                        double loggedCalories = 0.0;
+                        double loggedWalkCalories = 0.0;
+                        for (final l in logs) {
+                          final cal = (l['calories'] as num?)?.toDouble() ?? 0.0;
+                          loggedCalories += cal;
+                          if (l['type'] == 'walk') loggedWalkCalories += cal;
+                        }
+
                         final totalCalories = (summary?.totalCalories != null && summary!.totalCalories > 0)
                             ? summary.totalCalories
-                            : 4300.0;
+                            : (loggedCalories > 0 ? loggedCalories : 0.0);
                         final activeCalories = (summary?.activeCalories != null && summary!.activeCalories > 0)
                             ? summary.activeCalories
-                            : 2600.0;
-                        final hr = summary?.avgHeartRate?.round() ?? 62;
-                        final restingHr = summary?.restingHeartRate?.round() ?? 78;
+                            : (loggedCalories > 0 ? loggedCalories * 0.7 : 0.0);
+                        final walkCalories = (summary?.steps != null && summary!.steps > 0)
+                            ? (summary.steps * 0.04)
+                            : (loggedWalkCalories > 0 ? loggedWalkCalories : 0.0);
+                        final workoutCalories = (activeCalories - walkCalories).clamp(0.0, activeCalories);
+
+                        final hr = summary?.avgHeartRate?.round() ?? 0;
+                        final restingHr = summary?.restingHeartRate?.round() ?? 0;
                         final distKm = (summary?.distanceKm != null && summary!.distanceKm > 0)
                             ? summary.distanceKm
-                            : 5.8;
+                            : 0.0;
                         final activeMins = summary?.exerciseMinutes != null && summary!.exerciseMinutes > 0
                             ? summary.exerciseMinutes
-                            : 75;
-                        final sleepEff = summary?.sleepEfficiencyPercentage ?? 85;
+                            : 0;
+                        final sleepEff = summary?.sleepEfficiencyPercentage ?? 0;
                         final sleepDurStr = (summary?.sleepDurationMinutes != null && summary!.sleepDurationMinutes > 0)
                             ? '${summary.sleepDurationMinutes ~/ 60}h ${summary.sleepDurationMinutes % 60}m'
-                            : '7h 15m';
+                            : '--';
+
+                        // Dynamic Wellness Index calculation
+                        final habitRatio = state.completionPercentage / 100.0;
+                        final sleepRatio = sleepEff > 0 ? (sleepEff / 100.0) : 0.75;
+                        final stepRatio = ((summary?.steps ?? 0) / 10000.0).clamp(0.0, 1.0);
+                        final int wellnessScore = ((habitRatio * 50) + (sleepRatio * 30) + (stepRatio * 20)).round().clamp(10, 100);
+                        final int scoreDelta = (state.completionPercentage > 0 ? 5 : 0) + ((summary?.steps ?? 0) > 5000 ? 5 : 0);
 
                         return Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -265,6 +328,8 @@ class _DashboardPageState extends State<DashboardPage>
                                 child: BentoEnergyCard(
                                   totalCalories: totalCalories,
                                   runningCalories: activeCalories,
+                                  workoutCalories: workoutCalories,
+                                  walkingCalories: walkCalories,
                                 ),
                               ),
                             ),
@@ -290,7 +355,13 @@ class _DashboardPageState extends State<DashboardPage>
                                 HapticFlow.light();
                                 WearablesHubModal.show(context);
                               },
-                              child: const StaggeredEntrance(index: 3, child: BentoWellnessCard()),
+                              child: StaggeredEntrance(
+                                index: 3,
+                                child: BentoWellnessCard(
+                                  wellnessScore: wellnessScore,
+                                  scoreDelta: scoreDelta,
+                                ),
+                              ),
                             ),
                             const SizedBox(height: 14),
                             GestureDetector(

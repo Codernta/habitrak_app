@@ -13,6 +13,7 @@ import 'core/widgets/offline_global_indicator.dart';
 import 'features/auth/data/repositories/auth_repository.dart';
 import 'features/auth/presentation/cubit/auth_cubit.dart';
 import 'features/habit/data/repositories/hive_habit_repository.dart';
+import 'features/habit/services/firebase_habit_sync_service.dart';
 import 'features/habit/presentation/bloc/habit_bloc.dart';
 import 'features/health/presentation/bloc/wearable_sync_bloc.dart';
 import 'features/health/presentation/bloc/wearable_sync_event.dart';
@@ -52,11 +53,12 @@ void main() async {
   await notificationService.requestPermissions();
 
   // Setup dependencies
-  final habitRepository = HiveHabitRepository();
+  final firebaseHabitSyncService = FirebaseHabitSyncService();
+  final habitRepository = HiveHabitRepository(cloudSyncService: firebaseHabitSyncService);
   final settingsRepository = SettingsRepository();
   HapticFlow.enabled = settingsRepository.getHapticsEnabled();
-  final reflectionsRepository = ReflectionsRepository();
-  final goalsRepository = IntentionalGoalsRepository();
+  final reflectionsRepository = ReflectionsRepository(cloudSync: firebaseHabitSyncService);
+  final goalsRepository = IntentionalGoalsRepository(cloudSync: firebaseHabitSyncService);
   final soulfulnessRepository = SoulfulnessRepository();
   final activityRepository = ActivityRepository();
   final profileRepository = ProfileRepository();
@@ -90,6 +92,7 @@ void main() async {
     MultiRepositoryProvider(
       providers: [
         RepositoryProvider<HiveHabitRepository>.value(value: habitRepository),
+        RepositoryProvider<FirebaseHabitSyncService>.value(value: firebaseHabitSyncService),
         RepositoryProvider<SettingsRepository>.value(value: settingsRepository),
         RepositoryProvider<ReflectionsRepository>.value(value: reflectionsRepository),
         RepositoryProvider<IntentionalGoalsRepository>.value(value: goalsRepository),

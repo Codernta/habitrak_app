@@ -39,9 +39,11 @@ class _ProfilePageState extends State<ProfilePage> {
 
   bool _remindersEnabled = true;
   bool _hapticsEnabled = true;
-  String _userName = 'Jordan Smith';
-  int _streakDays = 12;
-  int _totalMindfulMinutes = 480;
+  String _userName = 'Mindful Explorer';
+  String _userEmail = '';
+  String? _userPhotoUrl;
+  int _streakDays = 0;
+  int _totalMindfulMinutes = 0;
   List<double> _heatmapIntensities = [];
   List<Map<String, dynamic>> _badges = [];
 
@@ -57,6 +59,8 @@ class _ProfilePageState extends State<ProfilePage> {
 
   void _loadProfileData() {
     _userName = _profileRepo.getUserName();
+    _userEmail = _profileRepo.getUserEmail();
+    _userPhotoUrl = _profileRepo.getUserPhotoUrl();
     _streakDays = _profileRepo.getStreakDays();
     _totalMindfulMinutes = _profileRepo.getTotalMindfulMinutes();
     _heatmapIntensities = _profileRepo.getHeatmapIntensities();
@@ -111,7 +115,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 if (newName.isNotEmpty) {
                   _profileRepo.setUserName(newName);
                   setState(() {
-                    _userName = newName;
+                    _loadProfileData();
                   });
                   HapticFlow.light();
                 }
@@ -236,15 +240,20 @@ class _ProfilePageState extends State<ProfilePage> {
               child: CircleAvatar(
                 radius: 36,
                 backgroundColor: AppColors.limeAccent.withValues(alpha: isDark ? 0.25 : 0.4),
-                child: Text(
-                  initials,
-                  style: TextStyle(
-                    fontFamily: 'Hanken Grotesk',
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: isDark ? AppColors.limeAccent : AppColors.obsidianBlack,
-                  ),
-                ),
+                backgroundImage: (_userPhotoUrl != null && _userPhotoUrl!.isNotEmpty)
+                    ? NetworkImage(_userPhotoUrl!)
+                    : null,
+                child: (_userPhotoUrl != null && _userPhotoUrl!.isNotEmpty)
+                    ? null
+                    : Text(
+                        initials,
+                        style: TextStyle(
+                          fontFamily: 'Hanken Grotesk',
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                          color: isDark ? AppColors.limeAccent : AppColors.obsidianBlack,
+                        ),
+                      ),
               ),
             ),
             const SizedBox(width: 20),
@@ -276,6 +285,21 @@ class _ProfilePageState extends State<ProfilePage> {
                       ),
                     ],
                   ),
+                  if (_userEmail.isNotEmpty) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      _userEmail,
+                      style: TextStyle(
+                        fontFamily: 'Hanken Grotesk',
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: isDark
+                            ? const Color(0xFFA0A5AD)
+                            : const Color(0xFF7A7E85),
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
                   const SizedBox(height: 6),
                   Row(
                     children: [
