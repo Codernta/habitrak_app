@@ -4,6 +4,7 @@ import '../../../../core/storage/hive_registrar.dart';
 import '../../domain/entities/habit.dart';
 import '../../domain/repositories/habit_repository.dart';
 import '../../services/firebase_habit_sync_service.dart';
+import '../../../../core/services/analytics_service.dart';
 
 class HiveHabitRepository implements HabitRepository {
   final Box<Habit> _box = Hive.box<Habit>(HiveRegistrar.habitsBoxName);
@@ -266,6 +267,23 @@ class HiveHabitRepository implements HabitRepository {
       await _updateHabitInBox(updated);
       await _recordDailyCompletion();
       _cloudSyncService.syncHabitToCloud(updated);
+
+      if (newCompleted) {
+        AnalyticsService().logHabitCompleted(
+          habitId: updated.id,
+          title: updated.title,
+          category: updated.category.name,
+          streak: updated.streak,
+          targetProgress: updated.targetProgress,
+          unit: updated.unit,
+        );
+      } else {
+        AnalyticsService().logHabitUncompleted(
+          habitId: updated.id,
+          title: updated.title,
+          streak: updated.streak,
+        );
+      }
     }
   }
 
@@ -301,6 +319,14 @@ class HiveHabitRepository implements HabitRepository {
       await _updateHabitInBox(updated);
       await _recordDailyCompletion();
       _cloudSyncService.syncHabitToCloud(updated);
+
+      AnalyticsService().logHabitProgressUpdated(
+        habitId: updated.id,
+        title: updated.title,
+        progress: sanitizedProgress,
+        targetProgress: updated.targetProgress,
+        isCompleted: newCompleted,
+      );
     }
   }
 
@@ -326,6 +352,14 @@ class HiveHabitRepository implements HabitRepository {
     await _box.add(safeHabit);
     await _recordDailyCompletion();
     _cloudSyncService.syncHabitToCloud(safeHabit);
+
+    AnalyticsService().logHabitCreated(
+      habitId: safeHabit.id,
+      title: safeHabit.title,
+      category: safeHabit.category.name,
+      targetProgress: safeHabit.targetProgress,
+      unit: safeHabit.unit,
+    );
   }
 
   @override
@@ -398,6 +432,13 @@ class HiveHabitRepository implements HabitRepository {
         currentStreak: maxStreak,
         totalCompletedHabits: completed,
       );
+
+      if (maxStreak > 0 && maxStreak % 7 == 0) {
+        AnalyticsService().logStreakMilestone(
+          streakDays: maxStreak,
+          totalCompletedHabits: completed,
+        );
+      }
     }
   }
 }

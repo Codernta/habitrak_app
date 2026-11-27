@@ -2,6 +2,7 @@ import 'package:hive/hive.dart';
 import '../../../../core/security/secure_data_manager.dart';
 import '../../../../core/storage/hive_registrar.dart';
 import '../../../habit/services/firebase_habit_sync_service.dart';
+import '../../../../core/services/analytics_service.dart';
 
 class ReflectionsRepository {
   final Box<Map> _box = Hive.box<Map>(HiveRegistrar.reflectionsBoxName);
@@ -113,6 +114,10 @@ class ReflectionsRepository {
     };
     await _box.put(id, entry);
     _cloudSync.syncReflectionToCloud(entry);
+    AnalyticsService().logReflectionSaved(
+      length: safeText.length,
+      relativeDate: 'Today',
+    );
     return entry;
   }
 

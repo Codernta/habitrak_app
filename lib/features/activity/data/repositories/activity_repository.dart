@@ -1,5 +1,6 @@
 import 'package:hive/hive.dart';
 import '../../../../core/storage/hive_registrar.dart';
+import '../../../../core/services/analytics_service.dart';
 
 class ActivityRepository {
   final Box<Map> _box = Hive.box<Map>(HiveRegistrar.activityLogsBoxName);
@@ -24,6 +25,11 @@ class ActivityRepository {
       'date': DateTime.now().toIso8601String(),
     };
     await _box.put(id, entry);
+    AnalyticsService().logWalkSession(
+      durationMinutes: durationMinutes,
+      distanceKm: distanceKm,
+      caloriesBurned: caloriesBurned,
+    );
   }
 
   Future<void> logYogaSession({
@@ -39,6 +45,10 @@ class ActivityRepository {
       'date': DateTime.now().toIso8601String(),
     };
     await _box.put(id, entry);
+    AnalyticsService().logYogaSession(
+      durationMinutes: durationMinutes,
+      posesCompleted: posesCompleted,
+    );
   }
 
   int getTotalMindfulMinutes() {

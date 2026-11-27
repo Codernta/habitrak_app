@@ -2,6 +2,7 @@ import 'package:hive/hive.dart';
 import '../../../../core/security/secure_data_manager.dart';
 import '../../../../core/storage/hive_registrar.dart';
 import '../../../habit/services/firebase_habit_sync_service.dart';
+import '../../../../core/services/analytics_service.dart';
 
 class IntentionalGoalsRepository {
   final Box<Map> _box = Hive.box<Map>(HiveRegistrar.mindfulnessGoalsBoxName);
@@ -72,6 +73,11 @@ class IntentionalGoalsRepository {
       updated['completed'] = !(updated['completed'] == true);
       await _box.put(id, updated);
       _cloudSync.syncGoalToCloud(updated);
+      AnalyticsService().logIntentionalGoalToggled(
+        goalId: id,
+        title: updated['title']?.toString() ?? '',
+        completed: updated['completed'] == true,
+      );
     }
   }
 

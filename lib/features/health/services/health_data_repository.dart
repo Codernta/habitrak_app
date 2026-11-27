@@ -24,9 +24,11 @@ class HealthDataRepository {
         _aggregationService = aggregationService ?? HealthAggregationService(),
         _localStorage = localStorage ?? HealthSyncLocalStorage();
 
-  /// Fetches raw health points for a date range, normalizes them, deduplicates, and aggregates into DailyHealthSummary.
+  /// Fetches raw health points for a date range, merges any direct BLE/IoT records,
+  /// normalizes them, deduplicates, and aggregates into DailyHealthSummary.
   Future<DailyHealthSummary> syncDailyHealthData({
     required DateTime date,
+    List<NormalizedHealthRecord> externalRecords = const [],
   }) async {
     final startOfDay = DateTime(date.year, date.month, date.day, 0, 0, 0);
     final endOfDay = DateTime(date.year, date.month, date.day, 23, 59, 59);
@@ -51,51 +53,57 @@ class HealthDataRepository {
         HealthDataType.SLEEP_AWAKE,
       ];
 
-      // Retrieve points from HealthKit or Health Connect
-      final points = await _health.getHealthDataFromTypes(
-        types: typesToFetch,
-        startTime: startOfDay,
-        endTime: endOfDay,
-      );
+      final normalizedRecords = <NormalizedHealthRecord>[
+        ...externalRecords.where((r) => r.recordingDate == dateKey),
+      ];
 
-      final normalizedRecords = <NormalizedHealthRecord>[];
-
-      for (final point in points) {
-        final metricType = _mapHealthDataTypeToMetricType(point.type);
-        if (metricType == null) continue;
-
-        double numVal = 0.0;
-        final rawVal = point.value;
-        if (rawVal is NumericHealthValue) {
-          numVal = rawVal.numericValue.toDouble();
-        } else if (rawVal is WorkoutHealthValue) {
-          numVal = point.dateTo.difference(point.dateFrom).inMinutes.toDouble();
-        }
-
-        final sourceApp = point.sourceName.isNotEmpty ? point.sourceName : 'Health';
-        final recordId = DeduplicationEngine.generateRecordId(
-          sourceApp: sourceApp,
-          metricType: metricType,
-          startTime: point.dateFrom,
-          endTime: point.dateTo,
-          value: numVal,
+      try {
+        // Retrieve points from HealthKit or Health Connect
+        final points = await _health.getHealthDataFromTypes(
+          types: typesToFetch,
+          startTime: startOfDay,
+          endTime: endOfDay,
         );
 
-        normalizedRecords.add(
-          NormalizedHealthRecord(
-            id: recordId,
+        for (final point in points) {
+          final metricType = _mapHealthDataTypeToMetricType(point.type);
+          if (metricType == null) continue;
+
+          double numVal = 0.0;
+          final rawVal = point.value;
+          if (rawVal is NumericHealthValue) {
+            numVal = rawVal.numericValue.toDouble();
+          } else if (rawVal is WorkoutHealthValue) {
+            numVal = point.dateTo.difference(point.dateFrom).inMinutes.toDouble();
+          }
+
+          final sourceApp = point.sourceName.isNotEmpty ? point.sourceName : 'Health';
+          final recordId = DeduplicationEngine.generateRecordId(
+            sourceApp: sourceApp,
             metricType: metricType,
-            value: numVal,
-            unit: point.unit.name,
             startTime: point.dateFrom,
             endTime: point.dateTo,
-            sourceApp: sourceApp,
-            sourceDevice: point.sourceId,
-            platform: Platform.isIOS ? 'ios' : 'android',
-            recordingDate: dateKey,
-            syncedAt: DateTime.now(),
-          ),
-        );
+            value: numVal,
+          );
+
+          normalizedRecords.add(
+            NormalizedHealthRecord(
+              id: recordId,
+              metricType: metricType,
+              value: numVal,
+              unit: point.unit.name,
+              startTime: point.dateFrom,
+              endTime: point.dateTo,
+              sourceApp: sourceApp,
+              sourceDevice: point.sourceId,
+              platform: Platform.isIOS ? 'ios' : 'android',
+              recordingDate: dateKey,
+              syncedAt: DateTime.now(),
+            ),
+          );
+        }
+      } catch (e) {
+        debugPrint('HealthDataRepository OS health query skipped/failed: $e');
       }
 
       // Deduplicate overlapping records from multiple devices/companion apps

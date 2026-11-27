@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import '../domain/models/daily_health_summary.dart';
 import '../domain/models/device_connection_metadata.dart';
 import 'health_sync_local_storage.dart';
+import '../../../../core/services/analytics_service.dart';
 
 class FirebaseHealthSyncService {
   final FirebaseFirestore _firestore;
@@ -47,6 +48,18 @@ class FirebaseHealthSyncService {
       // Mark as cloud synced locally
       final updated = summary.copyWith(isCloudSynced: true);
       await _localStorage.saveDailySummary(updated);
+
+      AnalyticsService().logHealthSummarySynced(
+        steps: summary.steps,
+        totalCalories: summary.totalCalories,
+        activeCalories: summary.activeCalories,
+        distanceKm: summary.distanceKm,
+        exerciseMinutes: summary.exerciseMinutes,
+        sleepDurationMinutes: summary.sleepDurationMinutes,
+        sleepEfficiency: summary.sleepEfficiencyPercentage ?? 0,
+        avgHeartRate: summary.avgHeartRate?.round() ?? 0,
+        restingHeartRate: summary.restingHeartRate?.round() ?? 0,
+      );
       return true;
     } catch (e) {
       debugPrint('FirebaseHealthSyncService.syncDailySummaryToCloud error: $e');

@@ -1,9 +1,11 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../domain/models/ai_health_insight.dart';
 import '../../domain/models/daily_health_summary.dart';
 import '../../domain/models/device_connection_metadata.dart';
+import '../../services/ble_wearable_service.dart';
 import '../../services/firebase_health_sync_service.dart';
 import '../../services/habit_automation_engine.dart';
 import '../../services/health_ai_service.dart';
@@ -20,6 +22,11 @@ class WearableSyncBloc extends Bloc<WearableSyncEvent, WearableSyncState> {
   final FirebaseHealthSyncService cloudSyncService;
   final HabitAutomationEngine habitAutomationEngine;
   final HealthAIService aiService;
+  final BleWearableService bleService;
+
+  StreamSubscription<List<BleDiscoveredDevice>>? _bleScanSub;
+  StreamSubscription<bool>? _bleScanningSub;
+  StreamSubscription<Map<String, BleTelemetrySnapshot>>? _bleTelemetrySub;
 
   WearableSyncBloc({
     required this.permissionService,
@@ -28,12 +35,36 @@ class WearableSyncBloc extends Bloc<WearableSyncEvent, WearableSyncState> {
     required this.cloudSyncService,
     required this.habitAutomationEngine,
     required this.aiService,
-  }) : super(WearableSyncInitial()) {
+    BleWearableService? bleService,
+  })  : bleService = bleService ?? BleWearableService(),
+        super(WearableSyncInitial()) {
     on<InitializeWearablesEvent>(_onInitialize);
     on<RequestHealthPermissionsEvent>(_onRequestPermissions);
     on<TriggerManualSyncEvent>(_onTriggerManualSync);
     on<TriggerHabitAutomationEvent>(_onTriggerHabitAutomation);
     on<GenerateAIReportEvent>(_onGenerateAIReportEvent);
+    on<StartBleScanEvent>(_onStartBleScan);
+    on<StopBleScanEvent>(_onStopBleScan);
+    on<ConnectBleDeviceEvent>(_onConnectBleDevice);
+    on<DisconnectBleDeviceEvent>(_onDisconnectBleDevice);
+    on<BleScanUpdatedEvent>(_onBleScanUpdated);
+    on<BleTelemetryUpdatedEvent>(_onBleTelemetryUpdated);
+
+    _bleScanSub = this.bleService.scanResultsStream.listen((devices) {
+      add(BleScanUpdatedEvent(devices: devices));
+    });
+    _bleScanningSub = this.bleService.isScanningStream.listen((scanning) {
+      if (state is WearableSyncSuccess) {
+        final current = state as WearableSyncSuccess;
+        add(BleScanUpdatedEvent(
+          devices: current.bleDiscoveredDevices,
+          isScanning: scanning,
+        ));
+      }
+    });
+    _bleTelemetrySub = this.bleService.telemetryStream.listen((telemetry) {
+      add(BleTelemetryUpdatedEvent(telemetry));
+    });
   }
 
   static String _todayDateKey() {
@@ -132,8 +163,10 @@ class WearableSyncBloc extends Bloc<WearableSyncEvent, WearableSyncState> {
 
     try {
       final targetDate = event.date ?? DateTime.now();
+      final bleRecords = bleService.drainBufferedRecords();
       final updatedSummary = await healthRepository.syncDailyHealthData(
         date: targetDate,
+        externalRecords: bleRecords,
       );
 
       // 1. Evaluate Deterministic Habit Automation
@@ -207,5 +240,116 @@ class WearableSyncBloc extends Bloc<WearableSyncEvent, WearableSyncState> {
     );
 
     emit(current.copyWith(latestInsight: insight));
+  }
+
+  Future<void> _onStartBleScan(
+    StartBleScanEvent event,
+    Emitter<WearableSyncState> emit,
+  ) async {
+    if (state is! WearableSyncSuccess) return;
+    final current = state as WearableSyncSuccess;
+    emit(current.copyWith(
+      isBleScanning: true,
+      clearBleStatusMessage: true,
+    ));
+    try {
+      await bleService.startScan();
+    } catch (e) {
+      emit((state as WearableSyncSuccess).copyWith(
+        isBleScanning: false,
+        bleStatusMessage: e.toString().replaceFirst('Exception: ', ''),
+      ));
+    }
+  }
+
+  Future<void> _onStopBleScan(
+    StopBleScanEvent event,
+    Emitter<WearableSyncState> emit,
+  ) async {
+    await bleService.stopScan();
+    if (state is WearableSyncSuccess) {
+      emit((state as WearableSyncSuccess).copyWith(isBleScanning: false));
+    }
+  }
+
+  Future<void> _onConnectBleDevice(
+    ConnectBleDeviceEvent event,
+    Emitter<WearableSyncState> emit,
+  ) async {
+    if (state is! WearableSyncSuccess) return;
+    final current = state as WearableSyncSuccess;
+    emit(current.copyWith(
+      isBleScanning: false,
+      bleStatusMessage: 'Connecting to ${event.device.name}...',
+    ));
+    try {
+      final metadata = await bleService.connectDevice(event.device.device);
+      await localStorage.saveConnectedDevice(metadata);
+      await cloudSyncService.registerDeviceMetadata(metadata);
+
+      emit((state as WearableSyncSuccess).copyWith(
+        connectedDevices: localStorage.getConnectedDevices(),
+        bleTelemetry: bleService.currentTelemetry,
+        bleStatusMessage: 'Connected to ${metadata.deviceModel}',
+      ));
+    } catch (e) {
+      emit((state as WearableSyncSuccess).copyWith(
+        bleStatusMessage: 'Connection failed: $e',
+      ));
+    }
+  }
+
+  Future<void> _onDisconnectBleDevice(
+    DisconnectBleDeviceEvent event,
+    Emitter<WearableSyncState> emit,
+  ) async {
+    if (state is! WearableSyncSuccess) return;
+    await bleService.disconnectDevice(event.deviceId);
+    final existing = localStorage
+        .getConnectedDevices()
+        .where((d) => d.deviceId == event.deviceId)
+        .firstOrNull;
+    if (existing != null) {
+      final disconnected = existing.copyWith(
+        connectionStatus: 'disconnected',
+        lastSyncTimestamp: DateTime.now(),
+      );
+      await localStorage.saveConnectedDevice(disconnected);
+    }
+    emit((state as WearableSyncSuccess).copyWith(
+      connectedDevices: localStorage.getConnectedDevices(),
+      bleTelemetry: bleService.currentTelemetry,
+      clearBleStatusMessage: true,
+    ));
+  }
+
+  void _onBleScanUpdated(
+    BleScanUpdatedEvent event,
+    Emitter<WearableSyncState> emit,
+  ) {
+    if (state is! WearableSyncSuccess) return;
+    final current = state as WearableSyncSuccess;
+    emit(current.copyWith(
+      bleDiscoveredDevices: event.devices,
+      isBleScanning: event.isScanning ?? current.isBleScanning,
+    ));
+  }
+
+  void _onBleTelemetryUpdated(
+    BleTelemetryUpdatedEvent event,
+    Emitter<WearableSyncState> emit,
+  ) {
+    if (state is! WearableSyncSuccess) return;
+    final current = state as WearableSyncSuccess;
+    emit(current.copyWith(bleTelemetry: event.telemetry));
+  }
+
+  @override
+  Future<void> close() async {
+    await _bleScanSub?.cancel();
+    await _bleScanningSub?.cancel();
+    await _bleTelemetrySub?.cancel();
+    await bleService.dispose();
+    return super.close();
   }
 }

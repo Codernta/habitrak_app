@@ -7,6 +7,7 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 
 import '../../habit/domain/entities/habit.dart';
+import '../../../../core/services/analytics_service.dart';
 
 class ProgressReportPdfService {
   static final ProgressReportPdfService _instance =
@@ -59,6 +60,12 @@ class ProgressReportPdfService {
       author: 'Habitrak',
       creator: 'Habitrak Neo-Health Engine',
       subject: 'Neo-Health Habit & Progress Analytics',
+    );
+
+    AnalyticsService().logProgressReportGenerated(
+      streakDays: streakDays,
+      mindfulMinutes: totalMindfulMinutes,
+      totalCompletedHabits: habits.where((h) => h.isCompleted).length,
     );
 
     // Load fonts gracefully with fallback

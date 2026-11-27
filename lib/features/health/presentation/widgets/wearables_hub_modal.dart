@@ -530,32 +530,225 @@ class WearablesHubModal extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Ecosystem & Wearable Devices',
-            style: TextStyle(
-              fontFamily: 'Hanken Grotesk',
-              fontWeight: FontWeight.w700,
-              fontSize: 15,
-              color: textPrimary,
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Text(
+                  'Ecosystem & IoT BLE Sensors',
+                  style: TextStyle(
+                    fontFamily: 'Hanken Grotesk',
+                    fontWeight: FontWeight.w700,
+                    fontSize: 15,
+                    color: textPrimary,
+                  ),
+                ),
+              ),
+              TextButton.icon(
+                onPressed: () {
+                  HapticFlow.light();
+                  context.read<WearableSyncBloc>().add(
+                    state.isBleScanning
+                        ? StopBleScanEvent()
+                        : StartBleScanEvent(),
+                  );
+                },
+                icon: Icon(
+                  state.isBleScanning
+                      ? Icons.stop_circle_outlined
+                      : Icons.bluetooth_searching,
+                  size: 16,
+                  color: const Color(0xFF10B981),
+                ),
+                label: Text(
+                  state.isBleScanning ? 'Stop Scan' : 'Scan BLE',
+                  style: const TextStyle(
+                    fontFamily: 'Hanken Grotesk',
+                    fontWeight: FontWeight.w700,
+                    fontSize: 12,
+                    color: Color(0xFF10B981),
+                  ),
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
           _buildDeviceItem(
-            name: Platform.isIOS ? 'Apple Watch & HealthKit' : 'Wear OS & Health Connect',
+            name: Platform.isIOS
+                ? 'Apple Watch & HealthKit'
+                : 'Wear OS & Health Connect',
             status: state.hasPermissions ? 'Active Sync' : 'Not Connected',
             icon: Icons.watch_outlined,
             isActive: state.hasPermissions,
             textPrimary: textPrimary,
             textMuted: textMuted,
           ),
-          _buildDeviceItem(
-            name: 'Garmin / Fitbit / Oura Companion Sync',
-            status: 'OS Aggregated',
-            icon: Icons.cloud_done_outlined,
-            isActive: true,
-            textPrimary: textPrimary,
-            textMuted: textMuted,
-          ),
+          if (state.bleStatusMessage != null) ...[
+            const SizedBox(height: 6),
+            Text(
+              state.bleStatusMessage!,
+              style: TextStyle(
+                fontFamily: 'Hanken Grotesk',
+                fontSize: 12,
+                color: textMuted,
+              ),
+            ),
+          ],
+          if (state.bleTelemetry.isNotEmpty) ...[
+            const Divider(height: 20),
+            Text(
+              'Connected BLE / IoT Devices',
+              style: TextStyle(
+                fontFamily: 'Hanken Grotesk',
+                fontWeight: FontWeight.w600,
+                fontSize: 12,
+                color: textMuted,
+              ),
+            ),
+            const SizedBox(height: 6),
+            ...state.bleTelemetry.values.map((t) {
+              final metrics = <String>[
+                if (t.heartRateBpm != null) '${t.heartRateBpm} bpm',
+                if (t.hrvRmssdMs != null)
+                  'HRV ${t.hrvRmssdMs!.toStringAsFixed(0)} ms',
+                if (t.spo2Percent != null) 'SpO2 ${t.spo2Percent}%',
+                if (t.cadenceSpm != null) '${t.cadenceSpm} spm',
+                if (t.batteryPercent != null) 'Bat ${t.batteryPercent}%',
+              ];
+              return Padding(
+                padding: const EdgeInsets.symmetric(vertical: 6),
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.bluetooth_connected,
+                      size: 18,
+                      color: Color(0xFF10B981),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            t.deviceName,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontFamily: 'Hanken Grotesk',
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: textPrimary,
+                            ),
+                          ),
+                          Text(
+                            metrics.isEmpty
+                                ? 'Listening for GATT telemetry...'
+                                : metrics.join(' · '),
+                            style: TextStyle(
+                              fontFamily: 'Hanken Grotesk',
+                              fontSize: 11,
+                              color: textMuted,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        HapticFlow.light();
+                        context.read<WearableSyncBloc>().add(
+                          DisconnectBleDeviceEvent(t.deviceId),
+                        );
+                      },
+                      child: const Text(
+                        'Disconnect',
+                        style: TextStyle(
+                          fontFamily: 'Hanken Grotesk',
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFFEF4444),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }),
+          ],
+          if (state.bleDiscoveredDevices.isNotEmpty) ...[
+            const Divider(height: 20),
+            Text(
+              'Nearby BLE Peripherals',
+              style: TextStyle(
+                fontFamily: 'Hanken Grotesk',
+                fontWeight: FontWeight.w600,
+                fontSize: 12,
+                color: textMuted,
+              ),
+            ),
+            const SizedBox(height: 6),
+            ...state.bleDiscoveredDevices
+                .where((d) => !state.bleTelemetry.containsKey(d.id))
+                .take(6)
+                .map((d) => Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 4),
+                      child: Row(
+                        children: [
+                          Icon(
+                            d.isHealthWearable
+                                ? Icons.monitor_heart_outlined
+                                : Icons.bluetooth,
+                            size: 18,
+                            color: d.isHealthWearable
+                                ? const Color(0xFF10B981)
+                                : textMuted,
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  d.name,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    fontFamily: 'Hanken Grotesk',
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w500,
+                                    color: textPrimary,
+                                  ),
+                                ),
+                                Text(
+                                  'RSSI ${d.rssi} dBm${d.isHealthWearable ? ' · Health GATT' : ''}',
+                                  style: TextStyle(
+                                    fontFamily: 'Hanken Grotesk',
+                                    fontSize: 11,
+                                    color: textMuted,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          TextButton(
+                            onPressed: () {
+                              HapticFlow.light();
+                              context
+                                  .read<WearableSyncBloc>()
+                                  .add(ConnectBleDeviceEvent(d));
+                            },
+                            child: const Text(
+                              'Connect',
+                              style: TextStyle(
+                                fontFamily: 'Hanken Grotesk',
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF10B981),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    )),
+          ],
         ],
       ),
     );

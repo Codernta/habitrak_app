@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../data/models/user_model.dart';
 import '../../data/repositories/auth_repository.dart';
 import 'auth_state.dart';
+import '../../../../core/services/analytics_service.dart';
 
 class AuthCubit extends Cubit<AuthState> {
   final AuthRepository _authRepository;
@@ -59,6 +60,9 @@ class AuthCubit extends Cubit<AuthState> {
     emit(const AuthLoading(message: 'Signing in with Google...'));
     try {
       final user = await _authRepository.signInWithGoogle();
+      AnalyticsService().setUserId(user.uid);
+      AnalyticsService().setUserProperty(name: 'auth_provider', value: 'google');
+      AnalyticsService().logAuthEvent(method: 'google', isAnonymous: false);
       emit(Authenticated(user));
     } on FirebaseAuthException catch (e) {
       if (e.code == 'ERROR_ABORTED_BY_USER' || e.code == 'popup_closed_by_user') {
@@ -75,6 +79,9 @@ class AuthCubit extends Cubit<AuthState> {
     emit(const AuthLoading(message: 'Preparing your mindful space...'));
     try {
       final user = await _authRepository.signInAnonymously();
+      AnalyticsService().setUserId(user.uid);
+      AnalyticsService().setUserProperty(name: 'auth_provider', value: 'guest');
+      AnalyticsService().logAuthEvent(method: 'guest', isAnonymous: true);
       emit(Authenticated(user));
     } catch (e) {
       // If Firebase anonymous authentication is not enabled in Firebase Console,
@@ -89,6 +96,9 @@ class AuthCubit extends Cubit<AuthState> {
         lastLoginAt: DateTime.now(),
         isAnonymous: true,
       );
+      AnalyticsService().setUserId(guest.uid);
+      AnalyticsService().setUserProperty(name: 'auth_provider', value: 'guest_offline');
+      AnalyticsService().logAuthEvent(method: 'guest_local', isAnonymous: true);
       emit(Authenticated(guest));
     }
   }
@@ -97,6 +107,8 @@ class AuthCubit extends Cubit<AuthState> {
     emit(const AuthLoading(message: 'Signing out...'));
     try {
       await _authRepository.signOut();
+      AnalyticsService().setUserId(null);
+      AnalyticsService().logAuthEvent(method: 'sign_out', isAnonymous: false);
       emit(const Unauthenticated());
     } catch (e) {
       emit(AuthError('Logout failed: ${e.toString()}'));

@@ -7,6 +7,7 @@ import 'package:habitrak/core/animations/pressable_scale.dart';
 import 'package:habitrak/core/theme/app_theme.dart';
 import '../../data/repositories/soulfulness_repository.dart';
 import '../../../music/services/soulful_music_service.dart';
+import '../../../../core/services/analytics_service.dart';
 
 class MeditationTimerModal extends StatefulWidget {
   final int initialMinutes;
@@ -133,6 +134,14 @@ class _MeditationTimerModalState extends State<MeditationTimerModal>
       technique: _selectedAmbientSound == 'silence'
           ? 'Silent Zen'
           : 'Ambient Zen',
+    );
+
+    AnalyticsService().logMeditationSession(
+      durationMinutes: _selectedMinutes,
+      technique: _selectedAmbientSound == 'silence'
+          ? 'Silent Zen'
+          : 'Ambient Zen',
+      ambientSound: _selectedAmbientSound,
     );
 
     setState(() {

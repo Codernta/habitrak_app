@@ -8,6 +8,7 @@ import 'core/storage/hive_registrar.dart';
 import 'core/storage/settings_repository.dart';
 import 'core/services/notification_service.dart';
 import 'core/services/connectivity_service.dart';
+import 'core/services/analytics_service.dart';
 import 'core/widgets/river_flow_background.dart';
 import 'core/widgets/offline_global_indicator.dart';
 import 'features/auth/data/repositories/auth_repository.dart';
@@ -17,6 +18,7 @@ import 'features/habit/services/firebase_habit_sync_service.dart';
 import 'features/habit/presentation/bloc/habit_bloc.dart';
 import 'features/health/presentation/bloc/wearable_sync_bloc.dart';
 import 'features/health/presentation/bloc/wearable_sync_event.dart';
+import 'features/health/services/ble_wearable_service.dart';
 import 'features/health/services/firebase_health_sync_service.dart';
 import 'features/health/services/habit_automation_engine.dart';
 import 'features/health/services/health_ai_service.dart';
@@ -52,6 +54,10 @@ void main() async {
   await notificationService.initialize();
   await notificationService.requestPermissions();
 
+  // Initialize Google Analytics for behavioral & health research
+  final analyticsService = AnalyticsService();
+  await analyticsService.initialize();
+
   // Setup dependencies
   final firebaseHabitSyncService = FirebaseHabitSyncService();
   final habitRepository = HiveHabitRepository(cloudSyncService: firebaseHabitSyncService);
@@ -80,6 +86,7 @@ void main() async {
   final healthAiService = HybridHealthAIService(
     offlineService: OfflineRuleBasedAIService(localStorage: healthLocalStorage),
   );
+  final bleWearableService = BleWearableService();
 
   // Initialize Android background sync
   await BackgroundSyncService.initialize();
@@ -91,6 +98,7 @@ void main() async {
   runApp(
     MultiRepositoryProvider(
       providers: [
+        RepositoryProvider<AnalyticsService>.value(value: analyticsService),
         RepositoryProvider<HiveHabitRepository>.value(value: habitRepository),
         RepositoryProvider<FirebaseHabitSyncService>.value(value: firebaseHabitSyncService),
         RepositoryProvider<SettingsRepository>.value(value: settingsRepository),
@@ -106,6 +114,7 @@ void main() async {
         RepositoryProvider<HealthPermissionService>.value(value: healthPermissionService),
         RepositoryProvider<HealthSyncLocalStorage>.value(value: healthLocalStorage),
         RepositoryProvider<HealthDataRepository>.value(value: healthDataRepository),
+        RepositoryProvider<BleWearableService>.value(value: bleWearableService),
       ],
       child: MultiBlocProvider(
         providers: [
@@ -126,6 +135,7 @@ void main() async {
               cloudSyncService: firebaseHealthSyncService,
               habitAutomationEngine: habitAutomationEngine,
               aiService: healthAiService,
+              bleService: bleWearableService,
             )..add(InitializeWearablesEvent()),
           ),
         ],
@@ -145,6 +155,7 @@ class HabitrakApp extends StatelessWidget {
       builder: (context, themeMode) {
         return MaterialApp(
           navigatorKey: appNavigatorKey,
+          navigatorObservers: [AnalyticsService().observer],
           title: 'Habitrak',
           debugShowCheckedModeBanner: false,
           theme: AppTheme.lightTheme,

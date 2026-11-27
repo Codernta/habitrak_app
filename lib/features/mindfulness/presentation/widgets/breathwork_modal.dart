@@ -6,6 +6,7 @@ import 'package:haptic_flow/haptic_flow.dart';
 import 'package:habitrak/core/animations/pressable_scale.dart';
 import 'package:habitrak/core/theme/app_theme.dart';
 import '../../data/repositories/soulfulness_repository.dart';
+import '../../../../core/services/analytics_service.dart';
 
 enum BreathPhase { inhale, holdIn, exhale, holdOut }
 
@@ -235,6 +236,11 @@ class _BreathworkModalState extends State<BreathworkModal>
       patternName: _selectedPattern.name,
       cycles: _completedCycles,
       durationSeconds: _totalElapsedSeconds,
+    );
+
+    AnalyticsService().logBreathworkSession(
+      durationMinutes: (_totalElapsedSeconds / 60).round().clamp(1, 120),
+      technique: _selectedPattern.name,
     );
 
     setState(() {

@@ -2,6 +2,7 @@ import 'package:equatable/equatable.dart';
 import '../../domain/models/ai_health_insight.dart';
 import '../../domain/models/daily_health_summary.dart';
 import '../../domain/models/device_connection_metadata.dart';
+import '../../services/ble_wearable_service.dart';
 import '../../services/habit_automation_engine.dart';
 import '../../services/health_permission_service.dart';
 
@@ -26,6 +27,10 @@ class WearableSyncSuccess extends WearableSyncState {
   final List<HabitAutomationResult> lastAutomationResults;
   final bool isSyncing;
   final DateTime? lastSyncedAt;
+  final bool isBleScanning;
+  final List<BleDiscoveredDevice> bleDiscoveredDevices;
+  final Map<String, BleTelemetrySnapshot> bleTelemetry;
+  final String? bleStatusMessage;
 
   const WearableSyncSuccess({
     required this.platformStatus,
@@ -37,6 +42,10 @@ class WearableSyncSuccess extends WearableSyncState {
     this.lastAutomationResults = const [],
     this.isSyncing = false,
     this.lastSyncedAt,
+    this.isBleScanning = false,
+    this.bleDiscoveredDevices = const [],
+    this.bleTelemetry = const {},
+    this.bleStatusMessage,
   });
 
   WearableSyncSuccess copyWith({
@@ -49,6 +58,11 @@ class WearableSyncSuccess extends WearableSyncState {
     List<HabitAutomationResult>? lastAutomationResults,
     bool? isSyncing,
     DateTime? lastSyncedAt,
+    bool? isBleScanning,
+    List<BleDiscoveredDevice>? bleDiscoveredDevices,
+    Map<String, BleTelemetrySnapshot>? bleTelemetry,
+    String? bleStatusMessage,
+    bool clearBleStatusMessage = false,
   }) {
     return WearableSyncSuccess(
       platformStatus: platformStatus ?? this.platformStatus,
@@ -61,6 +75,12 @@ class WearableSyncSuccess extends WearableSyncState {
           lastAutomationResults ?? this.lastAutomationResults,
       isSyncing: isSyncing ?? this.isSyncing,
       lastSyncedAt: lastSyncedAt ?? this.lastSyncedAt,
+      isBleScanning: isBleScanning ?? this.isBleScanning,
+      bleDiscoveredDevices: bleDiscoveredDevices ?? this.bleDiscoveredDevices,
+      bleTelemetry: bleTelemetry ?? this.bleTelemetry,
+      bleStatusMessage: clearBleStatusMessage
+          ? null
+          : (bleStatusMessage ?? this.bleStatusMessage),
     );
   }
 
@@ -75,6 +95,10 @@ class WearableSyncSuccess extends WearableSyncState {
         lastAutomationResults,
         isSyncing,
         lastSyncedAt,
+        isBleScanning,
+        bleDiscoveredDevices,
+        bleTelemetry,
+        bleStatusMessage,
       ];
 }
 

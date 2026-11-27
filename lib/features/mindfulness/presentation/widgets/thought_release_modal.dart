@@ -6,6 +6,7 @@ import 'package:habitrak/core/animations/app_animations.dart';
 import 'package:habitrak/core/animations/pressable_scale.dart';
 import 'package:habitrak/core/theme/app_theme.dart';
 import '../../data/repositories/soulfulness_repository.dart';
+import '../../../../core/services/analytics_service.dart';
 
 class ThoughtReleaseModal extends StatefulWidget {
   const ThoughtReleaseModal({super.key});
@@ -97,6 +98,11 @@ class _ThoughtReleaseModalState extends State<ThoughtReleaseModal>
 
     // Record release in Hive repository
     context.read<SoulfulnessRepository>().recordThoughtRelease();
+
+    AnalyticsService().logThoughtReleased(
+      thoughtLength: _thoughtController.text.length,
+      releaseMethod: 'zen_dissolve',
+    );
 
     _driftController.forward();
   }
